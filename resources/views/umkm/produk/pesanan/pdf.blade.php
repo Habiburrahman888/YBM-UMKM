@@ -197,6 +197,11 @@
             color: #166534;
         }
 
+        .badge-dikirim {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
         .badge-batal {
             background: #fee2e2;
             color: #991b1b;
@@ -269,8 +274,8 @@
             <div class="value">{{ $pesanans->where('status', 'selesai')->count() }}</div>
         </div>
         <div class="stat-card amber">
-            <div class="label">Pending / Diproses</div>
-            <div class="value">{{ $pesanans->whereIn('status', ['pending', 'diproses'])->count() }}</div>
+            <div class="label">Belum Selesai (Pending/Proses/Kirim)</div>
+            <div class="value">{{ $pesanans->whereIn('status', ['pending', 'diproses', 'dikirim'])->count() }}</div>
         </div>
         <div class="stat-card green" style="background:#f0fdf4;">
             <div class="label">Total Pendapatan (Selesai)</div>
@@ -321,6 +326,8 @@
                             <span class="badge badge-pending">Pending</span>
                         @elseif($p->status === 'diproses')
                             <span class="badge badge-diproses">Diproses</span>
+                        @elseif($p->status === 'dikirim')
+                            <span class="badge badge-dikirim">Dikirim</span>
                         @elseif($p->status === 'selesai')
                             <span class="badge badge-selesai">Selesai</span>
                         @else

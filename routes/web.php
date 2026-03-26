@@ -26,6 +26,9 @@ Route::prefix('/')->name('guest.')->group(function () {
     Route::get('/tentang', [GuestController::class, 'tentang'])->name('tentang');
     Route::get('/checkout/{uuid}', [GuestController::class, 'checkout'])->name('checkout');
     Route::post('/checkout/{uuid}', [GuestController::class, 'storeCheckout'])->name('store-checkout');
+
+    Route::get('/cek-pesanan', [GuestController::class, 'cekPesanan'])->name('cek-pesanan');
+    Route::post('/cek-pesanan', [GuestController::class, 'searchPesanan'])->name('search-pesanan');
 });
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

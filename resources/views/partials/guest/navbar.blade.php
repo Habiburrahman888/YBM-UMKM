@@ -87,7 +87,7 @@
 
         {{-- Links (desktop) --}}
         <div class="hidden lg:flex items-center gap-6 xl:gap-8 flex-1 justify-center">
-            @foreach ([['route' => 'guest.beranda', 'label' => 'Beranda'], ['route' => 'guest.katalog', 'label' => 'Katalog'], ['route' => 'guest.umkm', 'label' => 'Daftar UMKM']] as $link)
+            @foreach ([['route' => 'guest.beranda', 'label' => 'Beranda'], ['route' => 'guest.katalog', 'label' => 'Katalog'], ['route' => 'guest.umkm', 'label' => 'Daftar UMKM'], ['route' => 'guest.cek-pesanan', 'label' => 'Cek Pesanan']] as $link)
                 <a href="{{ route($link['route']) }}"
                     class="text-sm font-bold transition-all {{ $isHeroPage ? 'drop-shadow-md' : '' }}
                             {{ request()->routeIs($link['route'])
@@ -161,7 +161,7 @@ window.addEventListener('scroll', () => { scrolled = window.scrollY > 100 })"
 
         {{-- Links (desktop) --}}
         <div class="hidden lg:flex items-center gap-6 xl:gap-8 flex-1 justify-center">
-            @foreach ([['route' => 'guest.beranda', 'label' => 'Beranda'], ['route' => 'guest.katalog', 'label' => 'Katalog'], ['route' => 'guest.umkm', 'label' => 'Daftar UMKM']] as $link)
+            @foreach ([['route' => 'guest.beranda', 'label' => 'Beranda'], ['route' => 'guest.katalog', 'label' => 'Katalog'], ['route' => 'guest.umkm', 'label' => 'Daftar UMKM'], ['route' => 'guest.cek-pesanan', 'label' => 'Cek Pesanan']] as $link)
                 <a href="{{ route($link['route']) }}"
                     class="text-sm font-bold transition-all
                     {{ request()->routeIs($link['route']) ? 'text-blue-500' : 'text-neutral-500 hover:text-blue-500' }}">
@@ -228,7 +228,7 @@ window.addEventListener('scroll', () => { scrolled = window.scrollY > 100 })"
 
             {{-- Nav Links --}}
             <nav class="space-y-1">
-                @foreach ([['route' => 'guest.beranda', 'icon' => 'fa-home', 'label' => 'Beranda'], ['route' => 'guest.katalog', 'icon' => 'fa-shopping-bag', 'label' => 'Katalog Produk'], ['route' => 'guest.umkm', 'icon' => 'fa-store', 'label' => 'Daftar UMKM']] as $link)
+                @foreach ([['route' => 'guest.beranda', 'icon' => 'fa-home', 'label' => 'Beranda'], ['route' => 'guest.katalog', 'icon' => 'fa-shopping-bag', 'label' => 'Katalog Produk'], ['route' => 'guest.umkm', 'icon' => 'fa-store', 'label' => 'Daftar UMKM'], ['route' => 'guest.cek-pesanan', 'icon' => 'fa-search', 'label' => 'Cek Pesanan']] as $link)
                     <a href="{{ route($link['route']) }}"
                         class="flex items-center gap-3 px-4 py-2.5 sm:py-3 rounded-xl text-sm font-semibold transition-all
                         {{ request()->routeIs($link['route'])

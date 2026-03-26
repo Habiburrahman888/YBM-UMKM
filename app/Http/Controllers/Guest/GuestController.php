@@ -101,11 +101,15 @@ class GuestController extends Controller
             $message .= "Catatan: " . $request->catatan . "\n";
         }
 
-        $message .= "\nSaya telah mengunggah bukti transfer di sistem. Mohon segera diproses ya. Terimakasih!";
+        $message .= "\n\nHalo UMKM, Saya telah mengunggah bukti transfer di sistem. Mohon segera diproses ya. Terimakasih!\n\nLacak Pesanan Saya: " . route('guest.cek-pesanan', ['id_pesanan' => $pesanan->uuid, 'telepon' => $pesanan->telepon_pembeli]);
 
         $waLink = "https://wa.me/" . $targetWA . "?text=" . urlencode($message);
 
-        return redirect($waLink);
+        $setting  = SettingAdmin::first();
+        $sosmed   = Sosmed::first();
+        $kategori = Kategori::all();
+
+        return view('guest.checkout-success', compact('waLink', 'pesanan', 'setting', 'sosmed', 'kategori'));
     }
 
     public function beranda()
@@ -347,4 +351,35 @@ class GuestController extends Controller
 
         return view('guest.detail-umkm', compact('setting', 'sosmed', 'kategori', 'umkm'));
     }
-}
+    public function cekPesanan()
+    {
+        $setting  = SettingAdmin::first();
+        $sosmed   = Sosmed::first();
+        $kategori = Kategori::all();
+
+        return view('guest.cek-pesanan', compact('setting', 'sosmed', 'kategori'));
+    }
+
+    public function searchPesanan(Request $request)
+    {
+        $request->validate([
+            'id_pesanan' => 'required|string',
+            'telepon'    => 'required|string',
+        ]);
+
+        $pesanan = Pesanan::with(['umkm', 'items.produk'])
+            ->where('uuid', $request->id_pesanan)
+            ->where('telepon_pembeli', $request->telepon)
+            ->first();
+
+        if (!$pesanan) {
+            return back()->with('error', 'Pesanan tidak ditemukan. Pastikan ID Pesanan dan Nomor Telepon benar.');
+        }
+
+        $setting  = SettingAdmin::first();
+        $sosmed   = Sosmed::first();
+        $kategori = Kategori::all();
+
+        return view('guest.cek-pesanan', compact('setting', 'sosmed', 'kategori', 'pesanan'));
+    }
+}

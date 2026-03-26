@@ -56,7 +56,7 @@ class PesananController extends Controller
             ->firstOrFail();
 
         $request->validate([
-            'status' => 'required|in:pending,diproses,selesai,dibatalkan'
+            'status' => 'required|in:pending,diproses,dikirim,selesai,dibatalkan'
         ]);
 
         if ($pesanan->status === 'selesai') {
@@ -73,14 +73,14 @@ class PesananController extends Controller
             'status' => $request->status
         ]);
 
-        if ($oldStatus == 'pending' && in_array($request->status, ['diproses', 'selesai'])) {
-            // Kurangi stok saat pesanan diproses atau selesai
+        if ($oldStatus == 'pending' && in_array($request->status, ['diproses', 'dikirim', 'selesai'])) {
+            // Kurangi stok saat pesanan diproses, dikirim atau selesai
             foreach ($pesanan->items as $item) {
                 if ($item->produk) {
                     $item->produk->decrement('stok', $item->jumlah);
                 }
             }
-        } elseif (in_array($oldStatus, ['diproses', 'selesai']) && in_array($request->status, ['pending', 'dibatalkan'])) {
+        } elseif (in_array($oldStatus, ['diproses', 'dikirim', 'selesai']) && in_array($request->status, ['pending', 'dibatalkan'])) {
             // Kembalikan stok jika pesanan dibatalkan atau dikembalikan ke pending
             foreach ($pesanan->items as $item) {
                 if ($item->produk) {

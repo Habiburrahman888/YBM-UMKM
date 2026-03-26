@@ -20,9 +20,10 @@
                     class="px-3 py-1.5 text-xs font-bold rounded-full
                 @if ($pesanan->status === 'pending') bg-amber-100 text-amber-700
                 @elseif($pesanan->status === 'diproses') bg-blue-100 text-blue-700
+                @elseif($pesanan->status === 'dikirim') bg-yellow-100 text-yellow-700
                 @elseif($pesanan->status === 'selesai') bg-green-100 text-green-700
                 @else bg-red-100 text-red-700 @endif">
-                    {{ strtoupper($pesanan->status) }}
+                    {{ strtoupper($pesanan->status == 'dikirim' ? 'sedang diantar' : $pesanan->status) }}
                 </span>
             </div>
         </div>
@@ -179,6 +180,9 @@
                                     @endif
                                     <option value="diproses" {{ $pesanan->status === 'diproses' ? 'selected' : '' }}>
                                         DIPROSES
+                                    </option>
+                                    <option value="dikirim" {{ $pesanan->status === 'dikirim' ? 'selected' : '' }}>
+                                        SEDANG DIANTAR
                                     </option>
                                     <option value="selesai" {{ $pesanan->status === 'selesai' ? 'selected' : '' }}>
                                         SELESAI

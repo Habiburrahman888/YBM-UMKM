@@ -2,11 +2,9 @@
 
 {{-- ── Lengkungan ── --}}
 <div class="w-full overflow-hidden leading-none -mb-1" style="background: #f8fafc;">
-    <svg viewBox="0 0 1200 120" xmlns="http://www.w3.org/2000/svg"
-         preserveAspectRatio="none"
-         class="w-full block" style="height: 70px;">
-        <path d="M0,0 Q600,120 1200,0 L1200,120 L0,120 Z"
-              fill="#1e2d45"/>
+    <svg viewBox="0 0 1200 120" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" class="w-full block"
+        style="height: 70px;">
+        <path d="M0,0 Q600,120 1200,0 L1200,120 L0,120 Z" fill="#1e2d45" />
     </svg>
 </div>
 
@@ -14,15 +12,15 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 pb-6 sm:pb-8">
 
         {{-- Grid utama --}}
-        <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-[2fr_1fr_1.5fr] gap-8 sm:gap-12 lg:gap-16 pt-10 sm:pt-12 lg:pt-14 mb-10 sm:mb-12 footer-fade">
+        <div
+            class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-[2fr_1fr_1.5fr] gap-8 sm:gap-12 lg:gap-16 pt-10 sm:pt-12 lg:pt-14 mb-10 sm:mb-12 footer-fade">
 
             {{-- ── Brand ── --}}
             <div>
                 @if ($setting?->logo_expo)
                     <div class="flex items-center gap-3 mb-5">
-                        <img src="{{ asset('storage/' . $setting->logo_expo) }}"
-                             alt="{{ $setting->nama_expo }}"
-                             class="w-12 h-12 object-contain rounded-xl">
+                        <img src="{{ asset('storage/' . $setting->logo_expo) }}" alt="{{ $setting->nama_expo }}"
+                            class="w-12 h-12 object-contain rounded-xl">
                         <div>
                             <p class="font-heading text-base font-bold text-white leading-tight">
                                 {{ $setting->nama_expo ?? 'YBM UMKM' }}
@@ -49,21 +47,21 @@
                 <div class="flex gap-2">
                     @if ($sosmed?->facebook)
                         <a href="{{ $sosmed->facebook }}" target="_blank"
-                           class="w-9 h-9 rounded-xl bg-white/8 flex items-center justify-center text-white/65
+                            class="w-9 h-9 rounded-xl bg-white/8 flex items-center justify-center text-white/65
                                   hover:bg-blue-600 hover:text-white transition-all hover:-translate-y-0.5">
                             <i class="fab fa-facebook-f text-sm"></i>
                         </a>
                     @endif
                     @if ($sosmed?->instagram)
                         <a href="{{ $sosmed->instagram }}" target="_blank"
-                           class="w-9 h-9 rounded-xl bg-white/8 flex items-center justify-center text-white/65
+                            class="w-9 h-9 rounded-xl bg-white/8 flex items-center justify-center text-white/65
                                   hover:bg-pink-600 hover:text-white transition-all hover:-translate-y-0.5">
                             <i class="fab fa-instagram text-sm"></i>
                         </a>
                     @endif
                     @if ($sosmed?->youtube)
                         <a href="{{ $sosmed->youtube }}" target="_blank"
-                           class="w-9 h-9 rounded-xl bg-white/8 flex items-center justify-center text-white/65
+                            class="w-9 h-9 rounded-xl bg-white/8 flex items-center justify-center text-white/65
                                   hover:bg-red-600 hover:text-white transition-all hover:-translate-y-0.5">
                             <i class="fab fa-youtube text-sm"></i>
                         </a>
@@ -77,10 +75,14 @@
                     Navigasi
                 </h4>
                 <div class="space-y-2.5">
-                    <a href="{{ route('guest.beranda') }}" class="block text-sm text-white/65 hover:text-white transition-all">Beranda</a>
-                    <a href="{{ route('guest.katalog') }}" class="block text-sm text-white/65 hover:text-white transition-all">Katalog Produk</a>
-                    <a href="{{ route('guest.umkm') }}"   class="block text-sm text-white/65 hover:text-white transition-all">Daftar UMKM</a>
-                    <a href="{{ route('login') }}"        class="block text-sm text-white/65 hover:text-white transition-all">Masuk</a>
+                    <a href="{{ route('guest.beranda') }}"
+                        class="block text-sm text-white/65 hover:text-white transition-all">Beranda</a>
+                    <a href="{{ route('guest.katalog') }}"
+                        class="block text-sm text-white/65 hover:text-white transition-all">Katalog Produk</a>
+                    <a href="{{ route('guest.umkm') }}"
+                        class="block text-sm text-white/65 hover:text-white transition-all">Daftar UMKM</a>
+                    <a href="{{ route('login') }}"
+                        class="block text-sm text-white/65 hover:text-white transition-all">Masuk</a>
                 </div>
             </div>
 
@@ -99,7 +101,8 @@
                     @if ($setting?->phone)
                         <div class="flex gap-3 text-sm">
                             <i class="fas fa-phone text-white/40 mt-0.5 shrink-0 text-xs"></i>
-                            <a href="tel:{{ $setting->phone }}" class="text-white/65 hover:text-white transition-colors">
+                            <a href="tel:{{ $setting->phone }}"
+                                class="text-white/65 hover:text-white transition-colors">
                                 {{ $setting->phone }}
                             </a>
                         </div>
@@ -107,7 +110,8 @@
                     @if ($setting?->email)
                         <div class="flex gap-3 text-sm">
                             <i class="fas fa-envelope text-white/40 mt-0.5 shrink-0 text-xs"></i>
-                            <a href="mailto:{{ $setting->email }}" class="text-white/65 hover:text-white transition-colors break-all">
+                            <a href="mailto:{{ $setting->email }}"
+                                class="text-white/65 hover:text-white transition-colors break-all">
                                 {{ $setting->email }}
                             </a>
                         </div>
@@ -118,7 +122,8 @@
         </div>
 
         {{-- ── Footer Bottom ── --}}
-        <div class="pt-5 sm:pt-6 border-t border-white/10 flex items-center justify-center text-[11px] sm:text-xs text-white/40 footer-fade">
+        <div
+            class="pt-5 sm:pt-6 border-t border-white/10 flex items-center justify-center text-[11px] sm:text-xs text-white/40 footer-fade">
             <p>&copy; {{ date('Y') }} {{ $setting->nama_expo ?? 'YBM UMKM' }}. Seluruh Hak Cipta Dilindungi.</p>
         </div>
 
@@ -131,6 +136,7 @@
         transform: translateY(24px);
         transition: opacity .7s ease, transform .7s ease;
     }
+
     .footer-fade.footer-visible {
         opacity: 1;
         transform: translateY(0);
@@ -138,7 +144,7 @@
 </style>
 
 <script>
-    (function () {
+    (function() {
         const io = new IntersectionObserver((entries) => {
             entries.forEach((e, i) => {
                 if (e.isIntersecting) {
@@ -146,7 +152,9 @@
                     io.unobserve(e.target);
                 }
             });
-        }, { threshold: 0.1 });
+        }, {
+            threshold: 0.1
+        });
 
         document.querySelectorAll('.footer-fade').forEach(el => io.observe(el));
     })();

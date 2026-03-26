@@ -29,6 +29,7 @@
                     <option value="">Semua Status</option>
                     <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
                     <option value="diproses" {{ request('status') == 'diproses' ? 'selected' : '' }}>Diproses</option>
+                    <option value="dikirim" {{ request('status') == 'dikirim' ? 'selected' : '' }}>Sedang Diantar</option>
                     <option value="selesai" {{ request('status') == 'selesai' ? 'selected' : '' }}>Selesai</option>
                     <option value="dibatalkan" {{ request('status') == 'dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
                 </select>
@@ -104,9 +105,10 @@
                                     class="px-2 py-1 text-[10px] font-bold rounded-full
                             @if ($p->status === 'pending') bg-amber-100 text-amber-700
                             @elseif($p->status === 'diproses') bg-blue-100 text-blue-700
+                            @elseif($p->status === 'dikirim') bg-yellow-100 text-yellow-700
                             @elseif($p->status === 'selesai') bg-green-100 text-green-700
                             @else bg-red-100 text-red-700 @endif">
-                                    {{ strtoupper($p->status) }}
+                                    {{ strtoupper($p->status == 'dikirim' ? 'sedang diantar' : $p->status) }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right">

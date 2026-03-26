@@ -73,7 +73,7 @@ class LaporanTransaksiController extends Controller
 
         $pdf = Pdf::loadView('unit.laporan-transaksi.pdf', compact(
             'unit', 'pesanans', 'totalPendapatan', 'filters', 'umkmList'
-        ))->setPaper('a4', 'landscape');
+        ))->setPaper('a4', 'portrait');
 
         return $pdf->stream('laporan-transaksi-' . $unit->nama_unit . '-' . now()->format('Ymd') . '.pdf');
     }
