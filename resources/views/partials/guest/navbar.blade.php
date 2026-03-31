@@ -52,7 +52,7 @@
 
 {{-- HERO NAVBAR --}}
 <div id="heroNav"
-    class="z-40 {{ $isHeroPage ? 'absolute top-9 sm:top-10 left-0 right-0 bg-gradient-to-b from-black/60 via-black/20 to-transparent' : 'relative bg-white border-b border-neutral-100' }}">
+    class="z-[70] {{ $isHeroPage ? 'absolute top-9 sm:top-10 left-0 right-0 bg-gradient-to-b from-black/60 via-black/20 to-transparent' : 'relative bg-white border-b border-neutral-100' }}">
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-3.5 flex items-center justify-between gap-4 sm:gap-6">
 
@@ -135,7 +135,7 @@
 <nav id="stickyNav" x-data="{ scrolled: false }" x-init="scrolled = window.scrollY > 100;
 window.addEventListener('scroll', () => { scrolled = window.scrollY > 100 })"
     :class="scrolled ? 'translate-y-0 opacity-100 pointer-events-auto' : '-translate-y-full opacity-0 pointer-events-none'"
-    class="fixed top-0 left-0 right-0 z-50 bg-white shadow-[0_2px_20px_rgba(0,0,0,0.08)] transition-all duration-300">
+    class="fixed top-0 left-0 right-0 z-[100] bg-white shadow-[0_2px_20px_rgba(0,0,0,0.08)] transition-all duration-300">
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between gap-3 sm:gap-4">
 

@@ -1,4 +1,4 @@
-﻿@extends('layouts.guest')
+@extends('layouts.guest')
 
 @section('title', 'Katalog Produk')
 
@@ -134,7 +134,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6">
 
             {{-- SEARCH --}}
-            <div class="max-w-2xl mx-auto -mt-7 mb-12 relative z-20">
+            <div class="max-w-2xl mx-auto -mt-7 mb-12 relative z-[60]">
 
                 <form action="{{ route('guest.katalog') }}" method="GET"
                     class="search-wrap bg-white flex items-center gap-2 pl-5 pr-2 py-2 rounded-full
@@ -152,56 +152,21 @@
                         autocomplete="off"
                         class="flex-1 min-w-0 border-none bg-transparent py-2.5 text-sm font-semibold
                                text-neutral-800 placeholder:font-normal placeholder:text-neutral-400
-                               focus:outline-none">
+                               focus:outline-none px-4">
 
-                    {{-- City select — desktop --}}
-                    <div class="hidden sm:flex items-center border-l border-neutral-200 pl-3 mr-1 shrink-0">
-                        <div class="relative flex items-center">
-                            <select name="city" onchange="this.form.submit()"
-                                class="appearance-none py-2 pl-3 pr-7 bg-transparent border-none outline-none
-                                       cursor-pointer text-neutral-500 font-medium text-sm max-w-[140px]">
-                                <option value="">Semua Kota</option>
-                                @foreach ($cities_filter as $city)
-                                    <option value="{{ $city->code }}"
-                                        {{ request('city') == $city->code ? 'selected' : '' }}>
-                                        {{ $city->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <i
-                                class="fas fa-chevron-down text-[10px] text-neutral-400 absolute right-0 pointer-events-none"></i>
-                        </div>
+                    <div class="flex items-center gap-2 pr-2">
+                        @include('guest.partials.location-selector', ['route' => 'guest.katalog'])
+
+                        <button type="submit"
+                            class="flex-shrink-0 inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full
+                                   text-white text-sm font-bold whitespace-nowrap min-h-[40px]
+                                   transition-all duration-200 focus:outline-none shadow-sm hover:shadow-md"
+                            style="background: var(--brand);" onmouseover="this.style.background='var(--brand-dark)'"
+                            onmouseout="this.style.background='var(--brand)'">
+                            <i class="fas fa-search text-xs"></i>
+                            <span>Cari</span>
+                        </button>
                     </div>
-
-                    <button type="submit"
-                        class="flex-shrink-0 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full
-                               text-white text-sm font-semibold whitespace-nowrap min-h-[42px]
-                               transition-all duration-200 focus:outline-none"
-                        style="background: var(--brand);" onmouseover="this.style.background='var(--brand-dark)'"
-                        onmouseout="this.style.background='var(--brand)'">
-                        <i class="fas fa-search text-xs"></i>
-                        <span class="hidden sm:inline">Cari</span>
-                    </button>
-                </form>
-
-                {{-- City select — mobile --}}
-                <form action="{{ route('guest.katalog') }}" method="GET" class="sm:hidden mt-2">
-                    @if (request('kategori'))
-                        <input type="hidden" name="kategori" value="{{ request('kategori') }}">
-                    @endif
-                    @if (request('cari'))
-                        <input type="hidden" name="cari" value="{{ request('cari') }}">
-                    @endif
-                    <select name="city" onchange="this.form.submit()"
-                        class="w-full py-2.5 px-4 rounded-xl border border-neutral-200 bg-white
-                               text-sm text-neutral-400 font-medium outline-none cursor-pointer">
-                        <option value="">Lokasi Kota (Semua)</option>
-                        @foreach ($cities_filter as $city)
-                            <option value="{{ $city->code }}" {{ request('city') == $city->code ? 'selected' : '' }}>
-                                {{ $city->name }}
-                            </option>
-                        @endforeach
-                    </select>
                 </form>
             </div>
 
@@ -263,7 +228,7 @@
                                 Kategori
                             </p>
                             <nav class="flex flex-col gap-0.5" aria-label="Pilih kategori">
-                                <a href="{{ route('guest.katalog', request()->only(['cari'])) }}"
+                                <a href="{{ route('guest.katalog', request()->only(['cari', 'province', 'city'])) }}"
                                     @click="$store.wishlist.showOnly = false"
                                     :class="(!$store.wishlist.showOnly && {{ !request('kategori') ? 'true' : 'false' }}) ?
                                     'nav-pill-active' :
@@ -273,7 +238,7 @@
                                     Semua Kategori
                                 </a>
                                 @foreach ($kategori as $kat)
-                                    <a href="{{ route('guest.katalog', array_merge(request()->only(['cari']), ['kategori' => $kat->id])) }}"
+                                    <a href="{{ route('guest.katalog', array_merge(request()->only(['cari', 'province', 'city']), ['kategori' => $kat->id])) }}"
                                         @click="$store.wishlist.showOnly = false"
                                         :class="(!$store.wishlist.showOnly &&
                                             {{ request('kategori') == $kat->id ? 'true' : 'false' }}) ?
@@ -330,6 +295,17 @@
 
                         {{-- Active filter chips --}}
                         <div class="flex items-center gap-2 flex-wrap">
+                            @if (request('province'))
+                                <span
+                                    class="chip-brand inline-flex items-center gap-1.5 px-3 py-1 rounded-full
+                                             text-xs font-bold border">
+                                    <i class="fas fa-map-marker-alt"></i> Provinsi terpilih
+                                    <a href="{{ route('guest.katalog', request()->except(['province', 'city'])) }}"
+                                        class="no-underline opacity-60 hover:opacity-100 ml-0.5">
+                                        <i class="fas fa-times text-[0.65rem]"></i>
+                                    </a>
+                                </span>
+                            @endif
                             @if (request('city'))
                                 <span
                                     class="chip-brand inline-flex items-center gap-1.5 px-3 py-1 rounded-full

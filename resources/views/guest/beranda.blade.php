@@ -480,7 +480,7 @@
         $currentKategori = $kategori->firstWhere('id', request('kategori'));
         $activeCatName = $currentKategori ? $currentKategori->nama : 'all';
     @endphp
-    <section id="produk" class="bg-white pb-28" x-data="{
+    <section id="produk" class="bg-white pb-28 scroll-mt-24" x-data="{
         activeCat: '{{ addslashes($activeCatName) }}',
         categoryCounts: {
             'all': {{ count($produk) }},
@@ -491,7 +491,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6">
 
             {{-- Section Head --}}
-            <div class="flex items-center justify-between flex-wrap gap-5 pt-20 mb-6 reveal">
+            <div class="flex items-center justify-between flex-wrap gap-5 pt-20 mb-6 reveal relative z-[60]">
                 <div>
                     <span class="section-eyebrow">Produk Terbaru</span>
                     <h2 class="font-display font-light text-neutral-900 leading-tight"
@@ -504,29 +504,14 @@
                 </div>
 
                 <div class="flex items-center gap-2 flex-wrap">
-                    {{-- Filter kota --}}
-                    <form action="{{ route('guest.beranda') }}#produk" method="GET">
-                        <input type="hidden" name="section" value="produk">
-                        @if (request('kategori'))
-                            <input type="hidden" name="kategori" value="{{ request('kategori') }}">
-                        @endif
-                        <select name="city" onchange="this.form.submit()"
-                            class="h-9 pl-3 pr-8 rounded-full border border-neutral-200 text-sm font-medium text-neutral-600 cursor-pointer outline-none transition-all appearance-none bg-white hover:border-neutral-400"
-                            style="background-image:url('data:image/svg+xml;utf8,<svg fill=%22%2394a3b8%22 height=%2216%22 viewBox=%220 0 24 24%22 width=%2216%22 xmlns=%22http://www.w3.org/2000/svg%22><path d=%22M7 10l5 5 5-5z%22/></svg>');background-repeat:no-repeat;background-position:right .5rem center;">
-                            <option value="">Semua Kota</option>
-                            @foreach ($cities_filter as $city)
-                                <option value="{{ $city->code }}"
-                                    {{ request('city') == $city->code ? 'selected' : '' }}>
-                                    {{ $city->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </form>
+                    <div class="flex items-center gap-3">
+                        @include('guest.partials.location-selector', ['route' => 'guest.beranda'])
 
-                    <a href="{{ route('guest.katalog') }}"
-                        class="h-9 px-5 inline-flex items-center bg-neutral-900 text-white text-sm font-semibold rounded-full hover:bg-neutral-700 transition-colors whitespace-nowrap">
-                        Semua Produk
-                    </a>
+                        <a href="{{ route('guest.katalog') }}"
+                            class="h-10 px-5 inline-flex items-center bg-neutral-900 border border-neutral-900 text-white text-sm font-bold rounded-full hover:bg-neutral-800 transition-all whitespace-nowrap shadow-sm hover:shadow-md">
+                            Semua Produk
+                        </a>
+                    </div>
                 </div>
             </div>
 

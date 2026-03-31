@@ -1,4 +1,4 @@
-﻿@extends('layouts.guest')
+@extends('layouts.guest')
 
 @section('title', 'Daftar Mitra UMKM')
 
@@ -253,7 +253,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6">
 
             {{-- SEARCH --}}
-            <div class="max-w-2xl mx-auto -mt-7 mb-12 relative z-20">
+            <div class="max-w-2xl mx-auto -mt-7 mb-12 relative z-[60]">
                 <form action="{{ route('guest.umkm') }}" method="GET"
                     class="search-wrap bg-white flex items-center gap-2 pl-5 pr-2 py-2 rounded-full
                             border border-neutral-200
@@ -270,16 +270,52 @@
                         value="{{ request('cari') }}" autocomplete="off"
                         class="flex-1 min-w-0 border-none bg-transparent py-2.5 text-sm font-semibold
                                 text-neutral-800 placeholder:font-normal placeholder:text-neutral-400
-                                focus:outline-none">
+                                focus:outline-none px-4">
 
-                    <button type="submit"
-                        class="flex-shrink-0 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full
-                                text-white text-sm font-semibold whitespace-nowrap min-h-[42px]
-                                transition-all duration-200 focus:outline-none"
-                        style="background: var(--brand);">
-                        <i class="fas fa-search text-xs"></i>
-                        <span class="hidden sm:inline">Cari</span>
-                    </button>
+                    <div class="flex items-center gap-2 pr-2">
+                        @include('guest.partials.location-selector', ['route' => 'guest.umkm'])
+
+                        <button type="submit"
+                            class="flex-shrink-0 inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full
+                                    text-white text-sm font-bold whitespace-nowrap min-h-[40px]
+                                    transition-all duration-200 focus:outline-none shadow-sm hover:shadow-md"
+                            style="background: var(--brand);">
+                            <i class="fas fa-search text-xs"></i>
+                            <span>Cari</span>
+                        </button>
+                    </div>
+                </form>
+
+                {{-- Region select — mobile --}}
+                <form action="{{ route('guest.umkm') }}" method="GET" class="sm:hidden mt-2 flex flex-col gap-2">
+                    @if (request('kategori'))
+                        <input type="hidden" name="kategori" value="{{ request('kategori') }}">
+                    @endif
+                    @if (request('cari'))
+                        <input type="hidden" name="cari" value="{{ request('cari') }}">
+                    @endif
+                    <select name="province" onchange="this.form.submit()"
+                        class="w-full py-2.5 px-4 rounded-xl border border-neutral-200 bg-white
+                               text-sm text-neutral-400 font-medium outline-none cursor-pointer">
+                        <option value="">Pilih Provinsi</option>
+                        @foreach ($provinces_filter as $prov)
+                            <option value="{{ $prov->code }}" {{ request('province') == $prov->code ? 'selected' : '' }}>
+                                {{ $prov->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @if (request()->filled('province'))
+                        <select name="city" onchange="this.form.submit()"
+                            class="w-full py-2.5 px-4 rounded-xl border border-neutral-200 bg-white animate-in fade-in slide-in-from-top-2 duration-300
+                                   text-sm text-neutral-400 font-medium outline-none cursor-pointer">
+                            <option value="">Semua Kota</option>
+                            @foreach ($cities_filter as $city)
+                                <option value="{{ $city->code }}" {{ request('city') == $city->code ? 'selected' : '' }}>
+                                    {{ $city->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    @endif
                 </form>
             </div>
 
@@ -320,14 +356,14 @@
                             </p>
 
                             <nav class="flex flex-col gap-0.5" aria-label="Pilih kategori">
-                                <a href="{{ route('guest.umkm', request()->only(['cari'])) }}"
+                                <a href="{{ route('guest.umkm', request()->only(['cari', 'province', 'city'])) }}"
                                     class="flex justify-between items-center gap-2 px-3 py-2.5 rounded-lg
                                            text-sm font-semibold no-underline transition-all duration-200
                                            {{ !request('kategori') ? 'nav-pill-active' : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900' }}">
                                     Semua Mitra
                                 </a>
                                 @foreach ($kategori as $kat)
-                                    <a href="{{ route('guest.umkm', array_merge(request()->only(['cari']), ['kategori' => $kat->id])) }}"
+                                    <a href="{{ route('guest.umkm', array_merge(request()->only(['cari', 'province', 'city']), ['kategori' => $kat->id])) }}"
                                         class="flex justify-between items-center gap-2 px-3 py-2.5 rounded-lg
                                                text-sm font-semibold no-underline transition-all duration-200
                                                {{ request('kategori') == $kat->id ? 'nav-pill-active' : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900' }}">

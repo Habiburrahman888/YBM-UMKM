@@ -23,6 +23,7 @@ Route::prefix('/')->name('guest.')->group(function () {
     Route::get('/katalog/{uuid}', [GuestController::class, 'detailProduk'])->name('detail-produk');
     Route::get('/mitra', [GuestController::class, 'umkm'])->name('umkm');
     Route::get('/mitra/{uuid}', [GuestController::class, 'detailUmkm'])->name('detail-umkm');
+    Route::get('/navigasi-terdekat', [GuestController::class, 'nearestLocation'])->name('navigasi-terdekat');
     Route::get('/tentang', [GuestController::class, 'tentang'])->name('tentang');
     Route::get('/checkout/{uuid}', [GuestController::class, 'checkout'])->name('checkout');
     Route::post('/checkout/{uuid}', [GuestController::class, 'storeCheckout'])->name('store-checkout');

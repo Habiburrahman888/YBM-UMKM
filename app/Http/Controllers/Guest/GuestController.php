@@ -121,6 +121,10 @@ class GuestController extends Controller
         $produkQuery = ProdukUmkm::with(['umkm.kategori', 'umkm.city'])
             ->whereHas('umkm', fn($q) => $q->where('status', 'aktif'));
 
+        if (request()->filled('province')) {
+            $produkQuery->whereHas('umkm', fn($q) => $q->where('province_code', request('province')));
+        }
+
         if (request()->filled('city')) {
             $produkQuery->whereHas('umkm', fn($q) => $q->where('city_code', request('city')));
         }
@@ -241,7 +245,16 @@ class GuestController extends Controller
         $totalProduk   = ProdukUmkm::count();
         $totalKategori = Kategori::count();
 
-        $cities_filter = \Laravolt\Indonesia\Models\City::whereIn('code', Umkm::where('status', 'aktif')->pluck('city_code')->filter()->unique())->get();
+        $provinces_filter = \Laravolt\Indonesia\Models\Province::whereIn('code', Umkm::where('status', 'aktif')->pluck('province_code')->filter()->unique())->get();
+
+        $cities_query = \Laravolt\Indonesia\Models\City::whereIn('code', Umkm::where('status', 'aktif')->pluck('city_code')->filter()->unique());
+        if (request()->filled('province')) {
+            $cities_query->where('province_code', request('province'));
+        }
+        $cities_filter = $cities_query->get();
+
+        // Unified location selector
+        $grouped_locations = \Laravolt\Indonesia\Models\Province::with('cities')->get();
 
         $selectedCityCoords = null;
         if (request()->filled('city')) {
@@ -265,8 +278,10 @@ class GuestController extends Controller
             'totalUmkm',
             'totalProduk',
             'totalKategori',
+            'provinces_filter',
             'cities_filter',
-            'selectedCityCoords'
+            'selectedCityCoords',
+            'grouped_locations'
         ));
     }
 
@@ -288,6 +303,10 @@ class GuestController extends Controller
         $query = ProdukUmkm::with(['umkm.kategori', 'umkm.city'])
             ->whereHas('umkm', fn($q) => $q->where('status', 'aktif'));
 
+        if ($request->filled('province')) {
+            $query->whereHas('umkm', fn($q) => $q->where('province_code', $request->province));
+        }
+
         if ($request->filled('city')) {
             $query->whereHas('umkm', fn($q) => $q->where('city_code', $request->city));
         }
@@ -302,9 +321,18 @@ class GuestController extends Controller
 
         $produk = $query->paginate(12)->withQueryString();
 
-        $cities_filter = \Laravolt\Indonesia\Models\City::whereIn('code', Umkm::where('status', 'aktif')->pluck('city_code')->filter()->unique())->get();
+        $provinces_filter = \Laravolt\Indonesia\Models\Province::whereIn('code', Umkm::where('status', 'aktif')->pluck('province_code')->filter()->unique())->get();
 
-        return view('guest.katalog', compact('setting', 'sosmed', 'kategori', 'produk', 'cities_filter'));
+        $cities_query = \Laravolt\Indonesia\Models\City::whereIn('code', Umkm::where('status', 'aktif')->pluck('city_code')->filter()->unique());
+        if ($request->filled('province')) {
+            $cities_query->where('province_code', $request->province);
+        }
+        $cities_filter = $cities_query->get();
+
+        // Unified location selector
+        $grouped_locations = \Laravolt\Indonesia\Models\Province::with('cities')->get();
+
+        return view('guest.katalog', compact('setting', 'sosmed', 'kategori', 'produk', 'provinces_filter', 'cities_filter', 'grouped_locations'));
     }
 
     public function detailProduk($uuid)
@@ -337,9 +365,87 @@ class GuestController extends Controller
             $query->where('nama_usaha', 'like', '%' . $request->cari . '%');
         }
 
+        $provinces_filter = \Laravolt\Indonesia\Models\Province::whereIn('code', Umkm::where('status', 'aktif')->pluck('province_code')->filter()->unique())->get();
+
+        $cities_query = \Laravolt\Indonesia\Models\City::whereIn('code', Umkm::where('status', 'aktif')->pluck('city_code')->filter()->unique());
+        if ($request->filled('province')) {
+            $query->where('province_code', $request->province);
+            $cities_query->where('province_code', $request->province);
+        }
+        if ($request->filled('city')) {
+            $query->where('city_code', $request->city);
+        }
+        
+        $cities_filter = $cities_query->get();
+
         $umkm = $query->latest()->paginate(12)->withQueryString();
 
-        return view('guest.umkm', compact('setting', 'sosmed', 'kategori', 'umkm'));
+        // Unified location selector
+        $grouped_locations = \Laravolt\Indonesia\Models\Province::with('cities')->get();
+
+        return view('guest.umkm', compact('setting', 'sosmed', 'kategori', 'umkm', 'provinces_filter', 'cities_filter', 'grouped_locations'));
+    }
+
+    public function nearestLocation(Request $request)
+    {
+        $lat = $request->lat;
+        $lng = $request->lng;
+
+        if (!$lat || !$lng) {
+            return redirect()->back()->with('error', 'Koordinat tidak valid');
+        }
+
+        // Find nearest city from active cities (with UMKM) for better relevance
+        // Or all cities if desired. Let's use cities that have active UMKM first.
+        $activeCityCodes = Umkm::where('status', 'aktif')->pluck('city_code')->filter()->unique();
+        $cities = \Laravolt\Indonesia\Models\City::whereIn('code', $activeCityCodes)->get();
+
+        if ($cities->isEmpty()) {
+            // Fallback to all cities if no active UMKM
+            $cities = \Laravolt\Indonesia\Models\City::whereNotNull('meta')->take(100)->get();
+        }
+
+        $nearestCity = null;
+        $minDistance = INF;
+
+        foreach ($cities as $city) {
+            if (!$city->meta) continue;
+            
+            $cityLat = $city->meta['lat'] ?? $city->meta['latitude'] ?? null;
+            $cityLng = $city->meta['long'] ?? $city->meta['longitude'] ?? null;
+
+            if (!$cityLat || !$cityLng) continue;
+
+            // Simple distance (Euclidean is enough for "closest")
+            $dist = sqrt(pow($lat - $cityLat, 2) + pow($lng - $cityLng, 2));
+
+            if ($dist < $minDistance) {
+                $minDistance = $dist;
+                $nearestCity = $city;
+            }
+        }
+
+        if ($nearestCity) {
+            $params = array_merge(request()->except(['lat', 'lng', 'province', 'city']), [
+                'province' => $nearestCity->province_code,
+                'city' => $nearestCity->code
+            ]);
+            
+            $url = url()->previous();
+            $baseUrl = strtok($url, '?');
+            
+            // Build the final URL with parameters
+            $finalUrl = $baseUrl . '?' . http_build_query($params);
+            
+            // If we are on home page, we want the anchor
+            if (str_contains($url, 'beranda') || $url == url('/')) {
+                $finalUrl .= '#produk';
+            }
+
+            return redirect()->to($finalUrl);
+        }
+
+        return redirect()->back();
     }
 
     public function detailUmkm($uuid)
