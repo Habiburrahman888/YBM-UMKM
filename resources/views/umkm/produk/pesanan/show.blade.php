@@ -8,23 +8,15 @@
         <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <a href="{{ route('umkm.pesanan.index') }}"
-                    class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors">
-                    <i class="fas fa-arrow-left text-xs"></i>
+                    class="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-200 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
                 </a>
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">Detail Pesanan</h1>
                 </div>
-            </div>
-            <div class="flex items-center space-x-2">
-                <span
-                    class="px-3 py-1.5 text-xs font-bold rounded-full
-                @if ($pesanan->status === 'pending') bg-amber-100 text-amber-700
-                @elseif($pesanan->status === 'diproses') bg-blue-100 text-blue-700
-                @elseif($pesanan->status === 'dikirim') bg-yellow-100 text-yellow-700
-                @elseif($pesanan->status === 'selesai') bg-green-100 text-green-700
-                @else bg-red-100 text-red-700 @endif">
-                    {{ strtoupper($pesanan->status == 'dikirim' ? 'sedang diantar' : $pesanan->status) }}
-                </span>
             </div>
         </div>
     </div>
@@ -34,24 +26,24 @@
         <div class="lg:col-span-2 space-y-6">
             <!-- Customer & Order Info -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <i class="fas fa-user-circle text-blue-500"></i> Informasi Pelanggan
+                <h2 class="text-lg font-bold text-gray-900 mb-4">
+                    Informasi Pelanggan
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <p class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Nama Pembeli</p>
-                        <p class="text-sm font-semibold text-gray-800">{{ $pesanan->nama_pembeli }}</p>
+                        <p class="text-xs text-gray-800 uppercase font-bold tracking-wider mb-1">Nama Pembeli</p>
+                        <p class="text-sm text-gray-600">{{ $pesanan->nama_pembeli }}</p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Nomor Telepon</p>
+                        <p class="text-xs text-gray-800 uppercase font-bold tracking-wider mb-1">Nomor Telepon</p>
                         <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $pesanan->telepon_pembeli) }}"
-                            target="_blank" class="text-sm font-semibold text-green-600 hover:underline">
+                            target="_blank" class="text-sm text-gray-600 hover:underline">
                             {{ $pesanan->telepon_pembeli }} <i class="fab fa-whatsapp ml-1"></i>
                         </a>
                     </div>
                     <div class="md:col-span-2">
-                        <p class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Alamat Pengiriman</p>
-                        <p class="text-sm text-gray-700 leading-relaxed">{{ $pesanan->alamat_pembeli }}</p>
+                        <p class="text-xs text-gray-800 uppercase font-bold tracking-wider mb-1">Alamat Pengiriman</p>
+                        <p class="text-sm text-gray-600 leading-relaxed">{{ $pesanan->alamat_pembeli }}</p>
                     </div>
                     @if ($pesanan->catatan)
                         <div class="md:col-span-2 p-3 bg-gray-50 rounded-lg italic">
@@ -64,8 +56,8 @@
 
             <!-- Product Detail -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <i class="fas fa-box text-blue-500"></i> Detail Produk
+                <h2 class="text-lg font-bold text-gray-900 mb-4">
+                    Detail Produk
                 </h2>
                 <div class="space-y-6">
                     @if ($pesanan->items->count() > 0)
@@ -87,11 +79,11 @@
                                     <p class="text-sm text-gray-500">Jumlah: {{ $item->jumlah }} unit</p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-xs text-gray-400">Harga Satuan</p>
-                                    <p class="text-sm font-semibold">Rp {{ number_format($item->harga, 0, ',', '.') }}</p>
-                                    <p class="text-xs text-gray-400 mt-1">Subtotal</p>
-                                    <p class="text-sm font-bold text-blue-600">Rp
-                                        {{ number_format($item->subtotal, 0, ',', '.') }}</p>
+                                    <p class="text-xs text-gray-800 font-bold">Harga Satuan</p>
+                                    <p class="text-sm text-gray-600">Rp {{ number_format($item->harga, 0, ',', '.') }}</p>
+                                    <p class="text-xs text-gray-800 font-bold mt-1">Subtotal</p>
+                                    <p class="text-sm text-gray-600">Rp {{ number_format($item->subtotal, 0, ',', '.') }}
+                                    </p>
                                 </div>
                             </div>
                         @endforeach
@@ -122,7 +114,7 @@
                 </div>
                 <div class="mt-6 pt-6 border-t border-gray-100 flex justify-between items-center">
                     <span class="text-base font-bold text-gray-900">Total Pembayaran</span>
-                    <span class="text-xl font-black text-green-700">Rp
+                    <span class="text-xl font-black text-gray-900">Rp
                         {{ number_format($pesanan->total_harga, 0, ',', '.') }}</span>
                 </div>
             </div>
@@ -132,8 +124,8 @@
         <div class="space-y-6">
             <!-- Bukti Transfer -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <i class="fas fa-file-invoice-dollar text-blue-500"></i> Bukti Transfer
+                <h2 class="text-lg font-bold text-gray-900 mb-4">
+                    Bukti Transfer
                 </h2>
                 @if ($pesanan->bukti_transfer)
                     <a href="{{ Storage::url($pesanan->bukti_transfer) }}" target="_blank"
@@ -156,8 +148,8 @@
 
             <!-- Update Status -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <i class="fas fa-tasks text-blue-500"></i> Update Status
+                <h2 class="text-lg font-bold text-gray-900 mb-4">
+                    Update Status
                 </h2>
                 @if ($pesanan->status === 'selesai')
                     <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
@@ -173,22 +165,24 @@
                             <div>
                                 <select name="status"
                                     class="w-full p-3 rounded-lg border border-gray-200 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+
                                     @if ($pesanan->status === 'pending')
-                                        <option value="pending" {{ $pesanan->status === 'pending' ? 'selected' : '' }}>
-                                            PENDING
-                                        </option>
+                                        <option value="pending" selected>PENDING</option>
+                                        <option value="diproses">DIPROSES</option>
+                                        <option value="dikirim">SEDANG DIANTAR</option>
+                                        <option value="selesai">SELESAI</option>
+                                        <option value="dibatalkan">DIBATALKAN</option>
+                                    @elseif ($pesanan->status === 'diproses')
+                                        <option value="diproses" selected>DIPROSES</option>
+                                        <option value="dikirim">SEDANG DIANTAR</option>
+                                        <option value="selesai">SELESAI</option>
+                                        <option value="dibatalkan">DIBATALKAN</option>
+                                    @elseif ($pesanan->status === 'dikirim')
+                                        <option value="dikirim" selected>SEDANG DIANTAR</option>
+                                        <option value="selesai">SELESAI</option>
+                                        <option value="dibatalkan">DIBATALKAN</option>
                                     @endif
-                                    <option value="diproses" {{ $pesanan->status === 'diproses' ? 'selected' : '' }}>
-                                        DIPROSES
-                                    </option>
-                                    <option value="dikirim" {{ $pesanan->status === 'dikirim' ? 'selected' : '' }}>
-                                        SEDANG DIANTAR
-                                    </option>
-                                    <option value="selesai" {{ $pesanan->status === 'selesai' ? 'selected' : '' }}>
-                                        SELESAI
-                                    </option>
-                                    <option value="dibatalkan" {{ $pesanan->status === 'dibatalkan' ? 'selected' : '' }}>
-                                        DIBATALKAN</option>
+
                                 </select>
                             </div>
                             <button type="submit"

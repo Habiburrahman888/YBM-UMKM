@@ -13,7 +13,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 
     <!-- Styles -->
     <style>
@@ -57,55 +56,15 @@
 
         .auth-container {
             width: 100%;
-            max-width: 1400px;
+            max-width: 480px;
             height: 100vh;
             max-height: 100vh;
             display: flex;
+            align-items: center;
+            justify-content: center;
             position: relative;
             z-index: 1;
-            gap: 0;
-            overflow: hidden;
-        }
-
-        /* LEFT SIDE - IMAGE ONLY */
-        .auth-left {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .auth-image {
-            width: 100%;
-            max-width: 500px;
-            height: auto;
-            object-fit: contain;
-            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.15));
-            animation: float 6s ease-in-out infinite;
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-20px);
-            }
-        }
-
-        /* RIGHT SIDE - FORM WITH CARD */
-        .auth-right {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
+            padding: 20px;
         }
 
         .auth-card {
@@ -114,51 +73,37 @@
             padding: 36px 32px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 440px;
-            max-height: 90vh;
+            max-height: 95vh;
             overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
 
-        /* Custom scrollbar for card */
         .auth-card::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .auth-card::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-
-        .auth-card::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-        }
-
-        .auth-card::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+            display: none;
         }
 
         .auth-header {
             text-align: center;
-            margin-bottom: 28px;
+            margin-bottom: 20px;
         }
 
         .auth-header h1 {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 700;
             color: #1a1a1a;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             line-height: 1.2;
         }
 
         .auth-header p {
-            font-size: 15px;
+            font-size: 14px;
             color: #6b7280;
             font-weight: 400;
         }
 
         .form-group {
-            margin-bottom: 18px;
+            margin-bottom: 16px;
         }
 
         .form-label {
@@ -166,7 +111,7 @@
             font-size: 14px;
             font-weight: 500;
             color: #374151;
-            margin-bottom: 8px;
+            margin-bottom: 7px;
         }
 
         .form-input-wrapper {
@@ -187,7 +132,7 @@
 
         .form-input {
             width: 100%;
-            padding: 12px 16px 12px 46px;
+            padding: 11px 16px 11px 46px;
             font-size: 14px;
             border: 1.5px solid #e5e7eb;
             border-radius: 12px;
@@ -195,6 +140,7 @@
             transition: all 0.3s ease;
             font-family: 'Inter', sans-serif;
             background: #fafafa;
+            height: 42px;
         }
 
         .form-input:focus {
@@ -244,7 +190,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             gap: 12px;
         }
 
@@ -255,15 +201,15 @@
         }
 
         .form-checkbox input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             cursor: pointer;
             accent-color: #3b82f6;
             flex-shrink: 0;
         }
 
         .form-checkbox label {
-            font-size: 14px;
+            font-size: 13px;
             color: #374151;
             cursor: pointer;
             user-select: none;
@@ -271,7 +217,7 @@
         }
 
         .form-link {
-            font-size: 14px;
+            font-size: 13px;
             color: #3b82f6;
             text-decoration: none;
             font-weight: 500;
@@ -286,7 +232,7 @@
 
         .btn-primary {
             width: 100%;
-            padding: 12px 24px;
+            padding: 11px 24px;
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             color: #ffffff;
             border: none;
@@ -323,7 +269,7 @@
             display: flex;
             align-items: center;
             text-align: center;
-            margin: 24px 0;
+            margin: 18px 0;
         }
 
         .divider::before,
@@ -335,19 +281,19 @@
 
         .divider span {
             padding: 0 16px;
-            font-size: 13px;
+            font-size: 12px;
             color: #9ca3af;
             font-weight: 500;
         }
 
         .btn-google {
             width: 100%;
-            padding: 12px 24px;
+            padding: 11px 24px;
             background: #ffffff;
             color: #374151;
             border: 1.5px solid #e5e7eb;
             border-radius: 12px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -372,13 +318,13 @@
 
         .auth-footer {
             text-align: center;
-            margin-top: 28px;
-            padding-top: 20px;
+            margin-top: 20px;
+            padding-top: 16px;
             border-top: 1.5px solid #f3f4f6;
         }
 
         .auth-footer p {
-            font-size: 14px;
+            font-size: 13px;
             color: #6b7280;
         }
 
@@ -395,10 +341,10 @@
         }
 
         .alert {
-            padding: 12px 14px;
+            padding: 11px 14px;
             border-radius: 12px;
-            margin-bottom: 20px;
-            font-size: 14px;
+            margin-bottom: 16px;
+            font-size: 13px;
             font-weight: 500;
             display: flex;
             align-items: flex-start;
@@ -408,8 +354,8 @@
 
         .alert .icon {
             flex-shrink: 0;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
         }
 
         .alert-success {
@@ -443,10 +389,10 @@
         }
 
         .recaptcha-notice {
-            font-size: 12px;
+            font-size: 11px;
             color: #9ca3af;
             text-align: center;
-            margin-top: 16px;
+            margin-top: 12px;
             line-height: 1.5;
         }
 
@@ -470,16 +416,10 @@
         }
 
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        /* Icons */
         .icon {
             display: inline-block;
             width: 1em;
@@ -487,277 +427,29 @@
             vertical-align: middle;
         }
 
-        /* ===== RESPONSIVE BREAKPOINTS ===== */
-
-        /* Large Desktop */
-        @media (max-width: 1400px) {
-            .auth-left {
-                padding: 30px;
-            }
-
-            .auth-image {
-                max-width: 450px;
-            }
-        }
-
-        /* Desktop/Tablet */
-        @media (max-width: 1024px) {
-            body {
-                padding: 0;
-            }
-
-            .auth-container {
-                height: 100vh;
-            }
-
-            .auth-left {
-                display: none;
-            }
-
-            .auth-right {
-                flex: 1;
-                padding: 20px;
-            }
-
-            .auth-card {
-                max-width: 440px;
-                max-height: 95vh;
-                padding: 36px 32px;
-            }
-        }
-
-        /* Tablet */
+        /* Responsive */
         @media (max-width: 768px) {
-            body {
-                padding: 0;
-            }
-
-            .auth-right {
+            .auth-container {
                 padding: 16px;
             }
 
             .auth-card {
-                padding: 32px 28px;
-                border-radius: 20px;
-                max-height: 96vh;
-            }
-
-            .auth-header h1 {
-                font-size: 28px;
-            }
-
-            .auth-header p {
-                font-size: 14px;
-            }
-
-            .form-input {
-                padding: 13px 16px 13px 46px;
-                font-size: 15px;
-            }
-
-            .btn-primary,
-            .btn-google {
-                padding: 13px 20px;
-                font-size: 14px;
-            }
-        }
-
-        /* Mobile */
-        @media (max-width: 640px) {
-            body {
-                padding: 0;
-            }
-
-            .auth-right {
-                padding: 12px;
-            }
-
-            .auth-card {
                 padding: 28px 24px;
-                border-radius: 18px;
-                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-                max-height: 97vh;
-            }
-
-            .auth-header {
-                margin-bottom: 28px;
-            }
-
-            .auth-header h1 {
-                font-size: 26px;
-            }
-
-            .auth-header p {
-                font-size: 13px;
-            }
-
-            .form-group {
-                margin-bottom: 18px;
-            }
-
-            .form-label {
-                font-size: 13px;
-                margin-bottom: 7px;
-            }
-
-            .form-input {
-                padding: 12px 14px 12px 44px;
-                font-size: 15px;
-                border-radius: 10px;
-            }
-
-            .form-input-icon {
-                left: 14px;
-                font-size: 16px;
-            }
-
-            .password-toggle {
-                right: 14px;
-                font-size: 16px;
-            }
-
-            .form-row {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-                margin-bottom: 20px;
-            }
-
-            .form-checkbox label,
-            .form-link {
-                font-size: 13px;
-            }
-
-            .btn-primary,
-            .btn-google {
-                padding: 12px 18px;
-                font-size: 14px;
-                border-radius: 10px;
-            }
-
-            .divider {
-                margin: 24px 0;
-            }
-
-            .divider span {
-                font-size: 12px;
-                padding: 0 12px;
-            }
-
-            .auth-footer {
-                margin-top: 28px;
-                padding-top: 20px;
-            }
-
-            .auth-footer p {
-                font-size: 13px;
-            }
-
-            .alert {
-                padding: 12px 14px;
-                font-size: 13px;
-                border-radius: 10px;
-                margin-bottom: 20px;
-            }
-
-            .recaptcha-notice {
-                font-size: 11px;
-                margin-top: 14px;
+                border-radius: 20px;
             }
         }
 
-        /* Extra Small Mobile */
         @media (max-width: 400px) {
-            body {
-                padding: 0;
-            }
-
             .auth-card {
-                padding: 24px 20px;
+                padding: 24px 18px;
                 border-radius: 16px;
-                max-height: 98vh;
-            }
-
-            .auth-header h1 {
-                font-size: 24px;
-            }
-
-            .auth-header p {
-                font-size: 12px;
-            }
-
-            .form-input {
-                padding: 11px 12px 11px 42px;
-                font-size: 14px;
-            }
-
-            .btn-primary,
-            .btn-google {
-                padding: 11px 16px;
-                font-size: 13px;
-            }
-
-            .btn-google img {
-                width: 18px;
-                height: 18px;
             }
         }
 
-        /* Landscape Mobile */
         @media (max-width: 768px) and (orientation: landscape) {
-            body {
-                padding: 0;
-            }
-
-            .auth-container {
-                height: 100vh;
-            }
-
             .auth-card {
                 padding: 20px 24px;
-                margin: 0;
                 max-height: 95vh;
-            }
-
-            .auth-header {
-                margin-bottom: 20px;
-            }
-
-            .auth-header h1 {
-                font-size: 24px;
-            }
-
-            .form-group {
-                margin-bottom: 14px;
-            }
-
-            .form-row {
-                margin-bottom: 16px;
-            }
-
-            .divider {
-                margin: 20px 0;
-            }
-
-            .auth-footer {
-                margin-top: 20px;
-                padding-top: 16px;
-            }
-        }
-
-        /* High Resolution Screens */
-        @media (min-width: 1600px) {
-            .auth-container {
-                max-width: 1600px;
-            }
-
-            .auth-image {
-                max-width: 600px;
-            }
-
-            .auth-card {
-                max-width: 460px;
-                padding: 48px 40px;
             }
         }
     </style>
@@ -767,17 +459,8 @@
 
 <body>
     <div class="auth-container">
-        {{-- LEFT SIDE - IMAGE ONLY (Hidden on mobile) --}}
-        <div class="auth-left">
-            <lottie-player src="{{ asset('Auth/Pin code Password Protection, Secure Login animation.json') }}"
-                background="transparent" speed="1" class="auth-image" loop autoplay></lottie-player>
-        </div>
-
-        {{-- RIGHT SIDE - FORM WITH CARD --}}
-        <div class="auth-right">
-            <div class="auth-card">
-                @yield('content')
-            </div>
+        <div class="auth-card">
+            @yield('content')
         </div>
     </div>
 

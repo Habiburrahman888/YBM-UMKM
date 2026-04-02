@@ -1,350 +1,221 @@
-{{-- Splash Screen - YBM UMKM | Soft Blue Gradient + Sparkle --}}
-<div id="splashscreen" class="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
-    style="background: linear-gradient(135deg, #e0f0ff 0%, #c8e4f8 30%, #d6eeff 60%, #eaf6ff 100%);">
-
-    {{-- Animated gradient overlay --}}
-    <div class="absolute inset-0 pointer-events-none" id="splash-gradient-overlay"
-        style="background: linear-gradient(220deg, #b8d9f5 0%, #dff0ff 40%, #c2e2f7 80%, #e8f5ff 100%);
-               opacity: 0; animation: gradientShift 3s 0.3s ease forwards;">
-    </div>
-
-    {{-- Canvas untuk partikel --}}
-    <canvas id="splash-canvas" class="absolute inset-0 pointer-events-none" style="width:100%;height:100%;"></canvas>
-
-    {{-- Soft blobs --}}
-    <div class="absolute rounded-full pointer-events-none"
-        style="width:600px;height:600px;
-               background:radial-gradient(circle, rgba(147,210,255,0.35) 0%, transparent 70%);
-               top:-100px;left:-150px; animation:blobMove 6s ease-in-out infinite alternate;">
-    </div>
-    <div class="absolute rounded-full pointer-events-none"
-        style="width:400px;height:400px;
-               background:radial-gradient(circle, rgba(180,225,255,0.3) 0%, transparent 70%);
-               bottom:-80px;right:-100px; animation:blobMove 7s 1s ease-in-out infinite alternate-reverse;">
-    </div>
-
-    {{-- Corner TL --}}
-    <div class="absolute top-6 left-6 w-14 h-14 opacity-0" style="animation: cornerFade 1s 0.8s ease forwards;">
-        <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="0" y1="20" x2="20" y2="20" stroke="#5AAEE0" stroke-width="1.5" />
-            <line x1="20" y1="20" x2="20" y2="0" stroke="#5AAEE0" stroke-width="1.5" />
-            <circle cx="20" cy="20" r="2.5" fill="#5AAEE0" />
-            <line x1="0" y1="10" x2="10" y2="10" stroke="#A8D8F0" stroke-width="0.8" />
-            <line x1="10" y1="10" x2="10" y2="0" stroke="#A8D8F0" stroke-width="0.8" />
-        </svg>
-    </div>
-
-    {{-- Corner BR --}}
-    <div class="absolute bottom-6 right-6 w-14 h-14 opacity-0"
-        style="animation: cornerFade 1s 1s ease forwards; transform:rotate(180deg);">
-        <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="0" y1="20" x2="20" y2="20" stroke="#5AAEE0" stroke-width="1.5" />
-            <line x1="20" y1="20" x2="20" y2="0" stroke="#5AAEE0" stroke-width="1.5" />
-            <circle cx="20" cy="20" r="2.5" fill="#5AAEE0" />
-            <line x1="0" y1="10" x2="10" y2="10" stroke="#A8D8F0" stroke-width="0.8" />
-            <line x1="10" y1="10" x2="10" y2="0" stroke="#A8D8F0" stroke-width="0.8" />
-        </svg>
-    </div>
-
-    {{-- Center content --}}
-    <div class="flex flex-col items-center z-10">
-
-        {{-- Logo --}}
-        <div class="mb-2 opacity-0" style="animation: zoomIn 0.9s 0.2s cubic-bezier(.22,1,.36,1) forwards;">
-            @if ($setting?->logo_expo)
-            <img src="{{ asset('storage/' . $setting->logo_expo) }}"
-                alt="{{ $setting->nama_sekolah ?? 'YBM UMKM' }}" class="w-44"
-                style="filter: drop-shadow(0 8px 32px rgba(60,140,210,0.25));">
-            @else
-            <img src="{{ asset('images/logo.png') }}" alt="YBM UMKM" class="w-44"
-                style="filter: drop-shadow(0 8px 32px rgba(60,140,210,0.25));">
-            @endif
-        </div>
-        {{-- Divider --}}
-        <div class="flex items-center gap-3 mb-3 opacity-0"
-            style="width:210px; animation: ruleIn 0.9s 0.6s ease forwards;">
-            <div class="flex-1 h-px" style="background:linear-gradient(90deg,transparent,rgba(90,174,224,0.6));"></div>
-            <div style="width:5px;height:5px;background:#3AABDE;transform:rotate(45deg);flex-shrink:0;"></div>
-            <div class="flex-1 h-px" style="background:linear-gradient(90deg,rgba(90,174,224,0.6),transparent);"></div>
-        </div>
-
-        {{-- Tagline --}}
-        <div class="text-center mb-10 opacity-0"
-            style="animation: fadeUp 0.9s 0.65s cubic-bezier(.22,1,.36,1) forwards;">
-            <span class="block font-light mb-1"
-                style="font-family:'Georgia',serif; font-size:19px; color:#1A4A6B; letter-spacing:0.02em;">
-                Menjejak Manfaat
-            </span>
-            <span class="block font-light"
-                style="font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color:#6BAFD4;">
-                Yayasan Baitul Mal
-            </span>
-        </div>
-
-        {{-- Progress bar --}}
-        <div class="opacity-0" style="width:180px; animation: fadeUp 0.9s 0.85s ease forwards;">
-            <div class="w-full overflow-hidden mb-2"
-                style="height:2px; background:rgba(255,255,255,0.5); border-radius:2px;">
-                <div id="splash-progress" class="h-full"
-                    style="width:0%; border-radius:2px;
-                           background:linear-gradient(90deg,#3AABDE,#76CCF0,#3AABDE);
-                           background-size:200% 100%;
-                           animation: shimmer 1.5s linear infinite;
-                           transition: width 2.5s cubic-bezier(.4,0,.2,1);">
-                </div>
-            </div>
-            <p class="text-center font-light"
-                style="font-size:9px; letter-spacing:0.3em; text-transform:uppercase; color:#7BBFD8;">
-                Memuat...
-            </p>
-        </div>
-
-    </div>
-
-    {{-- Bottom stamp --}}
-    <p class="absolute bottom-5 font-light opacity-0"
-        style="font-size:9px; letter-spacing:0.22em; text-transform:uppercase; color:#9DCCE4;
-               animation: fadeUp 1s 1.5s ease forwards;">
-        {{ $setting?->nama_sekolah ?? 'YBM PLN' }} &nbsp;·&nbsp; UMKM
-    </p>
-
+<div id="splashscreen" style="position:fixed; inset:0; z-index:9999; overflow:hidden;">
+    <canvas id="splash-canvas" style="position:absolute; inset:0; width:100%; height:100%;"></canvas>
 </div>
-
-<style>
-    @keyframes gradientShift {
-        from {
-            opacity: 0;
-        }
-
-        to {
-            opacity: 1;
-        }
-    }
-
-    @keyframes blobMove {
-        from {
-            transform: translate(0, 0) scale(1);
-        }
-
-        to {
-            transform: translate(30px, 20px) scale(1.08);
-        }
-    }
-
-    @keyframes cornerFade {
-        from {
-            opacity: 0;
-            transform: scale(0.7);
-        }
-
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-
-    @keyframes zoomIn {
-        from {
-            opacity: 0;
-            transform: scale(0.8);
-        }
-
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
-    }
-
-    @keyframes fadeUp {
-        from {
-            opacity: 0;
-            transform: translateY(16px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @keyframes ruleIn {
-        from {
-            opacity: 0;
-        }
-
-        to {
-            opacity: 1;
-        }
-    }
-
-    @keyframes shimmer {
-        0% {
-            background-position: 200% 0;
-        }
-
-        100% {
-            background-position: -200% 0;
-        }
-    }
-
-    @keyframes pulse {
-
-        0%,
-        100% {
-            transform: scale(1);
-            opacity: 1;
-        }
-
-        50% {
-            transform: scale(1.5);
-            opacity: 0.6;
-        }
-    }
-
-    @keyframes sparkleAnim {
-        0% {
-            opacity: 0;
-            transform: scale(0) rotate(0deg);
-        }
-
-        50% {
-            opacity: 1;
-            transform: scale(1) rotate(180deg);
-        }
-
-        100% {
-            opacity: 0;
-            transform: scale(0) rotate(360deg);
-        }
-    }
-</style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-
-        // ── Particle / Sparkle Canvas ──────────────────────────────────────
+        const splash = document.getElementById('splashscreen');
         const canvas = document.getElementById('splash-canvas');
         const ctx = canvas.getContext('2d');
 
+        let W, H, animId, startTime = null,
+            done = false;
+        let offFull, phase = 'idle';
+
+        const LOGO_SRC =
+            "{{ $setting?->logo_expo ? asset('storage/' . $setting->logo_expo) : asset('images/logo.png') }}";
+        const TITLE = 'Menjejak Manfaat';
+        const SUBTITLE = 'YAYASAN BAITUL MAL';
+        const LOGO_SIZE = Math.min(window.innerWidth * 0.30, 150);
+
+        const D = {
+            LOGO_IN: 600,
+            RING_SPIN: 1800,
+            RING_OUT: 400,
+            TEXT_IN: 600,
+            FULL_HOLD: 1200,
+            FADE_OUT: 600,
+            GAP: 300
+        };
+        const TOTAL = D.LOGO_IN + D.RING_SPIN + D.RING_OUT + D.TEXT_IN + D.FULL_HOLD + D.FADE_OUT + D.GAP;
+
+        const logoImg = new Image();
+        logoImg.src = LOGO_SRC;
+        logoImg.onload = buildOffFull;
+
         function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        resize();
-        window.addEventListener('resize', resize);
-
-        const particles = [];
-        const COLORS = ['#3AABDE', '#76CCF0', '#B0E0FF', '#FFFFFF', '#5DC4F0', '#A0D8EF'];
-
-        function randomBetween(a, b) {
-            return a + Math.random() * (b - a);
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+            buildOffFull();
         }
 
-        // Buat 60 partikel sparkle
-        for (let i = 0; i < 60; i++) {
-            particles.push({
-                x: randomBetween(0, window.innerWidth),
-                y: randomBetween(0, window.innerHeight),
-                r: randomBetween(1, 3.5),
-                color: COLORS[Math.floor(Math.random() * COLORS.length)],
-                alpha: 0,
-                speed: randomBetween(0.3, 1.2),
-                dir: randomBetween(-1, 1),
-                life: 0,
-                maxLife: randomBetween(60, 160),
-                delay: randomBetween(0, 120),
-                type: Math.random() > 0.5 ? 'circle' : 'star',
-            });
+        function drawBg(c) {
+            const grad = c.createLinearGradient(0, 0, 0, H);
+            grad.addColorStop(0, '#e8f0f7');
+            grad.addColorStop(1, '#f5f9fc');
+            c.fillStyle = grad;
+            c.fillRect(0, 0, W, H);
         }
 
-        let frame = 0;
-        let animId;
+        function drawLogo(c, cx, cy, size, alpha) {
+            if (!logoImg.complete || !logoImg.naturalWidth) return;
+            c.save();
+            c.globalAlpha = alpha;
+            const aspect = logoImg.naturalHeight / logoImg.naturalWidth;
+            const lw = size,
+                lh = size * aspect;
+            c.drawImage(logoImg, cx - lw / 2, cy - lh / 2, lw, lh);
+            c.restore();
+        }
 
-        function drawStar(ctx, x, y, r, color, alpha) {
+        function drawRing(cx, cy, size, progress, ringAlpha, spinAngle) {
+            const R = size * 0.58;
             ctx.save();
-            ctx.globalAlpha = alpha;
-            ctx.fillStyle = color;
-            ctx.translate(x, y);
+            ctx.globalAlpha = ringAlpha;
+
             ctx.beginPath();
-            for (let i = 0; i < 4; i++) {
-                ctx.rotate(Math.PI / 2);
-                ctx.moveTo(0, 0);
-                ctx.lineTo(r * 0.4, r * 0.4);
-                ctx.lineTo(0, r);
-                ctx.lineTo(-r * 0.4, r * 0.4);
+            ctx.arc(cx, cy, R, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(29,111,164,0.18)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            let arcLen;
+            if (progress < 0.4) arcLen = (progress / 0.4) * Math.PI * 1.7;
+            else if (progress < 0.75) arcLen = Math.PI * 1.7;
+            else arcLen = Math.PI * 1.7 * (1 - (progress - 0.75) / 0.25);
+
+            const steps = 40;
+            for (let i = 0; i < steps; i++) {
+                const t0 = i / steps,
+                    t1 = (i + 1) / steps;
+                ctx.beginPath();
+                ctx.arc(cx, cy, R, spinAngle + t0 * arcLen, spinAngle + t1 * arcLen);
+                ctx.strokeStyle = `rgba(29,111,164,${0.18 + (i / steps) * 0.72})`;
+                ctx.lineWidth = 2.5;
+                ctx.lineCap = 'round';
+                ctx.stroke();
             }
-            ctx.closePath();
+
+            const tipAngle = spinAngle + arcLen;
+            ctx.beginPath();
+            ctx.arc(cx + Math.cos(tipAngle) * R, cy + Math.sin(tipAngle) * R, 3.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#2980b9';
             ctx.fill();
+
+            [-1, 1].forEach((side, i) => {
+                const da = spinAngle * 0.6 + side * Math.PI * 0.55 + i * 0.4;
+                const dr = R + 10;
+                ctx.beginPath();
+                ctx.arc(cx + Math.cos(da) * dr, cy + Math.sin(da) * dr, 2, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(29,111,164,${0.3 + i * 0.15})`;
+                ctx.fill();
+            });
+
             ctx.restore();
         }
 
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            frame++;
+        function drawTexts(c, alpha, blurPx, offsetY) {
+            const cx = W / 2,
+                cy = H / 2 + LOGO_SIZE * 0.72;
+            c.save();
+            if (blurPx > 0) c.filter = `blur(${blurPx.toFixed(1)}px)`;
+            c.globalAlpha = alpha;
+            c.textAlign = 'center';
+            c.font = '300 20px Georgia, serif';
+            c.fillStyle = '#1a3a5c';
+            c.fillText(TITLE, cx, cy + offsetY);
+            c.font = '500 9.5px sans-serif';
+            c.fillStyle = '#7a9ab5';
+            c.letterSpacing = '0.35em';
+            c.fillText(SUBTITLE, cx, cy + 20 + offsetY);
+            c.letterSpacing = '0';
+            c.filter = 'none';
+            c.globalAlpha = 1;
+            c.restore();
+        }
 
-            particles.forEach(p => {
-                if (frame < p.delay) return;
+        function buildOffFull() {
+            if (!W || !H) return;
+            offFull = document.createElement('canvas');
+            offFull.width = W;
+            offFull.height = H;
+            const fc = offFull.getContext('2d');
+            drawBg(fc);
+            drawLogo(fc, W / 2, H / 2 - LOGO_SIZE * 0.15, LOGO_SIZE, 1);
+            drawTexts(fc, 1, 0, 0);
+        }
 
-                p.life++;
-                const progress = p.life / p.maxLife;
-                // fade in then fade out
-                p.alpha = progress < 0.3 ?
-                    (progress / 0.3) :
-                    progress < 0.7 ?
-                    1 :
-                    1 - ((progress - 0.7) / 0.3);
-                p.alpha = Math.max(0, Math.min(0.85, p.alpha));
+        function easeOut(t) {
+            return 1 - Math.pow(1 - t, 3);
+        }
 
-                p.y -= p.speed * 0.4;
-                p.x += p.dir * 0.3;
+        function animate(ts) {
+            if (done) return;
+            if (!startTime) startTime = ts;
+            const e = ts - startTime;
+            ctx.clearRect(0, 0, W, H);
+            const logoCX = W / 2,
+                logoCY = H / 2 - LOGO_SIZE * 0.15;
 
-                if (p.life >= p.maxLife) {
-                    // respawn
-                    p.x = randomBetween(0, canvas.width);
-                    p.y = randomBetween(canvas.height * 0.2, canvas.height);
-                    p.life = 0;
-                    p.maxLife = randomBetween(60, 160);
-                    p.delay = frame + randomBetween(0, 40);
-                    p.color = COLORS[Math.floor(Math.random() * COLORS.length)];
-                    p.r = randomBetween(1, 3.5);
+            if (e < D.LOGO_IN) {
+                const p = easeOut(e / D.LOGO_IN);
+                drawBg(ctx);
+                ctx.save();
+                ctx.translate(logoCX, logoCY);
+                ctx.scale(0.4 + p * 0.6, 0.4 + p * 0.6);
+                ctx.translate(-logoCX, -logoCY);
+                drawLogo(ctx, logoCX, logoCY, LOGO_SIZE, p);
+                ctx.restore();
+
+            } else if (e < D.LOGO_IN + D.RING_SPIN) {
+                const ringE = e - D.LOGO_IN;
+                const ringP = ringE / D.RING_SPIN;
+                const spinAngle = -Math.PI / 2 + (ringE / 1000) * 3.5;
+                drawBg(ctx);
+                drawLogo(ctx, logoCX, logoCY, LOGO_SIZE, 1);
+                drawRing(logoCX, logoCY, LOGO_SIZE, ringP, 1, spinAngle);
+
+            } else if (e < D.LOGO_IN + D.RING_SPIN + D.RING_OUT) {
+                const outP = (e - D.LOGO_IN - D.RING_SPIN) / D.RING_OUT;
+                const spinAngle = -Math.PI / 2 + (D.RING_SPIN / 1000) * 3.5 + (outP * D.RING_OUT / 1000) * 3.5;
+                drawBg(ctx);
+                drawLogo(ctx, logoCX, logoCY, LOGO_SIZE, 1);
+                drawRing(logoCX, logoCY, LOGO_SIZE, 1, 1 - outP, spinAngle);
+
+            } else if (e < D.LOGO_IN + D.RING_SPIN + D.RING_OUT + D.TEXT_IN) {
+                const p = easeOut((e - D.LOGO_IN - D.RING_SPIN - D.RING_OUT) / D.TEXT_IN);
+                drawBg(ctx);
+                drawLogo(ctx, logoCX, logoCY, LOGO_SIZE, 1);
+                drawTexts(ctx, p, (1 - p) * 10, (1 - p) * 12);
+
+            } else if (e < D.LOGO_IN + D.RING_SPIN + D.RING_OUT + D.TEXT_IN + D.FULL_HOLD) {
+                if (phase !== 'hold') {
+                    phase = 'hold';
+                    buildOffFull();
+                }
+                if (offFull) ctx.drawImage(offFull, 0, 0);
+
+            } else if (e < D.LOGO_IN + D.RING_SPIN + D.RING_OUT + D.TEXT_IN + D.FULL_HOLD + D.FADE_OUT) {
+                const p = (e - D.LOGO_IN - D.RING_SPIN - D.RING_OUT - D.TEXT_IN - D.FULL_HOLD) / D.FADE_OUT;
+                if (offFull) {
+                    ctx.globalAlpha = 1 - p;
+                    ctx.drawImage(offFull, 0, 0);
+                    ctx.globalAlpha = 1;
                 }
 
-                if (p.type === 'star') {
-                    drawStar(ctx, p.x, p.y, p.r * 2, p.color, p.alpha);
-                } else {
-                    ctx.save();
-                    ctx.globalAlpha = p.alpha;
-                    ctx.fillStyle = p.color;
-                    ctx.shadowColor = p.color;
-                    ctx.shadowBlur = 6;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.restore();
-                }
-            });
+            } else {
+                phase = 'idle';
+            }
 
             animId = requestAnimationFrame(animate);
         }
-        animate();
 
-        // ── Progress bar ──────────────────────────────────────────────────
-        setTimeout(function() {
-            const bar = document.getElementById('splash-progress');
-            if (bar) bar.style.width = '100%';
-        }, 150);
+        logoImg.onload = buildOffFull;
+        resize();
+        window.addEventListener('resize', () => {
+            resize();
+            startTime = null;
+        });
+        animId = requestAnimationFrame(animate);
 
-        // ── Hide splash setelah 3 detik ───────────────────────────────────
-        setTimeout(function() {
-            const splash = document.getElementById('splashscreen');
-            if (splash) {
-                splash.style.transition = 'opacity 0.6s ease';
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                done = true;
+                cancelAnimationFrame(animId);
+                splash.style.transition = 'opacity 0.6s ease-out';
                 splash.style.opacity = '0';
-                setTimeout(() => {
-                    cancelAnimationFrame(animId);
-                    splash.remove();
-                }, 600);
-            }
-        }, 3000);
+                setTimeout(() => splash && splash.remove(), 600);
+            }, TOTAL);
+        });
     });
 </script>

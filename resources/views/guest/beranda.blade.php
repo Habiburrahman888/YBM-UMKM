@@ -493,7 +493,6 @@
             {{-- Section Head --}}
             <div class="flex items-center justify-between flex-wrap gap-5 pt-20 mb-6 reveal relative z-[60]">
                 <div>
-                    <span class="section-eyebrow">Produk Terbaru</span>
                     <h2 class="font-display font-light text-neutral-900 leading-tight"
                         style="font-size: clamp(1.75rem, 2.8vw, 2.25rem);">
                         Produk <em class="italic" style="color:#1e40af;">Pilihan UMKM</em>
