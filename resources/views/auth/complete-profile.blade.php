@@ -2,1042 +2,756 @@
 
 @section('title', 'Lengkapi Profil')
 
-@push('styles')
-    <style>
-        /* Compact typography & spacing */
-        .auth-header {
-            margin-bottom: 16px;
-        }
-
-        .auth-header h1 {
-            font-size: 22px;
-        }
-
-        .auth-header p {
-            font-size: 13px;
-        }
-
-        /* Progress steps lebih compact */
-        .progress-steps {
-            margin-bottom: 24px;
-        }
-
-        .step-circle {
-            width: 36px;
-            height: 36px;
-            font-size: 14px;
-        }
-
-        .step-label {
-            font-size: 12px;
-        }
-
-        .progress-steps::before {
-            top: 18px;
-        }
-
-        .progress-line {
-            top: 18px;
-        }
-
-        /* Form lebih compact */
-        .form-group {
-            margin-bottom: 12px;
-        }
-
-        .form-label {
-            font-size: 13px;
-            margin-bottom: 4px;
-        }
-
-        .form-input {
-            padding: 8px 12px 8px 40px;
-            font-size: 13px;
-            height: 40px;
-        }
-
-        .form-grid {
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        /* File upload compact */
-        .file-upload-box {
-            padding: 16px 12px !important;
-        }
-
-        .file-upload-icon {
-            width: 32px !important;
-            height: 32px !important;
-            margin-bottom: 6px !important;
-        }
-
-        .file-upload-text {
-            font-size: 12px !important;
-        }
-
-        .file-upload-hint {
-            font-size: 11px !important;
-        }
-
-        /* Section header alamat */
-        .form-step [style*="margin-top: 32px"] {
-            margin-top: 16px !important;
-            padding-top: 16px !important;
-            margin-bottom: 10px !important;
-        }
-
-        /* Buttons compact */
-        .form-buttons {
-            margin-top: 16px;
-            padding-top: 16px;
-        }
-
-        .btn-primary,
-        .btn-secondary {
-            padding: 10px 20px;
-            font-size: 14px;
-        }
-
-        /* Card scroll internal - KUNCI UTAMA */
-        .auth-card {
-            max-height: 95vh;
-            overflow-y: auto;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-
-        .auth-card::-webkit-scrollbar {
-            display: none;
-        }
-
-        /* Prevent body scroll */
-        html,
-        body {
-            height: 100%;
-            overflow: hidden;
-        }
-
-        /* Override auth-card width untuk form yang lebih lebar */
-        .auth-card {
-            max-width: 900px !important;
-            padding: 40px !important;
-        }
-
-        /* Progress Steps */
-        .progress-steps {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 40px;
-            position: relative;
-        }
-
-        .progress-steps::before {
-            content: '';
-            position: absolute;
-            top: 20px;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: #e5e7eb;
-            z-index: 0;
-        }
-
-        .progress-line {
-            position: absolute;
-            top: 20px;
-            left: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #3b82f6, #2563eb);
-            transition: width 0.4s ease;
-            z-index: 0;
-        }
-
-        .step {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            z-index: 1;
-            flex: 1;
-        }
-
-        .step-circle {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            background: #ffffff;
-            border: 3px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 16px;
-            color: #9ca3af;
-            transition: all 0.3s ease;
-            margin-bottom: 8px;
-        }
-
-        .step.active .step-circle {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            border-color: #3b82f6;
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-
-        .step.completed .step-circle {
-            background: #10b981;
-            border-color: #10b981;
-            color: #ffffff;
-        }
-
-        .step-label {
-            font-size: 13px;
-            font-weight: 500;
-            color: #9ca3af;
-            text-align: center;
-            transition: color 0.3s ease;
-        }
-
-        .step.active .step-label,
-        .step.completed .step-label {
-            color: #374151;
-        }
-
-        /* Form Steps */
-        .form-step {
-            display: none;
-        }
-
-        .form-step.active {
-            display: block;
-            animation: fadeIn 0.4s ease;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Form Grid */
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .form-grid-full {
-            grid-column: 1 / -1;
-        }
-
-        /* File Upload */
-        .file-upload-wrapper {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .file-upload-box {
-            border: 2px dashed #d1d5db;
-            border-radius: 12px;
-            padding: 32px 24px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #fafafa;
-        }
-
-        .file-upload-box:hover {
-            border-color: #3b82f6;
-            background: #eff6ff;
-        }
-
-        .file-upload-box.dragover {
-            border-color: #3b82f6;
-            background: #eff6ff;
-        }
-
-        .file-upload-icon {
-            width: 48px;
-            height: 48px;
-            margin: 0 auto 12px;
-            color: #9ca3af;
-        }
-
-        .file-upload-text {
-            font-size: 14px;
-            color: #6b7280;
-            margin-bottom: 4px;
-        }
-
-        .file-upload-hint {
-            font-size: 12px;
-            color: #9ca3af;
-        }
-
-        .file-upload-input {
-            display: none;
-        }
-
-        .file-preview {
-            margin-top: 16px;
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .preview-item {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 2px solid #e5e7eb;
-        }
-
-        .preview-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .preview-remove {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: rgba(239, 68, 68, 0.9);
-            color: #ffffff;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            transition: background 0.2s;
-        }
-
-        .preview-remove:hover {
-            background: #dc2626;
-        }
-
-        /* Buttons */
-        .form-buttons {
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            gap: 12px;
-            margin-top: 32px;
-            padding-top: 24px;
-            border-top: 2px solid #f3f4f6;
-        }
-
-        .btn-secondary {
-            padding: 12px 28px;
-            background: #f3f4f6;
-            color: #374151;
-            border: none;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            grid-column: 1;
-        }
-
-        .btn-secondary:hover {
-            background: #e5e7eb;
-        }
-
-        .btn-secondary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-primary {
-            padding: 12px 28px;
-            grid-column: 3;
-        }
-
-        /* Validation Icons */
-        .validation-icon {
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 18px;
-            display: none;
-        }
-
-        .validation-icon.checking {
-            display: block;
-            color: #6b7280;
-        }
-
-        .validation-icon.valid {
-            display: block;
-            color: #10b981;
-        }
-
-        .validation-icon.invalid {
-            display: block;
-            color: #ef4444;
-        }
-
-        /* Password Strength */
-        .password-strength {
-            margin-top: 8px;
-            display: none;
-        }
-
-        .password-strength.show {
-            display: block;
-        }
-
-        .strength-bars {
-            display: flex;
-            gap: 4px;
-            margin-bottom: 6px;
-        }
-
-        .strength-bar {
-            height: 4px;
-            flex: 1;
-            background: #e5e7eb;
-            border-radius: 2px;
-            transition: background 0.3s ease;
-        }
-
-        .strength-bar.active {
-            background: #ef4444;
-        }
-
-        .strength-bars.medium .strength-bar.active {
-            background: #f59e0b;
-        }
-
-        .strength-bars.strong .strength-bar.active {
-            background: #10b981;
-        }
-
-        .strength-text {
-            font-size: 12px;
-            font-weight: 500;
-            color: #6b7280;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .auth-card {
-                padding: 32px 24px !important;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .progress-steps {
-                flex-wrap: wrap;
-            }
-
-            .step {
-                flex: 0 0 33.333%;
-                margin-bottom: 20px;
-            }
-
-            .form-buttons {
-                flex-direction: column-reverse;
-            }
-
-            .btn-primary,
-            .btn-secondary {
-                width: 100%;
-            }
-        }
-    </style>
-@endpush
-
 @section('content')
-    <div class="auth-header">
-        <h1>Lengkapi Profil Anda</h1>
-        <p>{{ $isGoogleUser ? 'Akun Google berhasil terhubung. ' : '' }}Silakan lengkapi informasi berikut untuk
-            menyelesaikan pendaftaran</p>
-    </div>
+    <div class="w-full flex flex-col overflow-y-auto max-h-screen px-11 py-9 scrollbar-hide">
 
-    {{-- Alert Messages --}}
-    @if (session('success'))
-        <div class="alert alert-success">
-            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>{{ session('success') }}</span>
+        {{-- ── Header ── --}}
+        <div class="text-center mb-6 pb-5 border-b border-slate-100">
+            <h1 class="text-[22px] font-bold text-neutral-800 mb-1">Lengkapi Profil Anda</h1>
+            <p class="text-[13px] text-neutral-500">
+                {{ $isGoogleUser ? 'Akun Google berhasil terhubung. ' : '' }}Silakan lengkapi informasi berikut untuk
+                menyelesaikan pendaftaran.
+            </p>
         </div>
-    @endif
 
-    @if (session('error'))
-        <div class="alert alert-danger">
-            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>{{ session('error') }}</span>
-        </div>
-    @endif
+        {{-- ── Alerts ── --}}
+        @if (session('success'))
+            <div class="alert alert-success">
+                <svg class="w-[18px] h-[18px] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{{ session('success') }}</span>
+            </div>
+        @endif
 
-    {{-- Progress Steps --}}
-    <div class="progress-steps">
-        <div class="progress-line" id="progressLine"></div>
-        <div class="step active" data-step="1">
-            <div class="step-circle">1</div>
-            <div class="step-label">Akun</div>
-        </div>
-        <div class="step" data-step="2">
-            <div class="step-circle">2</div>
-            <div class="step-label">Admin Unit</div>
-        </div>
-        <div class="step" data-step="3">
-            <div class="step-circle">3</div>
-            <div class="step-label">Data Unit</div>
-        </div>
-    </div>
+        @if (session('error'))
+            <div class="alert alert-error">
+                <svg class="w-[18px] h-[18px] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{{ session('error') }}</span>
+            </div>
+        @endif
 
-    {{-- Complete Profile Form --}}
-    <form method="POST" action="{{ route('complete-profile.store', $token) }}" id="completeProfileForm"
-        enctype="multipart/form-data">
-        @csrf
-        <input type="hidden" name="user_id" value="{{ $user->id }}">
-        <input type="hidden" name="recaptcha_token" id="recaptcha_token">
+        @if (session('warning'))
+            <div class="alert alert-warning">
+                <svg class="w-[18px] h-[18px] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{{ session('warning') }}</span>
+            </div>
+        @endif
 
-        {{-- STEP 1: DATA AKUN --}}
-        <div class="form-step active" data-step="1">
-            @if (!$isGoogleUser)
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Email Anda</label>
-                        <div class="form-input-wrapper">
-                            <span class="form-input-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
+        @if (session('info'))
+            <div class="alert alert-info">
+                <svg class="w-[18px] h-[18px] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{{ session('info') }}</span>
+            </div>
+        @endif
+
+        {{-- ── Progress Steps ── --}}
+        <div class="relative flex items-start mb-7">
+            {{-- Track line --}}
+            <div class="absolute top-[17px] left-0 right-0 h-0.5 bg-slate-200 z-0"></div>
+            {{-- Active progress line --}}
+            <div class="absolute top-[17px] left-0 h-0.5 bg-gradient-to-r from-[#1e3a5f] to-[#2563a8] z-[1] transition-all duration-500 ease-in-out"
+                id="progressLine" style="width:0%"></div>
+
+            <div class="step flex flex-col items-center flex-1 relative z-[2]" data-step="1">
+                <div
+                    class="step-circle w-9 h-9 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center text-[13px] font-semibold text-slate-400 mb-1.5 transition-all duration-300">
+                    1</div>
+                <div class="step-label text-[11.5px] text-slate-400 font-medium transition-colors duration-300">Akun</div>
+            </div>
+            <div class="step flex flex-col items-center flex-1 relative z-[2]" data-step="2">
+                <div
+                    class="step-circle w-9 h-9 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center text-[13px] font-semibold text-slate-400 mb-1.5 transition-all duration-300">
+                    2</div>
+                <div class="step-label text-[11.5px] text-slate-400 font-medium transition-colors duration-300">Admin unit
+                </div>
+            </div>
+            <div class="step flex flex-col items-center flex-1 relative z-[2]" data-step="3">
+                <div
+                    class="step-circle w-9 h-9 rounded-full bg-white border-2 border-slate-200 flex items-center justify-center text-[13px] font-semibold text-slate-400 mb-1.5 transition-all duration-300">
+                    3</div>
+                <div class="step-label text-[11.5px] text-slate-400 font-medium transition-colors duration-300">Data unit
+                </div>
+            </div>
+        </div>
+
+        {{-- ── Form ── --}}
+        <form method="POST" action="{{ route('complete-profile.store', $token) }}" id="completeProfileForm"
+            enctype="multipart/form-data">
+            @csrf
+            <input type="hidden" name="user_id" value="{{ $user->id }}">
+            <input type="hidden" name="recaptcha_token" id="recaptcha_token">
+
+            {{-- ══════════════════════════════
+                 STEP 1: AKUN
+            ══════════════════════════════ --}}
+            <div class="form-step active" data-step="1">
+
+                @if (!$isGoogleUser)
+                    <div class="grid grid-cols-2 gap-4 mb-1">
+
+                        {{-- Email (disabled) --}}
+                        <div class="mb-3.5">
+                            <label class="block text-[13px] font-medium text-neutral-700 mb-1.5">Email anda</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path
+                                            d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                                        </path>
+                                        <polyline points="22,6 12,13 2,6"></polyline>
+                                    </svg>
+                                </span>
+                                <input type="text"
+                                    class="form-input pl-10 pr-3 bg-slate-100 text-slate-500 cursor-not-allowed"
+                                    value="{{ $user->email }}" disabled>
+                            </div>
+                        </div>
+
+                        {{-- Username --}}
+                        <div class="mb-3.5">
+                            <label for="username" class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                                Username <span class="text-red-500">*</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                </span>
+                                <input type="text"
+                                    class="form-input pl-10 pr-8 @error('username') is-invalid @enderror" id="username"
+                                    name="username" placeholder="Minimal 6 karakter" value="{{ old('username') }}"
+                                    required>
+                                <span class="absolute right-3 text-[13px] font-semibold pointer-events-none hidden"
+                                    id="usernameValidation"></span>
+                            </div>
+                            @error('username')
+                                <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
+                            @enderror
+                            <span class="hidden mt-1 text-[12px] font-medium" id="usernameError"></span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-1">
+
+                        {{-- Password --}}
+                        <div class="mb-3.5">
+                            <label for="password" class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                                Password <span class="text-red-500">*</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2">
+                                        </rect>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                    </svg>
+                                </span>
+                                <input type="password"
+                                    class="form-input pl-10 pr-10 @error('password') is-invalid @enderror" id="password"
+                                    name="password" placeholder="Minimal 8 karakter" required>
+                                <button type="button" onclick="togglePassword('password','eyePassword')"
+                                    class="input-icon-right">
+                                    <svg id="eyePassword" xmlns="http://www.w3.org/2000/svg" width="16"
+                                        height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {{-- Password Strength --}}
+                            <div class="mt-2" id="passwordStrength">
+                                <div class="flex gap-1 mb-2" id="strengthBars">
+                                    <div class="h-[3px] flex-1 rounded bg-slate-200 transition-colors duration-300"></div>
+                                    <div class="h-[3px] flex-1 rounded bg-slate-200 transition-colors duration-300"></div>
+                                    <div class="h-[3px] flex-1 rounded bg-slate-200 transition-colors duration-300"></div>
+                                    <div class="h-[3px] flex-1 rounded bg-slate-200 transition-colors duration-300"></div>
+                                    <div class="h-[3px] flex-1 rounded bg-slate-200 transition-colors duration-300"></div>
+                                </div>
+                                <ul class="flex flex-col gap-1 p-0 list-none" id="passwordRules">
+                                    <li id="rule-length"
+                                        class="flex items-center gap-1.5 text-[12px] text-slate-400 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-slate-300 before:shrink-0 before:transition-colors">
+                                        Minimal 8 karakter</li>
+                                    <li id="rule-upper"
+                                        class="flex items-center gap-1.5 text-[12px] text-slate-400 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-slate-300 before:shrink-0 before:transition-colors">
+                                        Huruf besar (A-Z)</li>
+                                    <li id="rule-lower"
+                                        class="flex items-center gap-1.5 text-[12px] text-slate-400 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-slate-300 before:shrink-0 before:transition-colors">
+                                        Huruf kecil (a-z)</li>
+                                    <li id="rule-number"
+                                        class="flex items-center gap-1.5 text-[12px] text-slate-400 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-slate-300 before:shrink-0 before:transition-colors">
+                                        Angka (0-9)</li>
+                                    <li id="rule-special"
+                                        class="flex items-center gap-1.5 text-[12px] text-slate-400 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-slate-300 before:shrink-0 before:transition-colors">
+                                        Karakter khusus (@$!%*?&amp;#)</li>
+                                </ul>
+                            </div>
+
+                            @error('password')
+                                <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        {{-- Confirm Password --}}
+                        <div class="mb-3.5">
+                            <label for="password_confirmation"
+                                class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                                Konfirmasi password <span class="text-red-500">*</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2">
+                                        </rect>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                    </svg>
+                                </span>
+                                <input type="password"
+                                    class="form-input pl-10 pr-10 @error('password_confirmation') is-invalid @enderror"
+                                    id="password_confirmation" name="password_confirmation" placeholder="Ulangi password"
+                                    required>
+                                <button type="button" onclick="togglePassword('password_confirmation','eyeConfirm')"
+                                    class="input-icon-right">
+                                    <svg id="eyeConfirm" xmlns="http://www.w3.org/2000/svg" width="16"
+                                        height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </button>
+                            </div>
+                            <span class="hidden mt-1 text-[12px] text-red-500" id="confirmError"></span>
+                            @error('password_confirmation')
+                                <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                @else
+                    {{-- Google user: hanya tampilkan email --}}
+                    <div class="mb-3.5">
+                        <label class="block text-[13px] font-medium text-neutral-700 mb-1.5">Email anda</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
                                     </path>
                                     <polyline points="22,6 12,13 2,6"></polyline>
                                 </svg>
                             </span>
-                            <input type="text" class="form-input" value="{{ $maskedEmail }}" disabled>
+                            <input type="text"
+                                class="form-input pl-10 pr-3 bg-slate-100 text-slate-500 cursor-not-allowed"
+                                value="{{ $user->email }}" disabled>
                         </div>
                     </div>
+                    <div class="alert alert-info">
+                        <svg class="w-[18px] h-[18px] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Anda login menggunakan Google. Username dan password akan dibuat otomatis.</span>
+                    </div>
+                @endif
 
-                    <div class="form-group">
-                        <label for="username" class="form-label">Username <span style="color: #ef4444;">*</span></label>
-                        <div class="form-input-wrapper">
-                            <span class="form-input-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
+            </div>{{-- /step 1 --}}
+
+            {{-- ══════════════════════════════
+                 STEP 2: ADMIN UNIT
+            ══════════════════════════════ --}}
+            <div class="form-step" data-step="2">
+
+                <div class="grid grid-cols-2 gap-4 mb-1">
+                    {{-- Nama lengkap --}}
+                    <div class="mb-3.5">
+                        <label for="admin_nama" class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                            Nama lengkap <span class="text-red-500">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                                     <circle cx="12" cy="7" r="4"></circle>
                                 </svg>
                             </span>
-                            <input type="text" class="form-input @error('username') is-invalid @enderror" id="username"
-                                name="username" placeholder="Minimal 6 karakter" value="{{ old('username') }}" required>
-                            <span class="validation-icon" id="usernameValidation"></span>
+                            <input type="text" class="form-input pl-10 pr-3 @error('admin_nama') is-invalid @enderror"
+                                id="admin_nama" name="admin_nama" placeholder="Nama lengkap admin"
+                                value="{{ old('admin_nama') }}" required>
                         </div>
-                        @error('username')
-                            <span class="invalid-feedback">{{ $message }}</span>
+                        @error('admin_nama')
+                            <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
                         @enderror
-                        <span class="invalid-feedback" id="usernameError" style="display: none;"></span>
                     </div>
-                </div>
 
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="password" class="form-label">Password <span style="color: #ef4444;">*</span></label>
-                        <div class="form-input-wrapper">
-                            <span class="form-input-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                    {{-- Nomor telepon --}}
+                    <div class="mb-3.5">
+                        <label for="admin_telepon" class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                            Nomor telepon <span class="text-red-500">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                     stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2">
-                                    </rect>
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                    <path
+                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                                    </path>
                                 </svg>
                             </span>
-                            <input type="password" class="form-input @error('password') is-invalid @enderror"
-                                id="password" name="password" placeholder="Minimal 8 karakter" required>
-                            <button type="button" class="password-toggle" onclick="togglePassword('password')">
-                                <svg id="eyeIconPassword" xmlns="http://www.w3.org/2000/svg" width="20"
-                                    height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                </svg>
-                            </button>
+                            <input type="tel"
+                                class="form-input pl-10 pr-3 @error('admin_telepon') is-invalid @enderror"
+                                id="admin_telepon" name="admin_telepon" placeholder="08xxxxxxxxxx"
+                                value="{{ old('admin_telepon') }}" required>
                         </div>
-                        <div class="password-strength" id="passwordStrength">
-                            <div class="strength-bars" id="strengthBars">
-                                <div class="strength-bar"></div>
-                                <div class="strength-bar"></div>
-                                <div class="strength-bar"></div>
-                                <div class="strength-bar"></div>
-                            </div>
-                            <div class="strength-text" id="strengthText">Masukkan password</div>
-                        </div>
-                        @error('password')
-                            <span class="invalid-feedback">{{ $message }}</span>
+                        @error('admin_telepon')
+                            <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
                         @enderror
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="password_confirmation" class="form-label">Konfirmasi Password <span
-                                style="color: #ef4444;">*</span></label>
-                        <div class="form-input-wrapper">
-                            <span class="form-input-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                <div class="grid grid-cols-2 gap-4 mb-1">
+                    {{-- Email admin (readonly) --}}
+                    <div class="mb-3.5">
+                        <label for="admin_email" class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                            Email admin <span class="text-red-500">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                     stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2">
-                                    </rect>
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                                    </path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
                                 </svg>
                             </span>
-                            <input type="password" class="form-input @error('password_confirmation') is-invalid @enderror"
-                                id="password_confirmation" name="password_confirmation" placeholder="Ulangi password"
-                                required>
-                            <button type="button" class="password-toggle"
-                                onclick="togglePassword('password_confirmation')">
-                                <svg id="eyeIconPasswordConfirmation" xmlns="http://www.w3.org/2000/svg" width="20"
-                                    height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                </svg>
-                            </button>
+                            <input type="email"
+                                class="form-input pl-10 pr-3 bg-slate-100 text-slate-500 cursor-not-allowed"
+                                id="admin_email" name="admin_email" value="{{ $user->email }}" readonly>
                         </div>
-                        @error('password_confirmation')
-                            <span class="invalid-feedback">{{ $message }}</span>
-                        @enderror
+                        <span class="block mt-1 text-[11px] text-slate-400">Email diambil dari akun yang didaftarkan</span>
                     </div>
-                </div>
-            @else
-                <div class="form-group">
-                    <label class="form-label">Email Anda</label>
-                    <div class="form-input-wrapper">
-                        <span class="form-input-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
-                                </path>
-                                <polyline points="22,6 12,13 2,6"></polyline>
-                            </svg>
-                        </span>
-                        <input type="text" class="form-input" value="{{ $maskedEmail }}" disabled>
-                    </div>
-                </div>
 
-                <div class="alert alert-info">
-                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>Anda login menggunakan Google. Username dan password akan dibuat otomatis.</span>
-                </div>
-            @endif
-        </div>
-
-        {{-- STEP 2: DATA ADMIN UNIT --}}
-        <div class="form-step" data-step="2">
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="admin_nama" class="form-label">Nama Lengkap <span
-                            style="color: #ef4444;">*</span></label>
-                    <div class="form-input-wrapper">
-                        <span class="form-input-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="12" cy="7" r="4"></circle>
-                            </svg>
-                        </span>
-                        <input type="text" class="form-input @error('admin_nama') is-invalid @enderror"
-                            id="admin_nama" name="admin_nama" placeholder="Nama lengkap admin"
-                            value="{{ old('admin_nama') }}" required>
-                    </div>
-                    @error('admin_nama')
-                        <span class="invalid-feedback">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <div class="form-group">
-                    <label for="admin_telepon" class="form-label">Nomor Telepon <span
-                            style="color: #ef4444;">*</span></label>
-                    <div class="form-input-wrapper">
-                        <span class="form-input-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path
-                                    d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
-                                </path>
-                            </svg>
-                        </span>
-                        <input type="tel" class="form-input @error('admin_telepon') is-invalid @enderror"
-                            id="admin_telepon" name="admin_telepon" placeholder="08xxxxxxxxxx"
-                            value="{{ old('admin_telepon') }}" required>
-                    </div>
-                    @error('admin_telepon')
-                        <span class="invalid-feedback">{{ $message }}</span>
-                    @enderror
-                </div>
-            </div>
-
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="admin_email" class="form-label">Email Admin <span
-                            style="color: #ef4444;">*</span></label>
-                    <div class="form-input-wrapper">
-                        <span class="form-input-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
-                                </path>
-                                <polyline points="22,6 12,13 2,6"></polyline>
-                            </svg>
-                        </span>
-                        <input type="email" class="form-input" id="admin_email" name="admin_email"
-                            value="{{ $user->email }}" readonly style="background-color: #f9fafb; cursor: not-allowed;">
-                    </div>
-                    <small style="color: #6b7280; font-size: 12px; display: block; margin-top: 4px;">Email ini diambil dari
-                        akun yang Anda daftarkan</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="admin_foto" class="form-label">Foto Profil (Opsional)</label>
-                    <div class="file-upload-wrapper">
-                        <label for="admin_foto" class="file-upload-box" id="adminFotoBox" style="padding: 20px 16px;">
-                            <svg class="file-upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor"
-                                style="width: 32px; height: 32px; margin-bottom: 8px;">
+                    {{-- Foto profil --}}
+                    <div class="mb-3.5">
+                        <label class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                            Foto profil <span class="text-[13px] text-slate-400 font-normal">(opsional)</span>
+                        </label>
+                        <label for="admin_foto"
+                            class="flex flex-col items-center justify-center gap-1 border-[1.5px] border-dashed border-slate-300 rounded-lg p-4 text-center cursor-pointer bg-slate-50 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200"
+                            id="adminFotoBox">
+                            <svg class="w-6 h-6 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                             </svg>
-                            <div class="file-upload-text" style="font-size: 13px;">Klik atau drag & drop</div>
-                            <div class="file-upload-hint" style="font-size: 11px;">JPG, PNG (Max. 2MB)</div>
+                            <span class="text-[13px] text-slate-500">Klik atau drag &amp; drop</span>
+                            <span class="text-[11px] text-slate-400">JPG, PNG (maks. 2MB)</span>
                         </label>
-                        <input type="file" class="file-upload-input" id="admin_foto" name="admin_foto"
+                        <input type="file" class="hidden" id="admin_foto" name="admin_foto"
                             accept="image/jpeg,image/jpg,image/png">
-                        <div class="file-preview" id="adminFotoPreview"></div>
+                        <div class="flex flex-wrap gap-2.5 mt-2.5" id="adminFotoPreview"></div>
+                        @error('admin_foto')
+                            <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
+                        @enderror
                     </div>
-                    @error('admin_foto')
-                        <span class="invalid-feedback">{{ $message }}</span>
-                    @enderror
                 </div>
-            </div>
-        </div>
 
-        {{-- STEP 3: DATA UNIT --}}
-        <div class="form-step" data-step="3">
-            {{-- Logo Unit --}}
-            <div class="form-group">
-                <label for="logo" class="form-label">Logo Unit (Opsional)</label>
-                <div class="file-upload-wrapper">
-                    <label for="logo" class="file-upload-box" id="logoBox">
-                        <svg class="file-upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none"
+            </div>{{-- /step 2 --}}
+
+            {{-- ══════════════════════════════
+                 STEP 3: DATA UNIT
+            ══════════════════════════════ --}}
+            <div class="form-step" data-step="3">
+
+                {{-- Logo unit --}}
+                <div class="mb-3.5">
+                    <label class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                        Logo unit <span class="text-[13px] text-slate-400 font-normal">(opsional)</span>
+                    </label>
+                    <label for="logo"
+                        class="flex flex-col items-center justify-center gap-1 border-[1.5px] border-dashed border-slate-300 rounded-lg p-4 text-center cursor-pointer bg-slate-50 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200"
+                        id="logoBox">
+                        <svg class="w-6 h-6 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
-                        <div class="file-upload-text">Klik atau drag & drop untuk upload logo</div>
-                        <div class="file-upload-hint">JPG, PNG, atau JPEG (Max. 2MB)</div>
+                        <span class="text-[13px] text-slate-500">Klik atau drag &amp; drop untuk upload logo</span>
+                        <span class="text-[11px] text-slate-400">JPG, PNG, JPEG (maks. 2MB)</span>
                     </label>
-                    <input type="file" class="file-upload-input" id="logo" name="logo"
+                    <input type="file" class="hidden" id="logo" name="logo"
                         accept="image/jpeg,image/jpg,image/png">
-                    <div class="file-preview" id="logoPreview"></div>
-                </div>
-                @error('logo')
-                    <span class="invalid-feedback">{{ $message }}</span>
-                @enderror
-            </div>
-
-            {{-- Nama Unit & Deskripsi --}}
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="nama_unit" class="form-label">Nama Unit <span style="color: #ef4444;">*</span></label>
-                    <div class="form-input-wrapper">
-                        <span class="form-input-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                            </svg>
-                        </span>
-                        <input type="text" class="form-input @error('nama_unit') is-invalid @enderror" id="nama_unit"
-                            name="nama_unit" placeholder="Nama unit usaha" value="{{ old('nama_unit') }}" required>
-                    </div>
-                    @error('nama_unit')
-                        <span class="invalid-feedback">{{ $message }}</span>
+                    <div class="flex flex-wrap gap-2.5 mt-2.5" id="logoPreview"></div>
+                    @error('logo')
+                        <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
                     @enderror
                 </div>
 
-                <div class="form-group">
-                    <label for="email_unit" class="form-label">Email Unit <span style="color: #ef4444;">*</span></label>
-                    <div class="form-input-wrapper">
-                        <span class="form-input-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
-                                </path>
-                                <polyline points="22,6 12,13 2,6"></polyline>
-                            </svg>
-                        </span>
-                        <input type="email" class="form-input @error('email_unit') is-invalid @enderror"
-                            id="email_unit" name="email_unit" placeholder="unit@email.com"
-                            value="{{ old('email_unit') }}" required>
+                <div class="grid grid-cols-2 gap-4 mb-1">
+                    {{-- Nama unit --}}
+                    <div class="mb-3.5">
+                        <label for="nama_unit" class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                            Nama unit <span class="text-red-500">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
+                            </span>
+                            <input type="text" class="form-input pl-10 pr-3 @error('nama_unit') is-invalid @enderror"
+                                id="nama_unit" name="nama_unit" placeholder="Nama unit usaha"
+                                value="{{ old('nama_unit') }}" required>
+                        </div>
+                        @error('nama_unit')
+                            <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
+                        @enderror
                     </div>
-                    @error('email_unit')
-                        <span class="invalid-feedback">{{ $message }}</span>
+
+                    {{-- Email unit --}}
+                    <div class="mb-3.5">
+                        <label for="email_unit" class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                            Email unit <span class="text-red-500">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                                    </path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
+                                </svg>
+                            </span>
+                            <input type="email" class="form-input pl-10 pr-3 @error('email_unit') is-invalid @enderror"
+                                id="email_unit" name="email_unit" placeholder="unit@email.com"
+                                value="{{ old('email_unit') }}" required>
+                        </div>
+                        @error('email_unit')
+                            <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+
+                {{-- Deskripsi --}}
+                <div class="mb-3.5">
+                    <label for="deskripsi" class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                        Deskripsi unit <span class="text-[13px] text-slate-400 font-normal">(opsional)</span>
+                    </label>
+                    <textarea class="form-input pl-3 pr-3 h-auto min-h-[76px] resize-y pt-2.5 @error('deskripsi') is-invalid @enderror"
+                        id="deskripsi" name="deskripsi" rows="3" placeholder="Deskripsikan unit usaha anda...">{{ old('deskripsi') }}</textarea>
+                    @error('deskripsi')
+                        <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
                     @enderror
                 </div>
-            </div>
 
-            {{-- Deskripsi --}}
-            <div class="form-group">
-                <label for="deskripsi" class="form-label">Deskripsi Unit (Opsional)</label>
-                <textarea class="form-input @error('deskripsi') is-invalid @enderror" id="deskripsi" name="deskripsi" rows="3"
-                    placeholder="Deskripsikan unit usaha Anda..." style="resize: vertical; padding-top: 14px;">{{ old('deskripsi') }}</textarea>
-                @error('deskripsi')
-                    <span class="invalid-feedback">{{ $message }}</span>
-                @enderror
-            </div>
+                {{-- Section separator: Alamat --}}
+                <div class="border-t border-slate-100 pt-4 mt-4 mb-3.5">
+                    <div class="flex items-center gap-1.5 text-[14px] font-semibold text-slate-800 mb-0.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        Alamat &amp; lokasi
+                    </div>
+                    <p class="text-[12px] text-slate-500">Lengkapi informasi alamat unit usaha anda</p>
+                </div>
 
-            {{-- SECTION: ALAMAT & LOKASI --}}
-            <div style="margin-top: 32px; margin-bottom: 16px; padding-top: 24px; border-top: 2px solid #f3f4f6;">
-                <h3 style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 4px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                {{-- Alamat lengkap --}}
+                <div class="mb-3.5">
+                    <label for="alamat" class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                        Alamat lengkap <span class="text-red-500">*</span>
+                    </label>
+                    <textarea class="form-input pl-3 pr-3 h-auto min-h-[76px] resize-y pt-2.5 @error('alamat') is-invalid @enderror"
+                        id="alamat" name="alamat" rows="3" placeholder="Contoh: Jl. Merdeka No. 123, RT 01/RW 05" required>{{ old('alamat') }}</textarea>
+                    <span class="block mt-1 text-[11px] text-slate-400">Isi dengan detail alamat seperti nama jalan, nomor,
+                        RT/RW</span>
+                    @error('alamat')
+                        <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-1">
+                    {{-- Provinsi --}}
+                    <div class="mb-3.5">
+                        <label for="provinsi_kode" class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                            Provinsi <span class="text-red-500">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="10" r="3"></circle>
+                                    <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"></path>
+                                </svg>
+                            </span>
+                            <select
+                                class="form-input pl-10 pr-8 appearance-none @error('provinsi_kode') is-invalid @enderror"
+                                id="provinsi_kode" name="provinsi_kode" required>
+                                <option value="">Pilih provinsi</option>
+                                @foreach ($provinces as $province)
+                                    <option value="{{ $province->code }}"
+                                        {{ old('provinsi_kode') == $province->code ? 'selected' : '' }}>
+                                        {{ $province->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('provinsi_kode')
+                            <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    {{-- Kota --}}
+                    <div class="mb-3.5">
+                        <label for="kota_kode" class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                            Kota/kabupaten <span class="text-red-500">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                </svg>
+                            </span>
+                            <select class="form-input pl-10 pr-8 appearance-none @error('kota_kode') is-invalid @enderror"
+                                id="kota_kode" name="kota_kode" required disabled>
+                                <option value="">Pilih kota/kabupaten</option>
+                            </select>
+                        </div>
+                        @error('kota_kode')
+                            <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-1">
+                    {{-- Kecamatan --}}
+                    <div class="mb-3.5">
+                        <label for="kecamatan_kode" class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                            Kecamatan <span class="text-red-500">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                    <line x1="9" y1="3" x2="9" y2="21"></line>
+                                    <line x1="15" y1="3" x2="15" y2="21"></line>
+                                </svg>
+                            </span>
+                            <select
+                                class="form-input pl-10 pr-8 appearance-none @error('kecamatan_kode') is-invalid @enderror"
+                                id="kecamatan_kode" name="kecamatan_kode" required disabled>
+                                <option value="">Pilih kecamatan</option>
+                            </select>
+                        </div>
+                        @error('kecamatan_kode')
+                            <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    {{-- Kelurahan --}}
+                    <div class="mb-3.5">
+                        <label for="kelurahan_kode" class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                            Kelurahan/desa <span class="text-red-500">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
+                            </span>
+                            <select
+                                class="form-input pl-10 pr-8 appearance-none @error('kelurahan_kode') is-invalid @enderror"
+                                id="kelurahan_kode" name="kelurahan_kode" required disabled>
+                                <option value="">Pilih kelurahan/desa</option>
+                            </select>
+                        </div>
+                        @error('kelurahan_kode')
+                            <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-1">
+                    {{-- Kode pos --}}
+                    <div class="mb-3.5">
+                        <label for="kode_pos" class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                            Kode pos <span class="text-red-500">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="2" width="20" height="8" rx="2"></rect>
+                                    <rect x="2" y="14" width="20" height="8" rx="2"></rect>
+                                    <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                                    <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                                </svg>
+                            </span>
+                            <input type="text" class="form-input pl-10 pr-3 @error('kode_pos') is-invalid @enderror"
+                                id="kode_pos" name="kode_pos" placeholder="12345" maxlength="5"
+                                value="{{ old('kode_pos') }}" required>
+                        </div>
+                        <span class="block mt-1 text-[11px] text-slate-400">Otomatis terisi saat memilih kelurahan</span>
+                        @error('kode_pos')
+                            <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    {{-- Telepon unit --}}
+                    <div class="mb-3.5">
+                        <label for="telepon" class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                            Telepon unit <span class="text-red-500">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path
+                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                                    </path>
+                                </svg>
+                            </span>
+                            <input type="tel" class="form-input pl-10 pr-3 @error('telepon') is-invalid @enderror"
+                                id="telepon" name="telepon" placeholder="021-xxxxxxx atau 08xxxxxxxxxx"
+                                value="{{ old('telepon') }}" required>
+                        </div>
+                        @error('telepon')
+                            <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+
+            </div>{{-- /step 3 --}}
+
+            {{-- ── Navigation Buttons ── --}}
+            <div class="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
+                <button type="button" id="prevBtn" onclick="changeStep(-1)"
+                    class="invisible inline-flex items-center gap-1.5 px-5 py-2.5 text-[13.5px] font-medium text-neutral-700 bg-slate-100 border border-slate-200 rounded-lg hover:bg-slate-200 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                        <circle cx="12" cy="10" r="3"></circle>
+                        stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
                     </svg>
-                    Alamat & Lokasi
-                </h3>
-                <p style="font-size: 13px; color: #6b7280; margin: 0;">Lengkapi informasi alamat unit usaha Anda</p>
-            </div>
+                    Kembali
+                </button>
 
-            {{-- Alamat Lengkap --}}
-            <div class="form-group">
-                <label for="alamat" class="form-label">Alamat Lengkap <span style="color: #ef4444;">*</span></label>
-                <textarea class="form-input @error('alamat') is-invalid @enderror" id="alamat" name="alamat" rows="3"
-                    placeholder="Contoh: Jl. Merdeka No. 123, RT 01/RW 05" style="resize: vertical; padding-top: 14px;" required>{{ old('alamat') }}</textarea>
-                <small style="color: #6b7280; font-size: 12px; display: block; margin-top: 4px;">
-                    Isi dengan detail alamat seperti nama jalan, nomor, RT/RW
-                </small>
-                @error('alamat')
-                    <span class="invalid-feedback">{{ $message }}</span>
-                @enderror
-            </div>
+                <span class="text-[12px] text-slate-400" id="stepCounter">Langkah 1 dari 3</span>
 
-            {{-- Provinsi & Kota --}}
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="provinsi_kode" class="form-label">Provinsi <span style="color: #ef4444;">*</span></label>
-                    <div class="form-input-wrapper">
-                        <span class="form-input-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <circle cx="12" cy="10" r="3"></circle>
-                                <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"></path>
-                            </svg>
-                        </span>
-                        <select class="form-input @error('provinsi_kode') is-invalid @enderror" id="provinsi_kode"
-                            name="provinsi_kode" required>
-                            <option value="">Pilih Provinsi</option>
-                            @foreach ($provinces as $province)
-                                <option value="{{ $province->code }}"
-                                    {{ old('provinsi_kode') == $province->code ? 'selected' : '' }}>
-                                    {{ $province->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @error('provinsi_kode')
-                        <span class="invalid-feedback">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <div class="form-group">
-                    <label for="kota_kode" class="form-label">Kota/Kabupaten <span
-                            style="color: #ef4444;">*</span></label>
-                    <div class="form-input-wrapper">
-                        <span class="form-input-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                            </svg>
-                        </span>
-                        <select class="form-input @error('kota_kode') is-invalid @enderror" id="kota_kode"
-                            name="kota_kode" required disabled>
-                            <option value="">Pilih Kota/Kabupaten</option>
-                        </select>
-                    </div>
-                    @error('kota_kode')
-                        <span class="invalid-feedback">{{ $message }}</span>
-                    @enderror
+                <div>
+                    <button type="button" id="nextBtn" onclick="changeStep(1)"
+                        class="btn-primary w-auto h-auto px-5 py-2.5 inline-flex items-center gap-1.5">
+                        Selanjutnya
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                    <button type="submit" id="submitBtn"
+                        class="btn-primary w-auto h-auto px-5 py-2.5 hidden items-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        Selesai
+                    </button>
                 </div>
             </div>
 
-            {{-- Kecamatan & Kelurahan --}}
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="kecamatan_kode" class="form-label">Kecamatan <span
-                            style="color: #ef4444;">*</span></label>
-                    <div class="form-input-wrapper">
-                        <span class="form-input-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                <line x1="9" y1="3" x2="9" y2="21"></line>
-                                <line x1="15" y1="3" x2="15" y2="21"></line>
-                            </svg>
-                        </span>
-                        <select class="form-input @error('kecamatan_kode') is-invalid @enderror" id="kecamatan_kode"
-                            name="kecamatan_kode" required disabled>
-                            <option value="">Pilih Kecamatan</option>
-                        </select>
-                    </div>
-                    @error('kecamatan_kode')
-                        <span class="invalid-feedback">{{ $message }}</span>
-                    @enderror
-                </div>
+        </form>
 
-                <div class="form-group">
-                    <label for="kelurahan_kode" class="form-label">Kelurahan/Desa <span
-                            style="color: #ef4444;">*</span></label>
-                    <div class="form-input-wrapper">
-                        <span class="form-input-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                            </svg>
-                        </span>
-                        <select class="form-input @error('kelurahan_kode') is-invalid @enderror" id="kelurahan_kode"
-                            name="kelurahan_kode" required disabled>
-                            <option value="">Pilih Kelurahan/Desa</option>
-                        </select>
-                    </div>
-                    @error('kelurahan_kode')
-                        <span class="invalid-feedback">{{ $message }}</span>
-                    @enderror
-                </div>
+        @if (!empty($recaptchaSiteKey))
+            <div class="mt-3.5 text-[11px] text-slate-400 text-center leading-relaxed">
+                This site is protected by reCAPTCHA and the Google
+                <a href="https://policies.google.com/privacy" target="_blank"
+                    class="text-slate-500 hover:underline">Privacy Policy</a> and
+                <a href="https://policies.google.com/terms" target="_blank" class="text-slate-500 hover:underline">Terms
+                    of Service</a> apply.
             </div>
-
-            {{-- Kode Pos & Telepon --}}
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="kode_pos" class="form-label">Kode Pos <span style="color: #ef4444;">*</span></label>
-                    <div class="form-input-wrapper">
-                        <span class="form-input-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
-                                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
-                                <line x1="6" y1="6" x2="6.01" y2="6"></line>
-                                <line x1="6" y1="18" x2="6.01" y2="18"></line>
-                            </svg>
-                        </span>
-                        <input type="text" class="form-input @error('kode_pos') is-invalid @enderror" id="kode_pos"
-                            name="kode_pos" placeholder="12345" value="{{ old('kode_pos') }}" maxlength="5" required>
-                    </div>
-                    <small style="color: #6b7280; font-size: 12px; display: block; margin-top: 4px;">
-                        Otomatis terisi saat memilih kelurahan
-                    </small>
-                    @error('kode_pos')
-                        <span class="invalid-feedback">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <div class="form-group">
-                    <label for="telepon" class="form-label">Telepon Unit <span style="color: #ef4444;">*</span></label>
-                    <div class="form-input-wrapper">
-                        <span class="form-input-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path
-                                    d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
-                                </path>
-                            </svg>
-                        </span>
-                        <input type="tel" class="form-input @error('telepon') is-invalid @enderror" id="telepon"
-                            name="telepon" placeholder="021-xxxxxxx atau 08xxxxxxxxxx" value="{{ old('telepon') }}"
-                            required>
-                    </div>
-                    @error('telepon')
-                        <span class="invalid-feedback">{{ $message }}</span>
-                    @enderror
-                </div>
+        @else
+            <div class="mt-2.5 text-[11px] text-red-500 text-center">
+                ⚠️ Warning: reCAPTCHA is not configured. Please set RECAPTCHA_SITE_KEY in your .env file.
             </div>
-        </div>
+        @endif
 
-        {{-- Form Navigation Buttons --}}
-        <div class="form-buttons">
-            <button type="button" class="btn-secondary" id="prevBtn" onclick="changeStep(-1)"
-                style="display: none;">
-                Kembali
-            </button>
-            <button type="button" class="btn-primary" id="nextBtn" onclick="changeStep(1)">
-                Selanjutnya
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
+    </div>{{-- /.cp-inner --}}
+
+    {{-- ── Validation Modal ── --}}
+    <div class="fixed inset-0 bg-black/30 flex items-center justify-center z-[9999] opacity-0 pointer-events-none transition-opacity duration-200"
+        id="valModalOverlay" onclick="closeValModal(event)">
+        <div class="bg-white rounded-2xl p-7 w-[90%] max-w-[380px] shadow-[0_20px_60px_rgba(0,0,0,0.13)] scale-95 translate-y-2 transition-all duration-200"
+            id="valModal">
+            <div class="w-[46px] h-[46px] rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round" class="text-red-500">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
                 </svg>
-            </button>
-            <button type="submit" class="btn-primary" id="submitBtn" style="display: none;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-                Selesai
+            </div>
+            <div class="text-[15px] font-semibold text-gray-900 text-center mb-3">Mohon lengkapi data</div>
+            <ul class="list-none p-0 m-0 flex flex-col gap-1.5 max-h-[240px] overflow-y-auto mb-4" id="valModalList"></ul>
+            <button onclick="closeValModal()"
+                class="w-full py-2.5 bg-gradient-to-br from-[#1e3a5f] to-[#2563a8] text-white border-none rounded-[10px] text-[13.5px] font-semibold cursor-pointer hover:opacity-90 transition-opacity">
+                Mengerti
             </button>
         </div>
-    </form>
+    </div>
 
-    {{-- reCAPTCHA Notice --}}
-    @if ($recaptchaSiteKey)
-        <div class="recaptcha-notice" style="margin-top: 24px;">
-            This site is protected by reCAPTCHA and the Google
-            <a href="https://policies.google.com/privacy" target="_blank">Privacy Policy</a> and
-            <a href="https://policies.google.com/terms" target="_blank">Terms of Service</a> apply.
-        </div>
-    @endif
 @endsection
 
 @push('scripts')
-    @if ($recaptchaSiteKey)
+    @if (!empty($recaptchaSiteKey))
         <script src="https://www.google.com/recaptcha/api.js?render={{ $recaptchaSiteKey }}"></script>
         <script>
             const RECAPTCHA_SITE_KEY = '{{ $recaptchaSiteKey }}';
@@ -1045,43 +759,28 @@
     @endif
 
     <script>
+        /* ─────────────────────────────────────────
+        AUTH-CARD OVERRIDE → single column
+        ───────────────────────────────────────── */
+        document.addEventListener('DOMContentLoaded', function() {
+            const card = document.querySelector('.auth-card');
+            if (card) {
+                card.style.cssText =
+                    'flex-direction:column;width:min(720px,calc(100vw - 32px));height:auto;max-height:calc(100vh - 32px);overflow-y:auto;';
+            }
+        });
+
+        /* ─────────────────────────────────────────
+        STEP STATE
+        ───────────────────────────────────────── */
         let currentStep = 1;
         const totalSteps = 3;
         const isGoogleUser = {{ $isGoogleUser ? 'true' : 'false' }};
 
-        // PENANGANAN ERROR STEP DARI SERVER
         @if (session('error_step'))
-            // Set step berdasarkan error dari server
             currentStep = {{ session('error_step') }};
-
-            // Jalankan setelah DOM ready
             document.addEventListener('DOMContentLoaded', function() {
-                // Sembunyikan semua step
-                document.querySelectorAll('.form-step').forEach(step => {
-                    step.classList.remove('active');
-                });
-
-                // Tampilkan step yang error
-                const errorStep = document.querySelector(`.form-step[data-step="${currentStep}"]`);
-                if (errorStep) {
-                    errorStep.classList.add('active');
-                }
-
-                // Update step circles
-                document.querySelectorAll('.step').forEach((step, index) => {
-                    step.classList.remove('active', 'completed');
-                    if (index + 1 < currentStep) {
-                        step.classList.add('completed');
-                    } else if (index + 1 === currentStep) {
-                        step.classList.add('active');
-                    }
-                });
-
-                // Update progress line dan buttons
-                updateProgressLine();
-                updateButtons();
-
-                // Auto-scroll ke field yang error
+                restoreStep(currentStep);
                 setTimeout(function() {
                     const firstError = document.querySelector('.is-invalid');
                     if (firstError) {
@@ -1095,45 +794,63 @@
             });
         @endif
 
-        // Multi-step form navigation
-        function changeStep(direction) {
-            const steps = document.querySelectorAll('.form-step');
-            const stepCircles = document.querySelectorAll('.step');
-
-            // Validate current step before moving forward
-            if (direction === 1 && !validateStep(currentStep)) {
-                return;
-            }
-
-            // Hide current step
-            steps[currentStep - 1].classList.remove('active');
-            stepCircles[currentStep - 1].classList.remove('active');
-            stepCircles[currentStep - 1].classList.add('completed');
-
-            // Update current step
-            currentStep += direction;
-
-            // Show new step
-            steps[currentStep - 1].classList.add('active');
-            stepCircles[currentStep - 1].classList.add('active');
-
-            // Update progress line
+        function restoreStep(target) {
+            document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+            document.querySelector(`.form-step[data-step="${target}"]`).classList.add('active');
+            updateCircles();
             updateProgressLine();
-
-            // Update buttons
             updateButtons();
+        }
 
-            // Scroll to top
+        function changeStep(direction) {
+            if (direction === 1 && !validateStep(currentStep)) return;
+            document.querySelectorAll('.form-step')[currentStep - 1].classList.remove('active');
+            currentStep += direction;
+            document.querySelectorAll('.form-step')[currentStep - 1].classList.add('active');
+            updateCircles();
+            updateProgressLine();
+            updateButtons();
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
             });
         }
 
+        /* ─────────────────────────────────────────
+        PROGRESS UI
+        ───────────────────────────────────────── */
+        function updateCircles() {
+            document.querySelectorAll('.step').forEach((el, i) => {
+                const circle = el.querySelector('.step-circle');
+                const label = el.querySelector('.step-label');
+                const n = i + 1;
+
+                circle.className =
+                    'step-circle w-9 h-9 rounded-full border-2 flex items-center justify-center text-[13px] font-semibold mb-1.5 transition-all duration-300';
+                label.className = 'step-label text-[11.5px] font-medium transition-colors duration-300';
+
+                if (n < currentStep) {
+                    circle.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
+                    label.classList.add('text-slate-700');
+                    circle.innerHTML =
+                        `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
+                } else if (n === currentStep) {
+                    circle.classList.add('bg-gradient-to-br', 'from-[#1e3a5f]', 'to-[#2563a8]', 'border-[#2563a8]',
+                        'text-white', 'shadow-[0_0_0_4px_rgba(37,99,168,0.15)]');
+                    label.classList.add('text-slate-700');
+                    circle.textContent = n;
+                } else {
+                    circle.classList.add('bg-white', 'border-slate-200', 'text-slate-400');
+                    label.classList.add('text-slate-400');
+                    circle.textContent = n;
+                }
+            });
+        }
+
         function updateProgressLine() {
-            const progressLine = document.getElementById('progressLine');
-            const percentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
-            progressLine.style.width = percentage + '%';
+            const pct = ((currentStep - 1) / (totalSteps - 1)) * 100;
+            document.getElementById('progressLine').style.width = pct + '%';
+            document.getElementById('stepCounter').textContent = `Langkah ${currentStep} dari ${totalSteps}`;
         }
 
         function updateButtons() {
@@ -1141,294 +858,317 @@
             const nextBtn = document.getElementById('nextBtn');
             const submitBtn = document.getElementById('submitBtn');
 
-            if (currentStep === 1) {
-                prevBtn.style.display = 'none';
-            } else {
-                prevBtn.style.display = 'flex';
-            }
+            prevBtn.style.visibility = currentStep === 1 ? 'hidden' : 'visible';
 
             if (currentStep === totalSteps) {
                 nextBtn.style.display = 'none';
-                submitBtn.style.display = 'flex';
+                submitBtn.style.display = 'inline-flex';
             } else {
-                nextBtn.style.display = 'flex';
+                nextBtn.style.display = 'inline-flex';
                 submitBtn.style.display = 'none';
             }
         }
 
+        /* ─────────────────────────────────────────
+        VALIDATION MODAL
+        ───────────────────────────────────────── */
+        function showValModal(errors) {
+            document.getElementById('valModalList').innerHTML = errors
+                .map(e =>
+                    `<li class="flex items-start gap-2 text-[13px] text-neutral-700 bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-2 leading-snug"><span class="w-[17px] h-[17px] min-w-[17px] rounded-full bg-red-500 text-white text-[11px] font-bold flex items-center justify-center mt-px shrink-0">!</span>${e}</li>`
+                )
+                .join('');
+            const overlay = document.getElementById('valModalOverlay');
+            const modal = document.getElementById('valModal');
+            overlay.classList.remove('pointer-events-none');
+            overlay.style.opacity = '1';
+            modal.style.transform = 'scale(1) translateY(0)';
+        }
+
+        function closeValModal(e) {
+            if (e && e.target !== document.getElementById('valModalOverlay')) return;
+            const overlay = document.getElementById('valModalOverlay');
+            const modal = document.getElementById('valModal');
+            overlay.style.opacity = '0';
+            modal.style.transform = 'scale(0.95) translateY(8px)';
+            setTimeout(() => overlay.classList.add('pointer-events-none'), 200);
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeValModal();
+        });
+
+        /* ─────────────────────────────────────────
+        PASSWORD RULES
+        ───────────────────────────────────────── */
+        const PASSWORD_RULES = [{
+                id: 'rule-length',
+                label: 'Password minimal 8 karakter',
+                test: v => v.length >= 8
+            },
+            {
+                id: 'rule-upper',
+                label: 'Password harus ada huruf besar (A-Z)',
+                test: v => /[A-Z]/.test(v)
+            },
+            {
+                id: 'rule-lower',
+                label: 'Password harus ada huruf kecil (a-z)',
+                test: v => /[a-z]/.test(v)
+            },
+            {
+                id: 'rule-number',
+                label: 'Password harus ada angka (0-9)',
+                test: v => /[0-9]/.test(v)
+            },
+            {
+                id: 'rule-special',
+                label: 'Password harus ada karakter khusus (@$!%*?&#)',
+                test: v => /[@$!%*?&#]/.test(v)
+            },
+        ];
+
+        function checkPasswordRules(val) {
+            let passed = 0;
+            PASSWORD_RULES.forEach(r => {
+                const el = document.getElementById(r.id);
+                if (!el) return;
+                const ok = r.test(val);
+                el.className = 'flex items-center gap-1.5 text-[12px] transition-colors duration-200';
+                if (val.length > 0) {
+                    if (ok) {
+                        el.classList.add('text-emerald-500');
+                        el.style.setProperty('--tw-before-bg', '#10b981');
+                    } else {
+                        el.classList.add('text-red-500');
+                    }
+                } else {
+                    el.classList.add('text-slate-400');
+                }
+                if (ok) passed++;
+            });
+            return passed;
+        }
+
+        /* ─────────────────────────────────────────
+        STEP VALIDATION
+        ───────────────────────────────────────── */
         function validateStep(step) {
             let isValid = true;
-            const currentStepElement = document.querySelector(`.form-step[data-step="${step}"]`);
-            const requiredInputs = currentStepElement.querySelectorAll(
-                'input[required], select[required], textarea[required]');
+            const errors = [];
+            const stepEl = document.querySelector(`.form-step[data-step="${step}"]`);
 
-            requiredInputs.forEach(input => {
+            stepEl.querySelectorAll('input[required], select[required], textarea[required]').forEach(input => {
                 if (!input.value.trim()) {
                     isValid = false;
                     input.classList.add('is-invalid');
-
-                    // Add or update error message
-                    let errorElement = input.parentElement.parentElement.querySelector('.invalid-feedback');
-                    if (!errorElement) {
-                        errorElement = document.createElement('span');
-                        errorElement.className = 'invalid-feedback';
-                        input.parentElement.parentElement.appendChild(errorElement);
-                    }
-                    errorElement.textContent = 'Field ini wajib diisi';
-                    errorElement.style.display = 'block';
+                    const labelText = stepEl.querySelector(`label[for="${input.id}"]`)?.textContent
+                        .replace('*', '').replace('(opsional)', '').trim() ?? 'Field';
+                    errors.push(`${labelText} wajib diisi`);
                 } else {
                     input.classList.remove('is-invalid');
-                    const errorElement = input.parentElement.parentElement.querySelector('.invalid-feedback');
-                    if (errorElement && !errorElement.textContent.includes('sudah')) {
-                        errorElement.style.display = 'none';
-                    }
+                    input.style.borderColor = '';
+                    input.style.background = '';
                 }
             });
 
-            // Additional validation for step 1 (password confirmation)
             if (step === 1 && !isGoogleUser) {
-                const password = document.getElementById('password');
-                const passwordConfirmation = document.getElementById('password_confirmation');
+                const pw = document.getElementById('password');
+                const pwc = document.getElementById('password_confirmation');
+                const val = pw?.value ?? '';
+                const passed = checkPasswordRules(val);
 
-                if (password.value !== passwordConfirmation.value) {
+                if (!val || passed !== PASSWORD_RULES.length) {
                     isValid = false;
-                    passwordConfirmation.classList.add('is-invalid');
-                    let errorElement = passwordConfirmation.parentElement.parentElement.querySelector('.invalid-feedback');
-                    if (!errorElement) {
-                        errorElement = document.createElement('span');
-                        errorElement.className = 'invalid-feedback';
-                        passwordConfirmation.parentElement.parentElement.appendChild(errorElement);
+                    if (pw) pw.classList.add('is-invalid');
+                    PASSWORD_RULES.filter(r => !r.test(val)).forEach(r => errors.push(r.label));
+                }
+
+                if (pw?.value && pwc?.value && pw.value !== pwc.value) {
+                    isValid = false;
+                    const err = document.getElementById('confirmError');
+                    if (err) {
+                        err.textContent = 'Password tidak cocok';
+                        err.classList.remove('hidden');
                     }
-                    errorElement.textContent = 'Password tidak cocok';
-                    errorElement.style.display = 'block';
+                    if (pwc) pwc.classList.add('is-invalid');
+                    errors.push('Konfirmasi password tidak cocok dengan password');
+                } else if (pwc?.value && pw?.value === pwc.value) {
+                    const err = document.getElementById('confirmError');
+                    if (err) err.classList.add('hidden');
+                    if (pwc) pwc.classList.remove('is-invalid');
                 }
             }
 
-            if (!isValid) {
-                alert('Mohon lengkapi semua field yang wajib diisi');
-            }
-
+            if (!isValid) showValModal([...new Set(errors)]);
             return isValid;
         }
 
-        // Toggle password visibility
-        function togglePassword(inputId) {
+        /* ─────────────────────────────────────────
+        PASSWORD TOGGLE
+        ───────────────────────────────────────── */
+        function togglePassword(inputId, iconId) {
             const input = document.getElementById(inputId);
-            const icon = document.getElementById('eyeIcon' + inputId.charAt(0).toUpperCase() + inputId.slice(1));
-
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.innerHTML = `
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                <line x1="1" y1="1" x2="23" y2="23"></line>
-            `;
-            } else {
-                input.type = 'password';
-                icon.innerHTML = `
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-            `;
-            }
+            const icon = document.getElementById(iconId);
+            const isPass = input.type === 'password';
+            input.type = isPass ? 'text' : 'password';
+            icon.innerHTML = isPass ?
+                `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>` :
+                `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
         }
 
-        // Password strength checker
+        /* ─────────────────────────────────────────
+        PASSWORD STRENGTH (non-Google)
+        ───────────────────────────────────────── */
         if (!isGoogleUser) {
-            const passwordInput = document.getElementById('password');
-            const passwordStrength = document.getElementById('passwordStrength');
-            const strengthBars = document.getElementById('strengthBars');
-            const strengthText = document.getElementById('strengthText');
+            document.getElementById('password')?.addEventListener('input', function() {
+                const val = this.value;
+                const passed = checkPasswordRules(val);
+                const cls = passed <= 2 ? '#ef4444' : passed <= 3 ? '#f59e0b' : '#10b981';
 
-            passwordInput.addEventListener('input', function() {
-                const password = this.value;
+                document.querySelectorAll('#strengthBars div').forEach((bar, i) => {
+                    bar.style.background = i < passed ? cls : '';
+                });
 
-                if (password.length === 0) {
-                    passwordStrength.classList.remove('show');
+                if (val.length > 0) this.classList.remove('is-invalid');
+            });
+
+            /* ── Username availability check ── */
+            let uTimer;
+            document.getElementById('username')?.addEventListener('input', function() {
+                clearTimeout(uTimer);
+                const val = this.value.trim();
+                const vIcon = document.getElementById('usernameValidation');
+                const err = document.getElementById('usernameError');
+
+                vIcon.className = 'absolute right-3 text-[13px] font-semibold pointer-events-none hidden';
+                vIcon.textContent = '';
+                err.className = 'hidden mt-1 text-[12px] font-medium';
+                err.textContent = '';
+                this.classList.remove('is-invalid');
+                this.style.borderColor = '';
+
+                if (!val) return;
+
+                if (val.length < 6) {
+                    setUsernameState('invalid', '×', 'Username minimal 6 karakter');
+                    return;
+                }
+                if (!/^[a-zA-Z0-9_]+$/.test(val)) {
+                    setUsernameState('invalid', '×', 'Hanya boleh huruf, angka, dan underscore');
                     return;
                 }
 
-                passwordStrength.classList.add('show');
+                vIcon.className =
+                    'absolute right-3 text-[13px] font-semibold pointer-events-none block text-slate-400';
+                vIcon.textContent = '⟳';
+                uTimer = setTimeout(() => checkUsername(val), 500);
+            });
 
-                let strength = 0;
-                const bars = strengthBars.querySelectorAll('.strength-bar');
+            function setUsernameState(state, icon, msg) {
+                const el = document.getElementById('username');
+                const vIcon = document.getElementById('usernameValidation');
+                const err = document.getElementById('usernameError');
 
-                // Reset bars
-                bars.forEach(bar => bar.classList.remove('active'));
-                strengthBars.className = 'strength-bars';
+                const colors = {
+                    valid: {
+                        border: '#10b981',
+                        icon: 'text-emerald-500'
+                    },
+                    invalid: {
+                        border: '#ef4444',
+                        icon: 'text-red-500'
+                    }
+                };
 
-                // Calculate strength
-                if (password.length >= 8) strength++;
-                if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
-                if (password.match(/[0-9]/)) strength++;
-                if (password.match(/[^a-zA-Z0-9]/)) strength++;
+                el.style.borderColor = state === 'neutral' ? '' : colors[state]?.border ?? '';
+                el.style.background = '';
 
-                // Update bars
-                for (let i = 0; i < strength; i++) {
-                    bars[i].classList.add('active');
-                }
+                if (state === 'invalid') el.classList.add('is-invalid');
+                else el.classList.remove('is-invalid');
 
-                // Update class and text
-                if (strength <= 1) {
-                    strengthText.textContent = 'Password lemah';
-                } else if (strength <= 2) {
-                    strengthBars.classList.add('medium');
-                    strengthText.textContent = 'Password sedang';
+                vIcon.className =
+                    `absolute right-3 text-[13px] font-semibold pointer-events-none block ${colors[state]?.icon ?? ''}`;
+                vIcon.textContent = icon;
+
+                if (msg) {
+                    err.textContent = msg;
+                    err.className =
+                        `block mt-1 text-[12px] font-medium ${state === 'valid' ? 'text-emerald-500' : 'text-red-500'}`;
                 } else {
-                    strengthBars.classList.add('strong');
-                    strengthText.textContent = 'Password kuat';
+                    err.className = 'hidden mt-1 text-[12px] font-medium';
                 }
-            });
-        }
+            }
 
-        // Username validation (real-time)
-        if (!isGoogleUser) {
-            let usernameCheckTimeout;
-            const usernameInput = document.getElementById('username');
-            const usernameValidation = document.getElementById('usernameValidation');
-            const usernameError = document.getElementById('usernameError');
-
-            usernameInput.addEventListener('input', function() {
-                clearTimeout(usernameCheckTimeout);
-
-                const username = this.value.trim();
-
-                usernameInput.classList.remove('checking', 'valid', 'is-invalid');
-                usernameValidation.className = 'validation-icon';
-                usernameValidation.innerHTML = '';
-                usernameError.style.display = 'none';
-
-                if (username.length === 0) {
-                    return;
-                }
-
-                if (username.length < 6) {
-                    usernameInput.classList.add('is-invalid');
-                    usernameValidation.className = 'validation-icon invalid';
-                    usernameValidation.innerHTML = '×';
-                    usernameError.textContent = 'Username minimal 6 karakter';
-                    usernameError.style.display = 'block';
-                    return;
-                }
-
-                if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-                    usernameInput.classList.add('is-invalid');
-                    usernameValidation.className = 'validation-icon invalid';
-                    usernameValidation.innerHTML = '×';
-                    usernameError.textContent = 'Username hanya boleh huruf, angka, dan underscore';
-                    usernameError.style.display = 'block';
-                    return;
-                }
-
-                usernameInput.classList.add('checking');
-                usernameValidation.className = 'validation-icon checking';
-                usernameValidation.innerHTML = '⟳';
-
-                usernameCheckTimeout = setTimeout(function() {
-                    checkUsernameAvailability(username);
-                }, 500);
-            });
-
-            function checkUsernameAvailability(username) {
+            function checkUsername(username) {
                 fetch(
                         `{{ route('check-username') }}?username=${encodeURIComponent(username)}&user_id={{ $user->id }}`
                     )
-                    .then(response => response.json())
+                    .then(r => r.json())
                     .then(data => {
-                        usernameInput.classList.remove('checking');
-                        usernameValidation.className = 'validation-icon';
-
-                        if (data.available) {
-                            usernameInput.classList.add('valid');
-                            usernameValidation.className = 'validation-icon valid';
-                            usernameValidation.innerHTML = '✓';
-                            usernameError.style.display = 'none';
-                        } else {
-                            usernameInput.classList.add('is-invalid');
-                            usernameValidation.className = 'validation-icon invalid';
-                            usernameValidation.innerHTML = '×';
-                            usernameError.textContent = data.message;
-                            usernameError.style.display = 'block';
-                        }
+                        if (data.available) setUsernameState('valid', '✓', null);
+                        else setUsernameState('invalid', '×', data.message);
                     })
-                    .catch(error => {
-                        console.error('Error checking username:', error);
-                        usernameInput.classList.remove('checking');
-                        usernameValidation.className = 'validation-icon';
-                        usernameValidation.innerHTML = '';
+                    .catch(() => {
+                        const vIcon = document.getElementById('usernameValidation');
+                        vIcon.className = 'absolute right-3 text-[13px] font-semibold pointer-events-none hidden';
+                        vIcon.textContent = '';
                     });
             }
         }
 
-        // File upload handling
+        /* ─────────────────────────────────────────
+        FILE UPLOAD
+        ───────────────────────────────────────── */
         function setupFileUpload(inputId, boxId, previewId) {
             const input = document.getElementById(inputId);
             const box = document.getElementById(boxId);
             const preview = document.getElementById(previewId);
 
-            // Click to upload
-            box.addEventListener('click', function(e) {
-                if (e.target.classList.contains('preview-remove')) return;
-                input.click();
-            });
-
-            // Drag & drop
-            box.addEventListener('dragover', function(e) {
+            box.addEventListener('dragover', e => {
                 e.preventDefault();
-                this.classList.add('dragover');
+                box.classList.add('border-blue-400', 'bg-blue-50');
             });
-
-            box.addEventListener('dragleave', function(e) {
+            box.addEventListener('dragleave', e => {
                 e.preventDefault();
-                this.classList.remove('dragover');
+                box.classList.remove('border-blue-400', 'bg-blue-50');
             });
-
-            box.addEventListener('drop', function(e) {
+            box.addEventListener('drop', e => {
                 e.preventDefault();
-                this.classList.remove('dragover');
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    input.files = files;
-                    handleFileSelect(input, preview);
+                box.classList.remove('border-blue-400', 'bg-blue-50');
+                if (e.dataTransfer.files.length) {
+                    input.files = e.dataTransfer.files;
+                    handleFile(input, preview);
                 }
             });
-
-            // File input change
-            input.addEventListener('change', function() {
-                handleFileSelect(this, preview);
-            });
+            input.addEventListener('change', () => handleFile(input, preview));
         }
 
-        function handleFileSelect(input, previewContainer) {
-            previewContainer.innerHTML = '';
-
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-
-                // Validate file size
-                if (file.size > 2 * 1024 * 1024) {
-                    alert('Ukuran file maksimal 2MB');
-                    input.value = '';
-                    return;
-                }
-
-                // Validate file type
-                if (!file.type.match('image/(jpeg|jpg|png)')) {
-                    alert('Format file harus JPG, JPEG, atau PNG');
-                    input.value = '';
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const previewItem = document.createElement('div');
-                    previewItem.className = 'preview-item';
-                    previewItem.innerHTML = `
-                    <img src="${e.target.result}" alt="Preview">
-                    <button type="button" class="preview-remove" onclick="removeFile('${input.id}', '${previewContainer.id}')">×</button>
-                `;
-                    previewContainer.appendChild(previewItem);
-                };
-                reader.readAsDataURL(file);
+        function handleFile(input, preview) {
+            preview.innerHTML = '';
+            const file = input.files[0];
+            if (!file) return;
+            if (file.size > 2 * 1024 * 1024) {
+                alert('Ukuran file maksimal 2MB');
+                input.value = '';
+                return;
             }
+            if (!file.type.match('image/(jpeg|jpg|png)')) {
+                alert('Format file harus JPG, JPEG, atau PNG');
+                input.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = e => {
+                preview.innerHTML = `
+                    <div class="relative w-[72px] h-[72px] rounded-lg overflow-hidden border border-slate-200">
+                        <img src="${e.target.result}" alt="Preview" class="w-full h-full object-cover">
+                        <button type="button"
+                            class="absolute top-0.5 right-0.5 w-[18px] h-[18px] rounded-full bg-red-500/90 text-white border-none cursor-pointer flex items-center justify-center text-[11px] leading-none"
+                            onclick="removeFile('${input.id}','${preview.id}')">×</button>
+                    </div>`;
+            };
+            reader.readAsDataURL(file);
         }
 
         function removeFile(inputId, previewId) {
@@ -1436,157 +1176,102 @@
             document.getElementById(previewId).innerHTML = '';
         }
 
-        // Setup file uploads
         setupFileUpload('admin_foto', 'adminFotoBox', 'adminFotoPreview');
         setupFileUpload('logo', 'logoBox', 'logoPreview');
 
-        // Location cascading dropdowns
-        const provinsiSelect = document.getElementById('provinsi_kode');
-        const kotaSelect = document.getElementById('kota_kode');
-        const kecamatanSelect = document.getElementById('kecamatan_kode');
-        const kelurahanSelect = document.getElementById('kelurahan_kode');
-        const kodePosInput = document.getElementById('kode_pos');
+        /* ─────────────────────────────────────────
+        LOCATION DROPDOWNS
+        ───────────────────────────────────────── */
+        const selProvinsi = document.getElementById('provinsi_kode');
+        const selKota = document.getElementById('kota_kode');
+        const selKecamatan = document.getElementById('kecamatan_kode');
+        const selKelurahan = document.getElementById('kelurahan_kode');
+        const inputKodePos = document.getElementById('kode_pos');
 
-        provinsiSelect.addEventListener('change', function() {
-            const provinceCode = this.value;
-            kotaSelect.disabled = !provinceCode;
-            kecamatanSelect.disabled = true;
-            kelurahanSelect.disabled = true;
-
-            kotaSelect.innerHTML = '<option value="">Pilih Kota/Kabupaten</option>';
-            kecamatanSelect.innerHTML = '<option value="">Pilih Kecamatan</option>';
-            kelurahanSelect.innerHTML = '<option value="">Pilih Kelurahan</option>';
-            kodePosInput.value = '';
-
-            if (provinceCode) {
-                fetch(`{{ route('get-cities') }}?province_code=${provinceCode}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.cities.forEach(city => {
-                            const option = new Option(city.name, city.code);
-                            kotaSelect.add(option);
-                        });
-                    });
-            }
+        selProvinsi.addEventListener('change', function() {
+            resetSelects([selKota, selKecamatan, selKelurahan]);
+            inputKodePos.value = '';
+            if (!this.value) return;
+            fetchOptions(`{{ route('get-cities') }}?province_code=${this.value}`, selKota, 'cities',
+                'Pilih kota/kabupaten');
         });
 
-        kotaSelect.addEventListener('change', function() {
-            const cityCode = this.value;
-            kecamatanSelect.disabled = !cityCode;
-            kelurahanSelect.disabled = true;
-
-            kecamatanSelect.innerHTML = '<option value="">Pilih Kecamatan</option>';
-            kelurahanSelect.innerHTML = '<option value="">Pilih Kelurahan</option>';
-            kodePosInput.value = '';
-
-            if (cityCode) {
-                fetch(`{{ route('get-districts') }}?city_code=${cityCode}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.districts.forEach(district => {
-                            const option = new Option(district.name, district.code);
-                            kecamatanSelect.add(option);
-                        });
-                    });
-            }
+        selKota.addEventListener('change', function() {
+            resetSelects([selKecamatan, selKelurahan]);
+            inputKodePos.value = '';
+            if (!this.value) return;
+            fetchOptions(`{{ route('get-districts') }}?city_code=${this.value}`, selKecamatan, 'districts',
+                'Pilih kecamatan');
         });
 
-        kecamatanSelect.addEventListener('change', function() {
-            const districtCode = this.value;
-            kelurahanSelect.disabled = !districtCode;
-
-            kelurahanSelect.innerHTML = '<option value="">Pilih Kelurahan</option>';
-            kodePosInput.value = '';
-
-            if (districtCode) {
-                fetch(`{{ route('get-villages') }}?district_code=${districtCode}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.villages.forEach(village => {
-                            const option = new Option(village.name, village.code);
-                            kelurahanSelect.add(option);
-                        });
-                    });
-            }
+        selKecamatan.addEventListener('change', function() {
+            resetSelects([selKelurahan]);
+            inputKodePos.value = '';
+            if (!this.value) return;
+            fetchOptions(`{{ route('get-villages') }}?district_code=${this.value}`, selKelurahan, 'villages',
+                'Pilih kelurahan/desa');
         });
 
-        kelurahanSelect.addEventListener('change', function() {
-            const villageCode = this.value;
-
-            if (villageCode) {
-                fetch(`{{ route('get-postal-code') }}?village_code=${villageCode}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.postal_code) {
-                            kodePosInput.value = data.postal_code;
-                        }
-                    });
-            }
+        selKelurahan.addEventListener('change', function() {
+            if (!this.value) return;
+            fetch(`{{ route('get-postal-code') }}?village_code=${this.value}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.postal_code) inputKodePos.value = data.postal_code;
+                });
         });
 
-        // Form submission with reCAPTCHA
+        function resetSelects(selects) {
+            const labels = ['Pilih kota/kabupaten', 'Pilih kecamatan', 'Pilih kelurahan/desa'];
+            selects.forEach((sel, i) => {
+                sel.innerHTML = `<option value="">${labels[i] ?? 'Pilih...'}</option>`;
+                sel.disabled = true;
+            });
+        }
+
+        function fetchOptions(url, select, key, placeholder) {
+            fetch(url).then(r => r.json()).then(data => {
+                select.disabled = false;
+                data[key].forEach(item => select.add(new Option(item.name, item.code)));
+            });
+        }
+
+        /* ─────────────────────────────────────────
+        FORM SUBMIT + reCAPTCHA
+        ───────────────────────────────────────── */
         document.getElementById('completeProfileForm').addEventListener('submit', function(e) {
-            @if ($recaptchaSiteKey)
+            @if (!empty($recaptchaSiteKey))
                 e.preventDefault();
-
-                const submitBtn = document.getElementById('submitBtn');
-                const originalContent = submitBtn.innerHTML;
-
-                // Validate all steps
-                let allValid = true;
-                for (let i = 1; i <= totalSteps; i++) {
-                    if (!validateStep(i)) {
-                        allValid = false;
-                        // Jump to first invalid step
-                        currentStep = i;
-                        document.querySelectorAll('.form-step').forEach(step => step.classList.remove('active'));
-                        document.querySelector(`.form-step[data-step="${i}"]`).classList.add('active');
-                        updateProgressLine();
-                        updateButtons();
-                        break;
-                    }
-                }
-
-                if (!allValid) {
-                    alert('Mohon lengkapi semua field yang wajib diisi');
-                    return;
-                }
-
-                // Disable button and show loading
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = `
-            <div class="spinner"></div>
-            <span>Memproses...</span>
-        `;
-
-                grecaptcha.ready(function() {
+                const btn = document.getElementById('submitBtn');
+                const orig = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = `<div class="spinner"></div><span>Memproses...</span>`;
+                grecaptcha.ready(() => {
                     grecaptcha.execute(RECAPTCHA_SITE_KEY, {
                             action: 'complete_profile'
                         })
-                        .then(function(token) {
+                        .then(token => {
                             document.getElementById('recaptcha_token').value = token;
                             document.getElementById('completeProfileForm').submit();
                         })
-                        .catch(function(error) {
-                            console.error('reCAPTCHA error:', error);
-                            submitBtn.disabled = false;
-                            submitBtn.innerHTML = originalContent;
-                            alert('Terjadi kesalahan pada verifikasi reCAPTCHA. Silakan coba lagi.');
+                        .catch(() => {
+                            btn.disabled = false;
+                            btn.innerHTML = orig;
+                            alert('Verifikasi reCAPTCHA gagal. Silakan coba lagi.');
                         });
                 });
             @endif
         });
 
-        // Auto-hide alerts
+        /* ─────────────────────────────────────────
+        AUTO-DISMISS ALERTS
+        ───────────────────────────────────────── */
         document.addEventListener('DOMContentLoaded', function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                setTimeout(function() {
-                    alert.style.opacity = '0';
-                    alert.style.transition = 'opacity 0.5s ease';
-                    setTimeout(function() {
-                        alert.remove();
-                    }, 500);
+            document.querySelectorAll('.alert').forEach(el => {
+                setTimeout(() => {
+                    el.style.transition = 'opacity 0.5s ease';
+                    el.style.opacity = '0';
+                    setTimeout(() => el.remove(), 500);
                 }, 5000);
             });
         });

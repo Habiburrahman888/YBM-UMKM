@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\Users;
@@ -27,10 +28,14 @@ use Laravolt\Indonesia\Models\Village;
 
 class AuthController extends Controller
 {
-    const OTP_EXPIRY_MINUTES = 15;
-    const RESEND_COOLDOWN_SECONDS = 900;
+    const OTP_EXPIRY_MINUTES            = 15;
+    const RESEND_COOLDOWN_SECONDS       = 900;
     const PASSWORD_RESET_EXPIRY_MINUTES = 15;
-    const MAX_LOGO_UNIT = 1;
+    const MAX_LOGO_UNIT                 = 1;
+
+    // =========================================================
+    // PRIVATE HELPERS
+    // =========================================================
 
     private function getExpoSettings(): array
     {
@@ -57,13 +62,25 @@ class AuthController extends Controller
         ];
     }
 
-    private function loadMailConfig()
+    private function loadMailConfig(): bool
     {
         try {
             $mailConfig = MailConfig::first();
 
             if (!$mailConfig) {
+                Log::warning('MailConfig: No mail configuration found in database.');
                 return false;
+            }
+
+            // Validate required fields
+            if (empty($mailConfig->MAIL_HOST) || empty($mailConfig->MAIL_USERNAME) || empty($mailConfig->MAIL_PASSWORD)) {
+                Log::warning('MailConfig: Missing required fields (HOST, USERNAME, or PASSWORD).');
+                return false;
+            }
+
+            // Warn if using test/sandbox mail host
+            if (str_contains(strtolower($mailConfig->MAIL_HOST), 'mailtrap') || str_contains(strtolower($mailConfig->MAIL_HOST), 'sandbox')) {
+                Log::warning('MailConfig: MAIL_HOST is set to a test/sandbox server (' . $mailConfig->MAIL_HOST . '). Emails will NOT be delivered to real inboxes. Please update to smtp.gmail.com or your production SMTP server.');
             }
 
             config([
@@ -74,31 +91,43 @@ class AuthController extends Controller
                 'mail.mailers.smtp.password'   => $mailConfig->MAIL_PASSWORD,
                 'mail.from.address'            => $mailConfig->MAIL_FROM_ADDRESS ?? $mailConfig->MAIL_USERNAME,
                 'mail.from.name'               => $mailConfig->MAIL_FROM_NAME ?? 'YBM UMKM',
+                'mail.mailers.smtp.timeout'    => 30, // Increased timeout
             ]);
 
-            \Illuminate\Support\Facades\Mail::purge('smtp');
+            // For local development on Windows/Laragon, we sometimes need to bypass SSL verification 
+            // if CA certificates are not properly configured in php.ini
+            if (app()->environment('local')) {
+                config([
+                    'mail.mailers.smtp.stream' => [
+                        'ssl' => [
+                            'allow_self_signed' => true,
+                            'verify_peer'       => false,
+                            'verify_peer_name'  => false,
+                        ],
+                    ],
+                ]);
+            }
+
+            Mail::purge('smtp');
 
             return true;
         } catch (\Exception $e) {
+            Log::error('MailConfig: Failed to load mail configuration - ' . $e->getMessage());
             return false;
         }
     }
 
-    private function maskEmail($email)
+    private function maskEmail(string $email): string
     {
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return $email;
         }
 
-        $parts    = explode('@', $email);
-        $username = $parts[0];
-        $domain   = $parts[1];
+        [$username, $domain] = explode('@', $email);
 
-        if (strlen($username) > 1) {
-            $maskedUsername = $username[0] . str_repeat('*', strlen($username) - 1);
-        } else {
-            $maskedUsername = $username;
-        }
+        $maskedUsername = strlen($username) > 1
+            ? $username[0] . str_repeat('*', strlen($username) - 1)
+            : $username;
 
         return $maskedUsername . '@' . $domain;
     }
@@ -116,6 +145,7 @@ class AuthController extends Controller
             }
         }
 
+        // Jika tidak ada secret key, lewati verifikasi
         if (!$secretKey) {
             return true;
         }
@@ -137,8 +167,7 @@ class AuthController extends Controller
                 return false;
             }
 
-            $score = $result['score'] ?? 0;
-            if ($score < 0.5) {
+            if (($result['score'] ?? 0) < 0.5) {
                 return false;
             }
 
@@ -148,32 +177,88 @@ class AuthController extends Controller
         }
     }
 
+    private function getRecaptchaSiteKey(): ?string
+    {
+        try {
+            $recaptchaConfig = RecaptchaConfig::first();
+            return $recaptchaConfig?->RECAPTCHA_SITE_KEY ?? config('services.recaptcha.site_key');
+        } catch (\Exception $e) {
+            return config('services.recaptcha.site_key');
+        }
+    }
+
+    private function cleanupRegistrationCache(string $email, string $token): void
+    {
+        $keys = [
+            'complete_profile_' . $email,
+            'google_complete_'  . $email,
+            'otp_registration_' . $email,
+            'otp_cooldown_'     . $email,
+            'token_map_'        . $token,
+        ];
+
+        foreach ($keys as $key) {
+            Cache::forget($key);
+        }
+    }
+
+    private function generateUniqueUsername(string $email, ?int $excludeUserId = null): string
+    {
+        $base    = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '', explode('@', $email)[0]));
+        $username = $base;
+        $counter  = 1;
+
+        while (
+            Users::where('username', $username)
+                ->when($excludeUserId, fn($q) => $q->where('id', '!=', $excludeUserId))
+                ->exists()
+        ) {
+            $username = $base . $counter++;
+        }
+
+        return $username;
+    }
+
+    private function generateKodeUnit(): string
+    {
+        $prefix = 'UNIT';
+        $year   = date('Y');
+
+        return DB::transaction(function () use ($prefix, $year) {
+            $lastUnit = Unit::whereYear('created_at', $year)
+                ->lockForUpdate()
+                ->orderBy('id', 'desc')
+                ->first();
+
+            $number   = $lastUnit ? (int) substr($lastUnit->kode_unit, -4) + 1 : 1;
+            $kodeUnit = $prefix . $year . str_pad($number, 4, '0', STR_PAD_LEFT);
+
+            $attempts = 0;
+            while (Unit::where('kode_unit', $kodeUnit)->exists() && $attempts < 10) {
+                $kodeUnit = $prefix . $year . str_pad(++$number, 4, '0', STR_PAD_LEFT);
+                $attempts++;
+            }
+
+            if ($attempts >= 10) {
+                throw new \Exception('Failed to generate unique kode unit after 10 attempts');
+            }
+
+            return $kodeUnit;
+        });
+    }
+
     // =========================================================
     // LOGIN
     // =========================================================
 
     public function showLogin()
     {
-        $recaptchaSiteKey = null;
-
-        try {
-            $recaptchaConfig  = RecaptchaConfig::first();
-            $recaptchaSiteKey = $recaptchaConfig?->RECAPTCHA_SITE_KEY ?? null;
-        } catch (\Exception $e) {
-            // silent
-        }
-
-        if (!$recaptchaSiteKey) {
-            $recaptchaSiteKey = config('services.recaptcha.site_key');
-        }
-
-        return view('auth.login', compact('recaptchaSiteKey'));
+        return view('auth.login', ['recaptchaSiteKey' => $this->getRecaptchaSiteKey()]);
     }
 
     public function login(Request $request)
     {
-        $recaptchaConfig  = RecaptchaConfig::first();
-        $recaptchaSiteKey = $recaptchaConfig?->RECAPTCHA_SITE_KEY ?? null;
+        $recaptchaSiteKey = $this->getRecaptchaSiteKey();
 
         $validator = Validator::make($request->all(), [
             'login'           => 'required|string',
@@ -187,65 +272,47 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
-                ->withInput($request->only('login', 'remember'))
-                ->with('recaptchaSiteKey', $recaptchaSiteKey);
+                ->withInput($request->only('login', 'remember'));
         }
 
         if (!$this->verifyRecaptcha($request->recaptcha_token, 'login')) {
             return redirect()->back()
                 ->withInput($request->only('login', 'remember'))
-                ->with('recaptchaSiteKey', $recaptchaSiteKey)
                 ->withErrors(['login' => 'Verifikasi reCAPTCHA gagal. Silakan coba lagi.']);
         }
 
         $loginType   = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-        $credentials = [
-            $loginType => $request->login,
-            'password' => $request->password,
-        ];
+        $credentials = [$loginType => $request->login, 'password' => $request->password];
 
         $user = Users::where($loginType, $request->login)->first();
 
         if (!$user) {
             return redirect()->back()
                 ->withInput($request->only('login', 'remember'))
-                ->with('recaptchaSiteKey', $recaptchaSiteKey)
                 ->withErrors(['login' => 'Akun tidak terdaftar dalam sistem.']);
         }
 
         if (!$user->email_verified_at) {
             return redirect()->route('verify-otp')
                 ->with('email', $user->email)
-                ->with('recaptchaSiteKey', $recaptchaSiteKey)
                 ->with('warning', 'Email Anda belum diverifikasi. Silakan cek email Anda untuk kode OTP.');
         }
 
         if (!$user->is_active) {
             return redirect()->back()
                 ->withInput($request->only('login', 'remember'))
-                ->with('recaptchaSiteKey', $recaptchaSiteKey)
                 ->withErrors(['login' => 'Akun Anda tidak aktif. Silakan hubungi administrator.']);
         }
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
-
             return redirect()->intended(route('dashboard'))
                 ->with('success', 'Selamat datang, ' . ($user->username ?? $this->maskEmail($user->email)) . '!');
         }
 
-        if (!Hash::check($request->password, $user->password)) {
-            return redirect()->back()
-                ->withInput($request->only('login', 'remember'))
-                ->with('recaptchaSiteKey', $recaptchaSiteKey)
-                ->withErrors(['password' => 'Password yang Anda masukkan salah.']);
-        }
-
-        Auth::login($user, $request->filled('remember'));
-        $request->session()->regenerate();
-
-        return redirect()->intended(route('dashboard'))
-            ->with('success', 'Selamat datang, ' . ($user->username ?? $this->maskEmail($user->email)) . '!');
+        return redirect()->back()
+            ->withInput($request->only('login', 'remember'))
+            ->withErrors(['password' => 'Password yang Anda masukkan salah.']);
     }
 
     // =========================================================
@@ -254,10 +321,7 @@ class AuthController extends Controller
 
     public function showRegister()
     {
-        $recaptchaConfig  = RecaptchaConfig::first();
-        $recaptchaSiteKey = $recaptchaConfig?->RECAPTCHA_SITE_KEY ?? null;
-
-        return view('auth.register', compact('recaptchaSiteKey'));
+        return view('auth.register', ['recaptchaSiteKey' => $this->getRecaptchaSiteKey()]);
     }
 
     public function register(Request $request)
@@ -274,9 +338,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
         if (!$this->verifyRecaptcha($request->recaptcha_token, 'register')) {
@@ -289,18 +351,18 @@ class AuthController extends Controller
             $otp       = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
             $expiresAt = Carbon::now()->addMinutes(self::OTP_EXPIRY_MINUTES);
 
-            $cacheKey = 'otp_registration_' . $normalizedEmail;
-            $otpData  = [
+            Cache::put('otp_registration_' . $normalizedEmail, [
                 'email'      => $normalizedEmail,
                 'otp'        => $otp,
                 'expires_at' => $expiresAt->toDateTimeString(),
                 'created_at' => now()->toDateTimeString(),
-            ];
+            ], self::OTP_EXPIRY_MINUTES * 60);
 
-            Cache::put($cacheKey, $otpData, self::OTP_EXPIRY_MINUTES * 60);
-
-            $cooldownKey = 'otp_cooldown_' . $normalizedEmail;
-            Cache::put($cooldownKey, Carbon::now()->addSeconds(self::RESEND_COOLDOWN_SECONDS), self::RESEND_COOLDOWN_SECONDS);
+            Cache::put(
+                'otp_cooldown_' . $normalizedEmail,
+                Carbon::now()->addSeconds(self::RESEND_COOLDOWN_SECONDS),
+                self::RESEND_COOLDOWN_SECONDS
+            );
 
             $request->session()->put('otp_email', $normalizedEmail);
             $request->session()->put('email', $normalizedEmail);
@@ -321,20 +383,23 @@ class AuthController extends Controller
 
             try {
                 $expo = $this->getExpoSettings();
-
                 Mail::send('emails.otp-verification', array_merge($expo, [
                     'otp'              => $otp,
                     'email'            => $normalizedEmail,
                     'expiresInMinutes' => self::OTP_EXPIRY_MINUTES,
                 ]), function ($message) use ($normalizedEmail, $expo) {
-                    $message->to($normalizedEmail)
-                        ->subject('Kode OTP Verifikasi - ' . $expo['nama_expo']);
+                    $message->to($normalizedEmail)->subject('Kode OTP Verifikasi - ' . $expo['nama_expo']);
                 });
 
                 return redirect()->route('verify-otp', ['email' => $normalizedEmail])
                     ->with('email', $normalizedEmail)
                     ->with('success', 'Kode OTP telah dikirim ke email Anda.');
-            } catch (\Exception $mailException) {
+            } catch (\Exception $e) {
+                Log::error('Registration Email Error: ' . $e->getMessage(), [
+                    'email' => $normalizedEmail,
+                    'trace' => $e->getTraceAsString()
+                ]);
+
                 if (app()->environment('local')) {
                     return redirect()->route('verify-otp', ['email' => $normalizedEmail])
                         ->with('email', $normalizedEmail)
@@ -346,9 +411,7 @@ class AuthController extends Controller
                     ->with('error', 'Gagal mengirim email. Gunakan tombol "Kirim Ulang OTP".');
             }
         } catch (\Exception $e) {
-            return back()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
-                ->withInput();
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
         }
     }
 
@@ -363,55 +426,37 @@ class AuthController extends Controller
             ?? $request->session()->get('email');
 
         if (!$email) {
-            return redirect()->route('register')
-                ->with('error', 'Sesi telah berakhir. Silakan daftar ulang.');
+            return redirect()->route('register')->with('error', 'Sesi telah berakhir. Silakan daftar ulang.');
         }
 
         $normalizedEmail = strtolower(trim($email));
-
-        $cacheKey = 'otp_registration_' . $normalizedEmail;
-        $otpData  = Cache::get($cacheKey);
+        $cacheKey        = 'otp_registration_' . $normalizedEmail;
+        $otpData         = Cache::get($cacheKey);
 
         if (!$otpData) {
-            return redirect()->route('register')
-                ->with('error', 'OTP telah kedaluwarsa. Silakan daftar ulang.');
+            return redirect()->route('register')->with('error', 'OTP telah kedaluwarsa. Silakan daftar ulang.');
         }
 
         try {
-            $expiresAt = $otpData['expires_at'];
-            if (is_string($expiresAt)) {
-                $expiresAt = Carbon::parse($expiresAt);
-            } elseif (!($expiresAt instanceof Carbon)) {
-                $expiresAt = Carbon::parse($expiresAt);
-            }
+            $expiresAt = Carbon::parse($otpData['expires_at']);
 
             if (Carbon::now()->isAfter($expiresAt)) {
                 Cache::forget($cacheKey);
-                return redirect()->route('register')
-                    ->with('error', 'OTP telah kedaluwarsa. Silakan daftar ulang.');
+                return redirect()->route('register')->with('error', 'OTP telah kedaluwarsa. Silakan daftar ulang.');
             }
         } catch (\Exception $e) {
-            return redirect()->route('register')
-                ->with('error', 'Terjadi kesalahan. Silakan daftar ulang.');
+            return redirect()->route('register')->with('error', 'Terjadi kesalahan. Silakan daftar ulang.');
         }
-
-        $cooldownKey = 'otp_cooldown_' . $normalizedEmail;
-        $canResendAt = Cache::get($cooldownKey);
 
         $request->session()->put('otp_email', $normalizedEmail);
         $request->session()->put('email', $normalizedEmail);
 
-        $maskedEmail = $this->maskEmail($email);
-
-        $recaptchaConfig  = RecaptchaConfig::first();
-        $recaptchaSiteKey = $recaptchaConfig?->RECAPTCHA_SITE_KEY ?? config('services.recaptcha.site_key');
-
         return view('auth.verify-otp', [
             'email'            => $email,
-            'maskedEmail'      => $maskedEmail,
+            'maskedEmail'      => $this->maskEmail($email),
             'expiresAt'        => $expiresAt->toIso8601String(),
-            'canResendAt'      => $canResendAt,
-            'recaptchaSiteKey' => $recaptchaSiteKey,
+            'canResendAt'      => Cache::get('otp_cooldown_' . $normalizedEmail),
+            'recaptchaSiteKey' => $this->getRecaptchaSiteKey(),
         ]);
     }
 
@@ -428,9 +473,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->with('email', $request->email);
+            return redirect()->back()->withErrors($validator)->with('email', $request->email);
         }
 
         if (!$this->verifyRecaptcha($request->recaptcha_token, 'verify_otp')) {
@@ -468,24 +511,22 @@ class AuthController extends Controller
                     'is_active'         => false,
                     'password'          => Hash::make(Str::random(32)),
                 ]);
-            } else {
-                if (!$user->email_verified_at) {
-                    $user->update(['email_verified_at' => now()]);
-                }
+            } elseif (!$user->email_verified_at) {
+                $user->update(['email_verified_at' => now()]);
             }
 
             Cache::forget($cacheKey);
             Cache::forget('otp_cooldown_' . $request->email);
 
             $profileToken = (string) Str::uuid();
-            $cacheData    = [
+
+            Cache::put('complete_profile_' . $request->email, [
                 'email'      => $request->email,
                 'user_id'    => $user->id,
                 'token'      => $profileToken,
                 'created_at' => now()->toDateTimeString(),
-            ];
+            ], 3600);
 
-            Cache::put('complete_profile_' . $request->email, $cacheData, 3600);
             Cache::put('token_map_' . $profileToken, $request->email, 3600);
 
             DB::commit();
@@ -494,7 +535,6 @@ class AuthController extends Controller
                 ->with('success', 'Email berhasil diverifikasi. Silakan lengkapi profil Anda.');
         } catch (\Exception $e) {
             DB::rollBack();
-
             return redirect()->back()
                 ->with('email', $request->email)
                 ->withErrors(['otp' => 'Terjadi kesalahan. Silakan coba lagi.']);
@@ -519,18 +559,17 @@ class AuthController extends Controller
             $canResendAt = Cache::get($cooldownKey);
 
             if ($canResendAt && Carbon::now()->isBefore($canResendAt)) {
-                $remainingSeconds = Carbon::now()->diffInSeconds($canResendAt);
+                $remaining = Carbon::now()->diffInSeconds($canResendAt);
                 return response()->json([
                     'success' => false,
-                    'message' => "Tunggu {$remainingSeconds} detik sebelum mengirim ulang OTP.",
+                    'message' => "Tunggu {$remaining} detik sebelum mengirim ulang OTP.",
                 ], 400);
             }
 
             $otp       = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
             $expiresAt = Carbon::now()->addMinutes(self::OTP_EXPIRY_MINUTES);
 
-            $cacheKey = 'otp_registration_' . $email;
-            Cache::put($cacheKey, [
+            Cache::put('otp_registration_' . $email, [
                 'email'      => $email,
                 'otp'        => $otp,
                 'expires_at' => $expiresAt->toDateTimeString(),
@@ -539,18 +578,14 @@ class AuthController extends Controller
 
             Cache::put($cooldownKey, Carbon::now()->addSeconds(self::RESEND_COOLDOWN_SECONDS), self::RESEND_COOLDOWN_SECONDS);
 
-            $mailConfigLoaded = $this->loadMailConfig();
-
-            if ($mailConfigLoaded) {
+            if ($this->loadMailConfig()) {
                 $expo = $this->getExpoSettings();
-
                 Mail::send('emails.otp-verification', array_merge($expo, [
                     'otp'              => $otp,
                     'email'            => $email,
                     'expiresInMinutes' => self::OTP_EXPIRY_MINUTES,
                 ]), function ($message) use ($email, $expo) {
-                    $message->to($email)
-                        ->subject('Kode OTP Baru - ' . $expo['nama_expo']);
+                    $message->to($email)->subject('Kode OTP Baru - ' . $expo['nama_expo']);
                 });
             }
 
@@ -568,12 +603,23 @@ class AuthController extends Controller
     // FORGOT PASSWORD
     // =========================================================
 
-    public function showForgotPasswordForm()
+    public function showForgotPasswordForm(Request $request)
     {
-        $recaptchaConfig  = RecaptchaConfig::first();
-        $recaptchaSiteKey = $recaptchaConfig?->RECAPTCHA_SITE_KEY ?? null;
+        $prefillEmail    = $request->session()->get('prefill_email');
+        $cooldownSeconds = 0;
 
-        return view('auth.forgot-password', compact('recaptchaSiteKey'));
+        if ($prefillEmail) {
+            $canResendAt = Cache::get('password_reset_cooldown_' . $prefillEmail);
+            if ($canResendAt && Carbon::now()->isBefore($canResendAt)) {
+                $cooldownSeconds = (int) Carbon::now()->diffInSeconds($canResendAt);
+            }
+        }
+
+        return view('auth.forgot-password', [
+            'recaptchaSiteKey' => $this->getRecaptchaSiteKey(),
+            'prefillEmail'     => $prefillEmail,
+            'cooldownSeconds'  => $cooldownSeconds,
+        ]);
     }
 
     public function sendResetLink(Request $request)
@@ -590,9 +636,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
         if (!$this->verifyRecaptcha($request->recaptcha_token, 'forgot_password')) {
@@ -601,57 +645,47 @@ class AuthController extends Controller
                 ->withErrors(['email' => 'Verifikasi reCAPTCHA gagal. Silakan coba lagi.']);
         }
 
+        // Cek cooldown
+        $cooldownKey    = 'password_reset_cooldown_' . $email;
+        $cooldownExpiry = Cache::get($cooldownKey);
+
+        if ($cooldownExpiry && Carbon::now()->isBefore($cooldownExpiry)) {
+            $request->session()->put('prefill_email', $email);
+            return redirect()->route('password.request');
+        }
+
+        $user = Users::where('email', $email)->first();
+
+        if (!$user) {
+            return redirect()->back()->with('error', 'Email tidak terdaftar.')->withInput();
+        }
+
+        // Buat / ambil token reset
+        $cacheKey     = 'password_reset_' . $user->uuid;
+        $existingData = Cache::get($cacheKey);
+
+        $token = ($existingData && Carbon::now()->lt(Carbon::parse($existingData['expires_at'])))
+            ? $existingData['token']
+            : Str::random(64);
+
+        $expiresAt = Carbon::now()->addMinutes(self::PASSWORD_RESET_EXPIRY_MINUTES);
+
+        Cache::put($cacheKey, [
+            'email'      => $email,
+            'token'      => $token,
+            'user_id'    => $user->id,
+            'expires_at' => $expiresAt->toDateTimeString(),
+            'created_at' => now()->toDateTimeString(),
+        ], self::PASSWORD_RESET_EXPIRY_MINUTES * 60);
+
+        Cache::put($cooldownKey, Carbon::now()->addSeconds(60), 60);
+
+        // Kirim email — gagal tidak menghentikan alur
+        $mailSent = false;
         try {
-            $email = $request->email;
-            $user  = Users::where('email', $email)->first();
-
-            if (!$user) {
-                return redirect()->back()
-                    ->with('error', 'Email tidak terdaftar.')
-                    ->withInput();
-            }
-
-            $cooldownKey    = 'password_reset_cooldown_' . $email;
-            $cooldownExpiry = Cache::get($cooldownKey);
-
-            if ($cooldownExpiry && Carbon::now()->isBefore($cooldownExpiry)) {
-                $remainingSeconds = Carbon::now()->diffInSeconds($cooldownExpiry);
-                return redirect()->back()
-                    ->with('error', "Mohon tunggu {$remainingSeconds} detik sebelum meminta link reset password lagi")
-                    ->withInput();
-            }
-
-            $cacheKey     = 'password_reset_' . $user->uuid;
-            $existingData = Cache::get($cacheKey);
-
-            if ($existingData) {
-                $expiresAt = Carbon::parse($existingData['expires_at']);
-                $token     = Carbon::now()->lt($expiresAt) ? $existingData['token'] : Str::random(64);
-            } else {
-                $token = Str::random(64);
-            }
-
-            $expiresAt = Carbon::now()->addMinutes(self::PASSWORD_RESET_EXPIRY_MINUTES);
-
-            Cache::put($cacheKey, [
-                'email'      => $email,
-                'token'      => $token,
-                'user_id'    => $user->id,
-                'expires_at' => $expiresAt->toDateTimeString(),
-                'created_at' => now()->toDateTimeString(),
-            ], self::PASSWORD_RESET_EXPIRY_MINUTES * 60);
-
-            Cache::put($cooldownKey, Carbon::now()->addSeconds(60), 60);
-
-            $mailConfigLoaded = $this->loadMailConfig();
-
-            if ($mailConfigLoaded) {
-                $resetUrl = route('password.reset', [
-                    'uuid'  => $user->uuid,
-                    'token' => $token,
-                ]);
-
-                $expo = $this->getExpoSettings();
+            if ($this->loadMailConfig()) {
+                $expo     = $this->getExpoSettings();
+                $resetUrl = route('password.reset', ['uuid' => $user->uuid, 'token' => $token]);
 
                 Mail::send('emails.password-reset', array_merge($expo, [
                     'token'            => $token,
@@ -660,22 +694,26 @@ class AuthController extends Controller
                     'expiresInMinutes' => self::PASSWORD_RESET_EXPIRY_MINUTES,
                     'resetUrl'         => $resetUrl,
                 ]), function ($message) use ($email, $expo) {
-                    $message->to($email)
-                        ->subject('Reset Password - ' . $expo['nama_expo']);
+                    $message->to($email)->subject('Reset Password - ' . $expo['nama_expo']);
                 });
+
+                $mailSent = true;
             }
-
-            $request->session()->put('email', $email);
-            $request->session()->flash('email', $email);
-
-            return redirect()->route('password.reset-sent')
-                ->with('email', $email)
-                ->with('success', 'Link reset password telah dikirim ke email Anda.');
         } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Terjadi kesalahan. Silakan coba lagi.')
-                ->withInput();
+            \Log::warning('Password reset email failed: ' . $e->getMessage(), ['email' => $email]);
         }
+
+        $request->session()->forget('prefill_email');
+        $request->session()->put('email', $email);
+        $request->session()->flash('email', $email);
+
+        $message = $mailSent
+            ? 'Link reset password telah dikirim ke email Anda.'
+            : 'Link reset password telah dibuat. Jika email tidak diterima dalam beberapa menit, gunakan tombol "Kirim Ulang".';
+
+        return redirect()->route('password.reset-sent')
+            ->with('email', $email)
+            ->with('success', $message);
     }
 
     public function showResetSent(Request $request)
@@ -690,49 +728,37 @@ class AuthController extends Controller
         $user = Users::where('email', $email)->first();
 
         if (!$user) {
-            return redirect()->route('password.request')
-                ->with('error', 'Pengguna tidak ditemukan.');
+            return redirect()->route('password.request')->with('error', 'Pengguna tidak ditemukan.');
         }
 
-        $cacheKey  = 'password_reset_' . $user->uuid;
-        $resetData = Cache::get($cacheKey);
+        $resetData = Cache::get('password_reset_' . $user->uuid);
 
         if (!$resetData) {
             return redirect()->route('password.request')
                 ->with('error', 'Link reset password telah kadaluarsa. Silakan minta ulang.');
         }
 
-        $expiresAt = Carbon::parse($resetData['expires_at']);
+        $expiresAt   = Carbon::parse($resetData['expires_at']);
+        $canResendAt = Cache::get('password_reset_cooldown_' . $email);
+        $canResendIn = $canResendAt ? max(0, Carbon::now()->diffInSeconds($canResendAt, false)) : 0;
 
-        $cooldownKey = 'password_reset_cooldown_' . $email;
-        $canResendAt = Cache::get($cooldownKey);
-
-        $canResendIn = 0;
-        if ($canResendAt) {
-            $canResendIn = max(0, Carbon::now()->diffInSeconds($canResendAt, false));
+        $countdownSeconds = max(0, Carbon::now()->diffInSeconds($expiresAt));
+        if ($countdownSeconds > (self::PASSWORD_RESET_EXPIRY_MINUTES * 60)) {
+            $countdownSeconds = self::PASSWORD_RESET_EXPIRY_MINUTES * 60;
         }
 
         $request->session()->put('email', $email);
         $request->session()->flash('email', $email);
 
-        $maskedEmail      = $this->maskEmail($email);
-        $countdownSeconds = max(0, Carbon::now()->diffInSeconds($expiresAt));
-        if ($countdownSeconds > 480) {
-            $countdownSeconds = 480;
-        }
-
-        $recaptchaConfig  = RecaptchaConfig::first();
-        $recaptchaSiteKey = $recaptchaConfig?->RECAPTCHA_SITE_KEY ?? null;
-
         return view('auth.reset-password-sent', [
             'email'            => $email,
-            'maskedEmail'      => $maskedEmail,
+            'maskedEmail'      => $this->maskEmail($email),
             'expiresAt'        => $expiresAt,
             'canResendAt'      => $canResendAt,
             'canResendIn'      => $canResendIn,
             'countdownSeconds' => $countdownSeconds,
             'user'             => $user,
-            'recaptchaSiteKey' => $recaptchaSiteKey,
+            'recaptchaSiteKey' => $this->getRecaptchaSiteKey(),
         ]);
     }
 
@@ -747,29 +773,20 @@ class AuthController extends Controller
         }
 
         if (!hash_equals($resetData['token'], $token)) {
-            return redirect()->route('password.request')
-                ->with('error', 'Token reset password tidak valid.');
+            return redirect()->route('password.request')->with('error', 'Token reset password tidak valid.');
         }
 
-        $expiresAt = Carbon::parse($resetData['expires_at']);
-        if (Carbon::now()->gt($expiresAt)) {
-            return redirect()->route('password.request')
-                ->with('error', 'Link reset password telah kadaluarsa.');
+        if (Carbon::now()->gt(Carbon::parse($resetData['expires_at']))) {
+            return redirect()->route('password.request')->with('error', 'Link reset password telah kadaluarsa.');
         }
 
-        $email       = $resetData['email'];
-        $maskedEmail = $this->maskEmail($email);
-
-        $recaptchaConfig  = RecaptchaConfig::first();
-        $recaptchaSiteKey = $recaptchaConfig?->RECAPTCHA_SITE_KEY ?? null;
-
-        return view('auth.reset-password', compact(
-            'email',
-            'maskedEmail',
-            'token',
-            'uuid',
-            'recaptchaSiteKey'
-        ));
+        return view('auth.reset-password', [
+            'email'            => $resetData['email'],
+            'maskedEmail'      => $this->maskEmail($resetData['email']),
+            'token'            => $token,
+            'uuid'             => $uuid,
+            'recaptchaSiteKey' => $this->getRecaptchaSiteKey(),
+        ]);
     }
 
     public function resendResetLink(Request $request)
@@ -790,10 +807,10 @@ class AuthController extends Controller
             $canResendAt = Cache::get($cooldownKey);
 
             if ($canResendAt && Carbon::now()->isBefore($canResendAt)) {
-                $remainingSeconds = Carbon::now()->diffInSeconds($canResendAt);
+                $remaining = Carbon::now()->diffInSeconds($canResendAt);
                 return response()->json([
                     'success' => false,
-                    'message' => "Tunggu {$remainingSeconds} detik sebelum mengirim ulang link reset password.",
+                    'message' => "Tunggu {$remaining} detik sebelum mengirim ulang link reset password.",
                 ], 400);
             }
 
@@ -803,11 +820,10 @@ class AuthController extends Controller
                 return response()->json(['success' => false, 'message' => 'Pengguna tidak ditemukan.'], 404);
             }
 
-            $cacheKey  = 'password_reset_' . $user->uuid;
             $token     = Str::random(64);
             $expiresAt = Carbon::now()->addMinutes(self::PASSWORD_RESET_EXPIRY_MINUTES);
 
-            Cache::put($cacheKey, [
+            Cache::put('password_reset_' . $user->uuid, [
                 'email'      => $email,
                 'token'      => $token,
                 'user_id'    => $user->id,
@@ -817,17 +833,13 @@ class AuthController extends Controller
 
             Cache::put($cooldownKey, Carbon::now()->addSeconds(60), 60);
 
-            $mailConfigLoaded = $this->loadMailConfig();
+            // Kirim email — gagal tidak menghentikan alur (sama seperti sendResetLink)
+            $mailSent = false;
+            try {
+                if ($this->loadMailConfig()) {
+                    $expo     = $this->getExpoSettings();
+                    $resetUrl = route('password.reset', ['uuid' => $user->uuid, 'token' => $token]);
 
-            if ($mailConfigLoaded) {
-                $resetUrl = route('password.reset', [
-                    'uuid'  => $user->uuid,
-                    'token' => $token,
-                ]);
-
-                $expo = $this->getExpoSettings();
-
-                try {
                     Mail::send('emails.password-reset', array_merge($expo, [
                         'token'            => $token,
                         'email'            => $email,
@@ -835,22 +847,26 @@ class AuthController extends Controller
                         'expiresInMinutes' => self::PASSWORD_RESET_EXPIRY_MINUTES,
                         'resetUrl'         => $resetUrl,
                     ]), function ($message) use ($email, $expo) {
-                        $message->to($email)
-                            ->subject('Reset Password - ' . $expo['nama_expo']);
+                        $message->to($email)->subject('Reset Password - ' . $expo['nama_expo']);
                     });
-                } catch (\Exception $mailEx) {
-                    return response()->json(['success' => false, 'message' => 'Gagal mengirim email. Silakan coba lagi.'], 500);
+
+                    $mailSent = true;
                 }
-            } else {
-                return response()->json(['success' => false, 'message' => 'Konfigurasi email belum lengkap.'], 500);
+            } catch (\Exception $e) {
+                \Log::warning('Resend reset link email failed: ' . $e->getMessage(), ['email' => $email]);
             }
+
+            $message = $mailSent
+                ? 'Link reset password telah dikirim ulang ke email Anda.'
+                : 'Link reset password telah diperbarui. Jika email tidak diterima, coba kirim ulang lagi.';
 
             return response()->json([
                 'success'     => true,
-                'message'     => 'Link reset password telah dikirim ulang ke email Anda.',
+                'message'     => $message,
                 'canResendIn' => 60,
             ]);
         } catch (\Exception $e) {
+            \Log::error('resendResetLink error: ' . $e->getMessage(), ['email' => $email ?? null]);
             return response()->json(['success' => false, 'message' => 'Terjadi kesalahan. Silakan coba lagi.'], 500);
         }
     }
@@ -869,9 +885,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
         if (!$this->verifyRecaptcha($request->recaptcha_token, 'reset_password')) {
@@ -884,24 +898,19 @@ class AuthController extends Controller
         $resetData = Cache::get($cacheKey);
 
         if (!$resetData) {
-            return redirect()->route('password.request')
-                ->with('error', 'Link reset password telah kadaluarsa.');
+            return redirect()->route('password.request')->with('error', 'Link reset password telah kadaluarsa.');
         }
 
         if (!hash_equals($resetData['token'], $request->token)) {
-            return redirect()->route('password.request')
-                ->with('error', 'Token reset password tidak valid.');
+            return redirect()->route('password.request')->with('error', 'Token reset password tidak valid.');
         }
 
         if ($resetData['email'] !== $request->email) {
-            return redirect()->route('password.request')
-                ->with('error', 'Email tidak sesuai.');
+            return redirect()->route('password.request')->with('error', 'Email tidak sesuai.');
         }
 
-        $expiresAt = Carbon::parse($resetData['expires_at']);
-        if (Carbon::now()->gt($expiresAt)) {
-            return redirect()->route('password.request')
-                ->with('error', 'Link reset password telah kadaluarsa.');
+        if (Carbon::now()->gt(Carbon::parse($resetData['expires_at']))) {
+            return redirect()->route('password.request')->with('error', 'Link reset password telah kadaluarsa.');
         }
 
         DB::beginTransaction();
@@ -913,10 +922,7 @@ class AuthController extends Controller
                 throw new \Exception('Pengguna tidak ditemukan');
             }
 
-            $user->update([
-                'password'   => Hash::make($request->password),
-                'updated_at' => now(),
-            ]);
+            $user->update(['password' => Hash::make($request->password), 'updated_at' => now()]);
 
             Cache::forget($cacheKey);
             Cache::forget('password_reset_cooldown_' . $request->email);
@@ -930,10 +936,9 @@ class AuthController extends Controller
                     'email'   => $user->email,
                     'tanggal' => now()->format('d F Y H:i:s'),
                 ]), function ($message) use ($user, $expo) {
-                    $message->to($user->email)
-                        ->subject('Password Berhasil Diubah - ' . $expo['nama_expo']);
+                    $message->to($user->email)->subject('Password Berhasil Diubah - ' . $expo['nama_expo']);
                 });
-            } catch (\Exception $mailEx) {
+            } catch (\Exception $e) {
                 // silent fail
             }
 
@@ -956,28 +961,19 @@ class AuthController extends Controller
     public function showCompleteProfile($token)
     {
         if (!$token) {
-            return redirect()->route('register')
-                ->with('error', 'Token tidak valid. Silakan daftar ulang.');
+            return redirect()->route('register')->with('error', 'Token tidak valid. Silakan daftar ulang.');
         }
 
-        $tokenMapKey = 'token_map_' . $token;
-        $email       = Cache::get($tokenMapKey);
+        $email = Cache::get('token_map_' . $token);
 
         if (!$email) {
-            $inactiveUsers = Users::where('is_active', false)
-                ->whereNotNull('email_verified_at')
-                ->get();
+            // Fallback: cari dari user tidak aktif
+            $inactiveUsers = Users::where('is_active', false)->whereNotNull('email_verified_at')->get();
 
             foreach ($inactiveUsers as $user) {
-                $possibleKeys = [
-                    'complete_profile_' . $user->email,
-                    'google_complete_' . $user->email,
-                ];
-
-                foreach ($possibleKeys as $cacheKey) {
-                    $cacheData = Cache::get($cacheKey);
-
-                    if ($cacheData && isset($cacheData['token']) && $cacheData['token'] === $token) {
+                foreach (['complete_profile_' . $user->email, 'google_complete_' . $user->email] as $key) {
+                    $data = Cache::get($key);
+                    if ($data && isset($data['token']) && $data['token'] === $token) {
                         $email = $user->email;
                         break 2;
                     }
@@ -990,42 +986,27 @@ class AuthController extends Controller
             }
         }
 
-        $cacheKey  = 'complete_profile_' . $email;
-        $cacheData = Cache::get($cacheKey);
-
-        if (!$cacheData) {
-            $cacheKey  = 'google_complete_' . $email;
-            $cacheData = Cache::get($cacheKey);
-        }
+        $cacheData = Cache::get('complete_profile_' . $email) ?? Cache::get('google_complete_' . $email);
 
         if (!$cacheData || !isset($cacheData['user_id'])) {
-            return redirect()->route('register')
-                ->with('error', 'Sesi telah berakhir. Silakan daftar ulang.');
+            return redirect()->route('register')->with('error', 'Sesi telah berakhir. Silakan daftar ulang.');
         }
 
         $user = Users::find($cacheData['user_id']);
 
         if (!$user) {
-            return redirect()->route('register')
-                ->with('error', 'Pengguna tidak ditemukan. Silakan daftar ulang.');
+            return redirect()->route('register')->with('error', 'Pengguna tidak ditemukan. Silakan daftar ulang.');
         }
 
         try {
-            $provinces    = Province::orderBy('name', 'asc')->get();
-            $isGoogleUser = !empty($user->google_id);
-            $maskedEmail  = $this->maskEmail($user->email);
-
-            $recaptchaConfig  = RecaptchaConfig::first();
-            $recaptchaSiteKey = $recaptchaConfig?->RECAPTCHA_SITE_KEY ?? null;
-
-            return view('auth.complete-profile', compact(
-                'user',
-                'maskedEmail',
-                'isGoogleUser',
-                'provinces',
-                'token',
-                'recaptchaSiteKey'
-            ));
+            return view('auth.complete-profile', [
+                'user'             => $user,
+                'maskedEmail'      => $this->maskEmail($user->email),
+                'isGoogleUser'     => !empty($user->google_id),
+                'provinces'        => Province::orderBy('name', 'asc')->get(),
+                'token'            => $token,
+                'recaptchaSiteKey' => $this->getRecaptchaSiteKey(),
+            ]);
         } catch (\Exception $e) {
             return redirect()->route('register')
                 ->with('error', 'Terjadi kesalahan saat memuat data wilayah. Silakan coba lagi.');
@@ -1044,10 +1025,7 @@ class AuthController extends Controller
 
         $rules = [
             'username' => $isGoogleUser ? 'nullable' : [
-                'required',
-                'string',
-                'min:6',
-                'max:50',
+                'required', 'string', 'min:6', 'max:50',
                 'regex:/^[a-zA-Z0-9_]+$/',
                 'unique:users,username,' . $user->id,
             ],
@@ -1085,24 +1063,17 @@ class AuthController extends Controller
             $errors    = $validator->errors();
             $errorStep = 1;
 
-            if ($errors->has('username') || $errors->has('password') || $errors->has('password_confirmation')) {
-                $errorStep = 1;
-            } elseif ($errors->has('admin_nama') || $errors->has('admin_telepon') || $errors->has('admin_email') || $errors->has('admin_foto')) {
+            if ($errors->hasAny(['admin_nama', 'admin_telepon', 'admin_email', 'admin_foto'])) {
                 $errorStep = 2;
-            } elseif (
-                $errors->has('nama_unit') || $errors->has('deskripsi') || $errors->has('logo') ||
-                $errors->has('alamat') ||
-                $errors->has('provinsi_kode') || $errors->has('kota_kode') ||
-                $errors->has('kecamatan_kode') || $errors->has('kelurahan_kode') ||
-                $errors->has('kode_pos') || $errors->has('telepon') || $errors->has('email_unit')
-            ) {
+            } elseif ($errors->hasAny([
+                'nama_unit', 'deskripsi', 'logo', 'alamat',
+                'provinsi_kode', 'kota_kode', 'kecamatan_kode', 'kelurahan_kode',
+                'kode_pos', 'telepon', 'email_unit',
+            ])) {
                 $errorStep = 3;
             }
 
-            return back()
-                ->withErrors($validator)
-                ->withInput()
-                ->with('error_step', $errorStep);
+            return back()->withErrors($validator)->withInput()->with('error_step', $errorStep);
         }
 
         if (!$this->verifyRecaptcha($request->recaptcha_token, 'complete_profile')) {
@@ -1126,15 +1097,13 @@ class AuthController extends Controller
 
             $user->update($userData);
 
-            $adminFotoPath = null;
-            if ($request->hasFile('admin_foto')) {
-                $adminFotoPath = $request->file('admin_foto')->store('admin-fotos', 'public');
-            }
+            $adminFotoPath = $request->hasFile('admin_foto')
+                ? $request->file('admin_foto')->store('admin-fotos', 'public')
+                : null;
 
-            $logoPath = null;
-            if ($request->hasFile('logo')) {
-                $logoPath = $request->file('logo')->store('unit-logos', 'public');
-            }
+            $logoPath = $request->hasFile('logo')
+                ? $request->file('logo')->store('unit-logos', 'public')
+                : null;
 
             $provinsi  = Province::where('code', $request->provinsi_kode)->first();
             $kota      = City::where('code', $request->kota_kode)->first();
@@ -1149,11 +1118,7 @@ class AuthController extends Controller
                     ->withInput();
             }
 
-            $kodePos = $request->kode_pos;
-            if (!$kodePos && $kelurahan->meta && is_array($kelurahan->meta)) {
-                $kodePos = $kelurahan->meta['postal_code'] ?? null;
-            }
-
+            $kodePos  = $request->kode_pos ?? ($kelurahan->meta['postal_code'] ?? null);
             $kodeUnit = $this->generateKodeUnit();
 
             Unit::create([
@@ -1197,17 +1162,15 @@ class AuthController extends Controller
                     'isGoogleUser' => $isGoogleUser,
                     'password'     => $isGoogleUser ? null : $request->password,
                 ]), function ($message) use ($user, $expo) {
-                    $message->to($user->email)
-                        ->subject('Registrasi Berhasil - ' . $expo['nama_expo']);
+                    $message->to($user->email)->subject('Registrasi Berhasil - ' . $expo['nama_expo']);
                 });
-            } catch (\Exception $mailEx) {
+            } catch (\Exception $e) {
                 // silent fail
             }
 
             DB::commit();
 
-            return redirect()->route('login')
-                ->with('success', 'Registrasi berhasil! Silakan login dengan akun Anda.');
+            return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login dengan akun Anda.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()
@@ -1259,11 +1222,9 @@ class AuthController extends Controller
             $action     = session('oauth_action', 'login');
             session()->forget('oauth_action');
 
-            if ($action === 'register') {
-                return $this->handleGoogleRegister($googleUser);
-            }
-
-            return $this->handleGoogleLogin($googleUser, $request);
+            return $action === 'register'
+                ? $this->handleGoogleRegister($googleUser)
+                : $this->handleGoogleLogin($googleUser, $request);
         } catch (\Exception $e) {
             $redirectRoute = session('oauth_action', 'login') === 'register' ? 'register' : 'login';
             session()->forget('oauth_action');
@@ -1275,16 +1236,12 @@ class AuthController extends Controller
 
     private function handleGoogleRegister($googleUser)
     {
-        $existingGoogleUser = Users::where('google_id', $googleUser->id)->first();
-        if ($existingGoogleUser) {
-            return redirect()->route('register')
-                ->with('error', 'Akun Google sudah terdaftar. Silakan login.');
+        if (Users::where('google_id', $googleUser->id)->exists()) {
+            return redirect()->route('register')->with('error', 'Akun Google sudah terdaftar. Silakan login.');
         }
 
-        $existingEmail = Users::where('email', $googleUser->email)->first();
-        if ($existingEmail) {
-            return redirect()->route('register')
-                ->with('error', 'Email sudah terdaftar dengan metode lain. Silakan login.');
+        if (Users::where('email', $googleUser->email)->exists()) {
+            return redirect()->route('register')->with('error', 'Email sudah terdaftar dengan metode lain. Silakan login.');
         }
 
         DB::beginTransaction();
@@ -1302,8 +1259,7 @@ class AuthController extends Controller
             ]);
 
             $profileToken = (string) Str::uuid();
-
-            $cacheData = [
+            $cacheData    = [
                 'email'      => $googleUser->email,
                 'user_id'    => $user->id,
                 'token'      => $profileToken,
@@ -1328,26 +1284,20 @@ class AuthController extends Controller
 
     private function handleGoogleLogin($googleUser, Request $request)
     {
-        $user = Users::where('google_id', $googleUser->id)->first();
+        $user = Users::where('google_id', $googleUser->id)->first()
+            ?? Users::where('email', $googleUser->email)->first();
 
         if (!$user) {
-            $user = Users::where('email', $googleUser->email)->first();
-        }
-
-        if (!$user) {
-            return redirect()->route('login')
-                ->with('error', 'Akun tidak ditemukan. Silakan daftar terlebih dahulu.');
+            return redirect()->route('login')->with('error', 'Akun tidak ditemukan. Silakan daftar terlebih dahulu.');
         }
 
         if (!$user->email_verified_at) {
-            return redirect()->route('login')
-                ->with('error', 'Email belum diverifikasi. Silakan verifikasi email terlebih dahulu.');
+            return redirect()->route('login')->with('error', 'Email belum diverifikasi. Silakan verifikasi email terlebih dahulu.');
         }
 
         if (!$user->is_active) {
             $profileToken = (string) Str::uuid();
-
-            $cacheData = [
+            $cacheData    = [
                 'email'      => $user->email,
                 'user_id'    => $user->id,
                 'token'      => $profileToken,
@@ -1403,11 +1353,9 @@ class AuthController extends Controller
         if (!$username) {
             return response()->json(['available' => false, 'message' => 'Username tidak boleh kosong']);
         }
-
         if (strlen($username) < 6) {
             return response()->json(['available' => false, 'message' => 'Username minimal 6 karakter']);
         }
-
         if (!preg_match('/^[a-zA-Z0-9_]+$/', $username)) {
             return response()->json(['available' => false, 'message' => 'Username hanya boleh huruf, angka, dan underscore']);
         }
@@ -1430,7 +1378,6 @@ class AuthController extends Controller
         if (!$email) {
             return response()->json(['available' => false, 'message' => 'Email tidak boleh kosong']);
         }
-
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return response()->json(['available' => false, 'message' => 'Format email tidak valid']);
         }
@@ -1448,17 +1395,13 @@ class AuthController extends Controller
     public function getCities(Request $request)
     {
         try {
-            $provinceCode = $request->input('province_code');
-
-            if (!$provinceCode) {
+            if (!$request->input('province_code')) {
                 return response()->json(['error' => 'Province code required'], 400);
             }
-
-            $cities = City::where('province_code', $provinceCode)
-                ->orderBy('name', 'asc')
-                ->get(['code', 'name']);
-
-            return response()->json(['cities' => $cities]);
+            return response()->json([
+                'cities' => City::where('province_code', $request->input('province_code'))
+                    ->orderBy('name')->get(['code', 'name']),
+            ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to load cities'], 500);
         }
@@ -1467,17 +1410,13 @@ class AuthController extends Controller
     public function getDistricts(Request $request)
     {
         try {
-            $cityCode = $request->input('city_code');
-
-            if (!$cityCode) {
+            if (!$request->input('city_code')) {
                 return response()->json(['error' => 'City code required'], 400);
             }
-
-            $districts = District::where('city_code', $cityCode)
-                ->orderBy('name', 'asc')
-                ->get(['code', 'name']);
-
-            return response()->json(['districts' => $districts]);
+            return response()->json([
+                'districts' => District::where('city_code', $request->input('city_code'))
+                    ->orderBy('name')->get(['code', 'name']),
+            ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to load districts'], 500);
         }
@@ -1486,17 +1425,13 @@ class AuthController extends Controller
     public function getVillages(Request $request)
     {
         try {
-            $districtCode = $request->input('district_code');
-
-            if (!$districtCode) {
+            if (!$request->input('district_code')) {
                 return response()->json(['error' => 'District code required'], 400);
             }
-
-            $villages = Village::where('district_code', $districtCode)
-                ->orderBy('name', 'asc')
-                ->get(['code', 'name', 'meta']);
-
-            return response()->json(['villages' => $villages]);
+            return response()->json([
+                'villages' => Village::where('district_code', $request->input('district_code'))
+                    ->orderBy('name')->get(['code', 'name', 'meta']),
+            ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to load villages'], 500);
         }
@@ -1505,94 +1440,21 @@ class AuthController extends Controller
     public function getPostalCode(Request $request)
     {
         try {
-            $villageCode = $request->input('village_code');
-
-            if (!$villageCode) {
+            if (!$request->input('village_code')) {
                 return response()->json(['error' => 'Village code required'], 400);
             }
 
-            $village = Village::where('code', $villageCode)->first();
+            $village = Village::where('code', $request->input('village_code'))->first();
 
             if (!$village) {
                 return response()->json(['error' => 'Village not found'], 404);
             }
 
-            $postalCode = null;
-            if ($village->meta && is_array($village->meta)) {
-                $postalCode = $village->meta['postal_code'] ?? null;
-            }
-
-            return response()->json(['postal_code' => $postalCode]);
+            return response()->json([
+                'postal_code' => is_array($village->meta) ? ($village->meta['postal_code'] ?? null) : null,
+            ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to load postal code'], 500);
         }
-    }
-
-    // =========================================================
-    // PRIVATE HELPERS
-    // =========================================================
-
-    private function cleanupRegistrationCache(string $email, string $token)
-    {
-        $keysToForget = [
-            'complete_profile_' . $email,
-            'google_complete_' . $email,
-            'otp_registration_' . $email,
-            'otp_cooldown_' . $email,
-            'token_map_' . $token,
-        ];
-
-        foreach ($keysToForget as $key) {
-            Cache::forget($key);
-        }
-    }
-
-    private function generateUniqueUsername(string $email, ?int $excludeUserId = null): string
-    {
-        $emailParts   = explode('@', $email);
-        $baseUsername = preg_replace('/[^a-zA-Z0-9_]/', '', $emailParts[0]);
-        $baseUsername = strtolower($baseUsername);
-
-        $username = $baseUsername;
-        $counter  = 1;
-
-        while (Users::where('username', $username)
-            ->when($excludeUserId, fn($q) => $q->where('id', '!=', $excludeUserId))
-            ->exists()
-        ) {
-            $username = $baseUsername . $counter;
-            $counter++;
-        }
-
-        return $username;
-    }
-
-    private function generateKodeUnit(): string
-    {
-        $prefix = 'UNIT';
-        $year   = date('Y');
-
-        return DB::transaction(function () use ($prefix, $year) {
-            $lastUnit = Unit::whereYear('created_at', $year)
-                ->lockForUpdate()
-                ->orderBy('id', 'desc')
-                ->first();
-
-            $number   = $lastUnit ? (int) substr($lastUnit->kode_unit, -4) + 1 : 1;
-            $kodeUnit = $prefix . $year . str_pad($number, 4, '0', STR_PAD_LEFT);
-
-            $attempts = 0;
-            while (Unit::where('kode_unit', $kodeUnit)->exists() && $attempts < 10) {
-                $number++;
-                $kodeUnit = $prefix . $year . str_pad($number, 4, '0', STR_PAD_LEFT);
-                $attempts++;
-            }
-
-            if ($attempts >= 10) {
-                throw new \Exception('Failed to generate unique kode unit after 10 attempts');
-            }
-
-            return $kodeUnit;
-        });
     }
 }

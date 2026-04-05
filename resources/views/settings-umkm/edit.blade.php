@@ -398,15 +398,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Auto-hide flash messages
-            const flashMessages = document.querySelectorAll('[class*="bg-red-50"], [class*="bg-green-50"]');
-            flashMessages.forEach(function(flashMessage) {
-                setTimeout(() => {
-                    flashMessage.style.opacity = '0';
-                    flashMessage.style.transition = 'opacity 0.5s ease';
-                    setTimeout(() => flashMessage.remove(), 500);
-                }, 5000);
-            });
+            // Auto-hide flash messages dikurangi karena sudah dihandle secara global 
+            // di app.blade.php untuk menghindari penghapusan elemen yang salah.
 
             // Logo preview
             const logoInput = document.getElementById('logo_umkm');

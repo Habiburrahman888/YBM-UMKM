@@ -661,17 +661,9 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const flashMessages = document.querySelectorAll('[class*="bg-red-50"], [class*="bg-green-50"]');
-            flashMessages.forEach(function(flashMessage) {
-                setTimeout(() => {
-                    flashMessage.style.opacity = '0';
-                    flashMessage.style.transition = 'opacity 0.5s ease';
-                    setTimeout(() => {
-                        flashMessage.remove();
-                    }, 500);
-                }, 5000);
-            });
-
+            // Auto-hide flash messages (Hanya untuk elemen dengan ID specifik if needed)
+            // Namun secara global sudah dihandle di app.blade.php
+            
             const logoInput = document.getElementById('logo_expo');
             if (logoInput) {
                 logoInput.addEventListener('change', function(e) {

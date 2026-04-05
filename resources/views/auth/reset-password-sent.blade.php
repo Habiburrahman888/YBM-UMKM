@@ -3,345 +3,148 @@
 @section('title', 'Link Reset Password Terkirim')
 
 @section('content')
-    <div class="auth-header">
-        <h1>Periksa Email Anda</h1>
-        <p>Kami telah mengirimkan link reset password ke <strong>{{ $maskedEmail }}</strong></p>
-    </div>
 
-    {{-- Alert Messages --}}
-    @if (session('success'))
-        <div class="alert alert-success">
-            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="alert alert-danger">
-            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>{{ session('error') }}</span>
-        </div>
-    @endif
-
-    {{-- Email Sent Illustration --}}
-    <div class="email-sent-illustration">
-        <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="60" cy="60" r="60" fill="#EFF6FF" />
-            <path
-                d="M40 45C40 42.2386 42.2386 40 45 40H75C77.7614 40 80 42.2386 80 45V75C80 77.7614 77.7614 80 75 80H45C42.2386 80 40 77.7614 40 75V45Z"
-                fill="#3B82F6" />
-            <path d="M40 45L60 60L80 45" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-            <circle cx="85" cy="35" r="8" fill="#10B981" />
-            <path d="M82 35L84 37L88 33" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-    </div>
-
-    {{-- Instructions --}}
-    <div class="instructions-box">
-        <h3>Langkah Selanjutnya:</h3>
-        <ol>
-            <li>Buka inbox email Anda ({{ $maskedEmail }})</li>
-            <li>Cari email dengan subjek "Reset Password"</li>
-            <li>Klik link yang tersedia dalam email</li>
-            <li>Link akan kedaluwarsa dalam <strong><span id="countdown">{{ $countdownSeconds }}</span> detik</strong></li>
-        </ol>
-
-        <div class="help-text">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-            <span>Tidak menerima email? Periksa folder spam atau gunakan tombol kirim ulang di bawah.</span>
+    {{-- ── Left Panel ── --}}
+    <div class="auth-left">
+        <div id="lottie-logo" class="w-[220px] h-[220px] relative z-10"></div>
+        <div class="auth-left-text">
+            <h2>Portal YBM UMKM</h2>
+            <p>Yayasan Baitul Maal UMKM Indonesia</p>
         </div>
     </div>
 
-    {{-- Resend Link --}}
-    <div class="resend-section">
-        <p>Tidak menerima email?</p>
-        <button type="button" class="btn-secondary" id="resendBtn" onclick="resendResetLink()" disabled>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="23 4 23 10 17 10"></polyline>
-                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-            </svg>
-            <span id="resendText">Kirim Ulang (<span id="resendTimer">{{ $canResendIn }}</span>)</span>
-        </button>
-    </div>
+    {{-- ── Right Panel ── --}}
+    <div class="auth-right">
 
-    {{-- Back to Login --}}
-    <div class="auth-footer">
-        <p>Ingat password Anda? <a href="{{ route('login') }}">Kembali ke Login</a></p>
-    </div>
-
-    {{-- Hidden input for AJAX --}}
-    <input type="hidden" id="email" value="{{ $email }}">
-    <input type="hidden" id="recaptcha_token">
-
-    {{-- reCAPTCHA Notice --}}
-    @if ($recaptchaSiteKey)
-        <div class="recaptcha-notice">
-            This site is protected by reCAPTCHA and the Google
-            <a href="https://policies.google.com/privacy" target="_blank">Privacy Policy</a> and
-            <a href="https://policies.google.com/terms" target="_blank">Terms of Service</a> apply.
+        {{-- Heading --}}
+        <div class="mb-3.5">
+            <h1 class="text-[22px] font-bold text-neutral-800 mb-1">Periksa Email Anda</h1>
+            <p class="text-[13px] text-neutral-500">
+                Kami telah mengirimkan link reset password ke <strong class="text-neutral-700">{{ $maskedEmail }}</strong>
+            </p>
         </div>
-    @endif
+
+        {{-- Alerts --}}
+        @if (session('success'))
+            <div class="alert alert-success alert-flash">
+                <svg class="w-[18px] h-[18px] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{{ session('success') }}</span>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-error alert-flash">
+                <svg class="w-[18px] h-[18px] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{{ session('error') }}</span>
+            </div>
+        @endif
+
+        @if (session('warning'))
+            <div class="alert alert-warning alert-flash">
+                <svg class="w-[18px] h-[18px] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{{ session('warning') }}</span>
+            </div>
+        @endif
+
+        @if (session('info'))
+            <div class="alert alert-info alert-flash">
+                <svg class="w-[18px] h-[18px] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{{ session('info') }}</span>
+            </div>
+        @endif
+
+        {{-- Instructions Box --}}
+        <div class="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-[10px] px-4 py-3.5 mb-3.5">
+            <h3 class="text-[13px] font-semibold text-green-900 mb-2.5">Langkah Selanjutnya:</h3>
+            <ol class="pl-5 text-green-800 flex flex-col gap-1.5">
+                <li class="text-[12px] leading-relaxed">Buka inbox email Anda ({{ $maskedEmail }})</li>
+                <li class="text-[12px] leading-relaxed">Cari email dengan subjek "Reset Password"</li>
+                <li class="text-[12px] leading-relaxed">Klik link yang tersedia dalam email</li>
+                <li class="text-[12px] leading-relaxed">
+                    Link akan kedaluwarsa dalam
+                    <strong>
+                        <span id="countdown"
+                            class="text-red-600 font-bold bg-red-100 rounded px-1.5 py-px font-[tabular-nums] tracking-wide transition-colors duration-300">
+                            15:00
+                        </span>
+                    </strong>
+                </li>
+            </ol>
+            <div
+                class="flex items-start gap-1.5 mt-2.5 pt-2.5 border-t border-green-200 text-green-700 text-[11px] leading-relaxed">
+                <svg class="shrink-0 mt-px" xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span>Tidak menerima email? Periksa folder spam atau gunakan tombol kirim ulang di bawah.</span>
+            </div>
+        </div>
+
+        {{-- Resend Section --}}
+        <div class="text-center mb-3">
+            <p class="text-[13px] text-neutral-500 mb-2">Tidak menerima email?</p>
+            <button type="button" id="resendBtn" onclick="resendResetLink()" disabled
+                class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-100 text-neutral-700 border border-slate-200 rounded-[10px] text-[13px] font-medium cursor-pointer transition-all duration-200 hover:bg-slate-200 hover:border-slate-300 disabled:opacity-50 disabled:cursor-not-allowed [&:not(:disabled)_svg]:hover:rotate-180">
+                <svg class="transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" width="16"
+                    height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+                <span id="resendText">Kirim Ulang (<span id="resendTimer">{{ $canResendIn }}</span>s)</span>
+            </button>
+        </div>
+
+        {{-- Back to Login --}}
+        <div class="text-center text-[13px] text-neutral-500">
+            Ingat password Anda?
+            <a href="{{ route('login') }}" class="text-primary-600 font-semibold hover:underline">Kembali ke Login</a>
+        </div>
+
+        <input type="hidden" id="email" value="{{ $email }}">
+
+        {{-- reCAPTCHA Notice --}}
+        @if (!empty($recaptchaSiteKey))
+            <div class="mt-2.5 text-[11px] text-neutral-400 text-center leading-relaxed">
+                This site is protected by reCAPTCHA and the Google
+                <a href="https://policies.google.com/privacy" target="_blank"
+                    class="text-neutral-500 hover:underline">Privacy Policy</a> and
+                <a href="https://policies.google.com/terms" target="_blank"
+                    class="text-neutral-500 hover:underline">Terms of Service</a> apply.
+            </div>
+        @else
+            <div class="mt-2.5 text-[11px] text-red-500 text-center">
+                ⚠️ Warning: reCAPTCHA is not configured. Please set RECAPTCHA_SITE_KEY in your .env file.
+            </div>
+        @endif
+
+    </div>
+
 @endsection
 
-@push('styles')
-    <style>
-        /* Prevent body scroll */
-        html,
-        body {
-            height: 100%;
-            overflow: hidden;
-        }
-
-        /* Card scroll internal */
-        .auth-card {
-            max-height: 95vh;
-            overflow-y: auto;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-
-        .auth-card::-webkit-scrollbar {
-            display: none;
-        }
-
-        /* Compact layout */
-        .auth-header {
-            margin-bottom: 12px;
-        }
-
-        .auth-header h1 {
-            font-size: 22px;
-        }
-
-        .auth-header p {
-            font-size: 13px;
-        }
-
-        /* Illustration lebih kecil */
-        .email-sent-illustration {
-            margin: 16px 0;
-        }
-
-        .email-sent-illustration svg {
-            width: 80px;
-            height: 80px;
-        }
-
-        /* Instructions compact */
-        .instructions-box {
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-
-        .instructions-box h3 {
-            font-size: 14px;
-            margin: 0 0 10px 0;
-        }
-
-        .instructions-box ol li {
-            margin-bottom: 8px;
-            font-size: 13px;
-        }
-
-        .help-text {
-            margin-top: 12px;
-            padding-top: 12px;
-            font-size: 12px;
-        }
-
-        /* Resend section compact */
-        .resend-section {
-            margin-bottom: 16px;
-        }
-
-        .resend-section p {
-            margin-bottom: 8px;
-            font-size: 13px;
-        }
-
-        .btn-secondary {
-            padding: 10px 20px;
-            font-size: 14px;
-        }
-
-        .auth-footer {
-            margin-top: 8px;
-            font-size: 13px;
-        }
-
-        .recaptcha-notice {
-            margin-top: 8px;
-            font-size: 11px;
-        }
-
-        /* Email Sent Illustration */
-        .email-sent-illustration {
-            display: flex;
-            justify-content: center;
-            margin: 32px 0;
-        }
-
-        .email-sent-illustration svg {
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-10px);
-            }
-        }
-
-        /* Instructions Box */
-        .instructions-box {
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-            border: 2px solid #10b981;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-        }
-
-        .instructions-box h3 {
-            color: #065f46;
-            font-size: 16px;
-            font-weight: 600;
-            margin: 0 0 16px 0;
-        }
-
-        .instructions-box ol {
-            margin: 0;
-            padding-left: 24px;
-            color: #047857;
-        }
-
-        .instructions-box ol li {
-            margin-bottom: 12px;
-            line-height: 1.6;
-            font-size: 14px;
-        }
-
-        .instructions-box ol li:last-child {
-            margin-bottom: 0;
-        }
-
-        .instructions-box ol li strong {
-            color: #065f46;
-        }
-
-        .help-text {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid #bbf7d0;
-            color: #047857;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        .help-text svg {
-            flex-shrink: 0;
-            margin-top: 2px;
-        }
-
-        /* Resend Section */
-        .resend-section {
-            text-align: center;
-            margin-bottom: 24px;
-        }
-
-        .resend-section p {
-            font-size: 14px;
-            color: #6b7280;
-            margin-bottom: 12px;
-        }
-
-        .btn-secondary {
-            padding: 12px 28px;
-            background: #f3f4f6;
-            color: #374151;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-secondary:hover:not(:disabled) {
-            background: #e5e7eb;
-            border-color: #d1d5db;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-secondary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-secondary svg {
-            transition: transform 0.3s ease;
-        }
-
-        .btn-secondary:hover:not(:disabled) svg {
-            transform: rotate(180deg);
-        }
-
-        /* Countdown highlight */
-        #countdown {
-            color: #dc2626;
-            font-weight: 700;
-            font-size: 16px;
-            padding: 2px 6px;
-            background: #fee2e2;
-            border-radius: 4px;
-        }
-
-        /* Responsive */
-        @media (max-width: 480px) {
-            .instructions-box {
-                padding: 20px;
-            }
-
-            .instructions-box h3 {
-                font-size: 15px;
-            }
-
-            .instructions-box ol {
-                padding-left: 20px;
-            }
-
-            .instructions-box ol li {
-                font-size: 13px;
-            }
-        }
-    </style>
-@endpush
-
 @push('scripts')
-    @if ($recaptchaSiteKey)
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+
+    @if (!empty($recaptchaSiteKey))
         <script src="https://www.google.com/recaptcha/api.js?render={{ $recaptchaSiteKey }}"></script>
         <script>
             const RECAPTCHA_SITE_KEY = '{{ $recaptchaSiteKey }}';
@@ -349,96 +152,87 @@
     @endif
 
     <script>
+        // ── Lottie ──
+        lottie.loadAnimation({
+            container: document.getElementById('lottie-logo'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: '{{ asset('Auth/Pin code Password Protection, Secure Login animation.json') }}'
+        });
+
         let linkExpirySeconds = {{ $countdownSeconds }};
         let resendCooldownSeconds = {{ $canResendIn }};
-        let countdownInterval;
-        let resendInterval;
+        let countdownInterval, resendInterval;
 
-        // Countdown untuk expiry link
+        function formatTime(s) {
+            return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+        }
+
+        function setResendCooldown(s) {
+            document.getElementById('resendText').innerHTML =
+                'Kirim Ulang (<span id="resendTimer">' + s + '</span>s)';
+        }
+
+        function setResendReady() {
+            document.getElementById('resendText').innerHTML = 'Kirim Ulang Link';
+            document.getElementById('resendBtn').disabled = false;
+        }
+
         function startLinkCountdown() {
-            const countdownElement = document.getElementById('countdown');
+            const el = document.getElementById('countdown');
+            el.textContent = formatTime(linkExpirySeconds);
 
-            countdownInterval = setInterval(function() {
+            countdownInterval = setInterval(() => {
                 linkExpirySeconds--;
-
                 if (linkExpirySeconds <= 0) {
                     clearInterval(countdownInterval);
-                    countdownElement.textContent = '0';
-                    countdownElement.style.background = '#fca5a5';
-
-                    // Show warning
-                    const instructionsBox = document.querySelector('.instructions-box');
-                    const expiredWarning = document.createElement('div');
-                    expiredWarning.className = 'alert alert-danger';
-                    expiredWarning.style.marginTop = '16px';
-                    expiredWarning.innerHTML = `
-                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>Link reset password telah kedaluwarsa. Silakan kirim ulang.</span>
-                `;
-                    instructionsBox.appendChild(expiredWarning);
+                    el.textContent = '0:00';
+                    el.classList.add('!bg-red-200', '!text-red-900');
+                    showAlert('danger', 'Link reset password telah kedaluwarsa. Silakan kirim ulang.');
                 } else {
-                    countdownElement.textContent = linkExpirySeconds;
-
-                    // Change color when less than 60 seconds
-                    if (linkExpirySeconds <= 60) {
-                        countdownElement.style.background = '#fecaca';
-                    }
+                    el.textContent = formatTime(linkExpirySeconds);
+                    if (linkExpirySeconds <= 60) el.classList.add('!bg-red-200');
                 }
             }, 1000);
         }
 
-        // Countdown untuk resend cooldown
         function startResendCountdown() {
-            const resendBtn = document.getElementById('resendBtn');
-            const resendTimer = document.getElementById('resendTimer');
-
-            resendInterval = setInterval(function() {
+            document.getElementById('resendBtn').disabled = true;
+            resendInterval = setInterval(() => {
                 resendCooldownSeconds--;
-
                 if (resendCooldownSeconds <= 0) {
                     clearInterval(resendInterval);
-                    resendBtn.disabled = false;
-                    document.getElementById('resendText').innerHTML = `
-                    <span>Kirim Ulang Link</span>
-                `;
+                    setResendReady();
                 } else {
-                    resendTimer.textContent = resendCooldownSeconds;
+                    const t = document.getElementById('resendTimer');
+                    if (t) t.textContent = resendCooldownSeconds;
                 }
             }, 1000);
         }
 
-        // Resend reset link
         async function resendResetLink() {
-            const resendBtn = document.getElementById('resendBtn');
-            const originalContent = resendBtn.innerHTML;
+            const btn = document.getElementById('resendBtn');
             const email = document.getElementById('email').value;
 
-            // Disable button
-            resendBtn.disabled = true;
-            resendBtn.innerHTML = `
-            <div class="spinner"></div>
-            <span>Mengirim...</span>
-        `;
+            btn.disabled = true;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<div class="spinner"></div><span>Mengirim...</span>';
 
             try {
-                @if ($recaptchaSiteKey)
-                    // Get reCAPTCHA token
+                @if (!empty($recaptchaSiteKey))
                     const token = await new Promise((resolve, reject) => {
-                        grecaptcha.ready(function() {
+                        grecaptcha.ready(() => {
                             grecaptcha.execute(RECAPTCHA_SITE_KEY, {
                                     action: 'resend_reset_link'
                                 })
-                                .then(resolve)
-                                .catch(reject);
+                                .then(resolve).catch(reject);
                         });
                     });
                 @else
                     const token = null;
                 @endif
 
-                // Send AJAX request
                 const response = await fetch('{{ route('password.resend') }}', {
                     method: 'POST',
                     headers: {
@@ -446,7 +240,7 @@
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({
-                        email: email,
+                        email,
                         recaptcha_token: token
                     })
                 });
@@ -454,84 +248,74 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    // Show success alert
                     showAlert('success', data.message);
-
-                    // Reset timers
-                    linkExpirySeconds = 480; // 8 minutes in seconds (15 * 60 - buffer)
-                    resendCooldownSeconds = data.canResendIn || 60;
-
-                    // Restart countdown
                     clearInterval(countdownInterval);
                     clearInterval(resendInterval);
+
+                    linkExpirySeconds = 900;
+                    resendCooldownSeconds = data.canResendIn || 60;
+
+                    const countdownEl = document.getElementById('countdown');
+                    countdownEl.classList.remove('!bg-red-200', '!text-red-900');
+
+                    setResendCooldown(resendCooldownSeconds);
                     startLinkCountdown();
                     startResendCountdown();
-
-                    // Update button
-                    resendBtn.innerHTML = originalContent;
-                    document.getElementById('resendTimer').textContent = resendCooldownSeconds;
                 } else {
                     showAlert('danger', data.message);
-                    resendBtn.disabled = false;
-                    resendBtn.innerHTML = originalContent;
+                    resendCooldownSeconds > 0 ? setResendCooldown(resendCooldownSeconds) : setResendReady();
+                    btn.disabled = resendCooldownSeconds > 0;
                 }
-            } catch (error) {
-                console.error('Resend error:', error);
+            } catch {
                 showAlert('danger', 'Terjadi kesalahan. Silakan coba lagi.');
-                resendBtn.disabled = false;
-                resendBtn.innerHTML = originalContent;
+                resendCooldownSeconds > 0 ? setResendCooldown(resendCooldownSeconds) : setResendReady();
+                btn.disabled = resendCooldownSeconds > 0;
             }
         }
 
-        // Show alert helper
+        // ── Alert helper ──
         function showAlert(type, message) {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type}`;
-            alertDiv.innerHTML = `
-            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                ${type === 'success' 
-                    ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />'
-                    : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />'
-                }
-            </svg>
-            <span>${message}</span>
-        `;
+            const map = {
+                success: 'alert-success',
+                danger: 'alert-error',
+                warning: 'alert-warning',
+                info: 'alert-info',
+            };
+            const icons = {
+                success: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>',
+                danger: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>',
+                warning: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>',
+                info: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>',
+            };
 
-            const authHeader = document.querySelector('.auth-header');
-            authHeader.parentNode.insertBefore(alertDiv, authHeader.nextSibling);
+            document.querySelectorAll('.alert-dynamic').forEach(el => el.remove());
 
-            // Auto-hide after 5 seconds
-            setTimeout(function() {
-                alertDiv.style.opacity = '0';
-                alertDiv.style.transition = 'opacity 0.5s ease';
-                setTimeout(function() {
-                    alertDiv.remove();
-                }, 500);
+            const div = document.createElement('div');
+            div.className = `alert ${map[type] ?? 'alert-error'} alert-dynamic`;
+            div.innerHTML =
+                `<svg class="w-[18px] h-[18px] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">${icons[type] ?? icons.danger}</svg><span>${message}</span>`;
+
+            const heading = document.querySelector('.auth-right > div');
+            heading.insertAdjacentElement('afterend', div);
+
+            setTimeout(() => {
+                div.style.opacity = '0';
+                setTimeout(() => div.remove(), 500);
             }, 5000);
         }
 
-        // Auto-hide existing alerts after 5 seconds
-        document.addEventListener('DOMContentLoaded', function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                setTimeout(function() {
-                    alert.style.opacity = '0';
-                    alert.style.transition = 'opacity 0.5s ease';
-                    setTimeout(function() {
-                        alert.remove();
-                    }, 500);
+        // ── Init ──
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.alert-flash').forEach(el => {
+                setTimeout(() => {
+                    el.style.opacity = '0';
+                    el.style.transition = 'opacity 0.5s ease';
+                    setTimeout(() => el.remove(), 500);
                 }, 5000);
             });
 
-            // Start countdowns
             startLinkCountdown();
-
-            if (resendCooldownSeconds > 0) {
-                startResendCountdown();
-            } else {
-                document.getElementById('resendBtn').disabled = false;
-                document.getElementById('resendText').innerHTML = '<span>Kirim Ulang Link</span>';
-            }
+            resendCooldownSeconds > 0 ? startResendCountdown() : setResendReady();
         });
     </script>
 @endpush

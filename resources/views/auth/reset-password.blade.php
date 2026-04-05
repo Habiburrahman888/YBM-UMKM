@@ -3,394 +3,235 @@
 @section('title', 'Reset Password')
 
 @section('content')
-    <div class="auth-header">
-        <h1>Buat Password Baru</h1>
-        <p>Masukkan password baru untuk akun <strong>{{ $maskedEmail }}</strong></p>
+
+    {{-- ── Left Panel ── --}}
+    <div class="auth-left">
+        <div id="lottie-logo" class="w-[220px] h-[220px] relative z-10"></div>
+        <div class="auth-left-text">
+            <h2>Portal YBM UMKM</h2>
+            <p>Yayasan Baitul Maal UMKM Indonesia</p>
+        </div>
     </div>
 
-    {{-- Alert Messages --}}
-    @if (session('success'))
-        <div class="alert alert-success">
-            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>{{ session('success') }}</span>
+    {{-- ── Right Panel ── --}}
+    <div class="auth-right">
+
+        {{-- Heading --}}
+        <div class="text-center mb-5">
+            <h1 class="text-[22px] font-bold text-neutral-800 mb-1">Buat Password Baru</h1>
+            <p class="text-[13px] text-neutral-500">
+                Masukkan password baru untuk akun <strong class="text-neutral-700">{{ $maskedEmail }}</strong>
+            </p>
         </div>
-    @endif
 
-    @if (session('error'))
-        <div class="alert alert-danger">
-            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>{{ session('error') }}</span>
-        </div>
-    @endif
-
-    @if (session('warning'))
-        <div class="alert alert-warning">
-            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <span>{{ session('warning') }}</span>
-        </div>
-    @endif
-
-    @if (session('info'))
-        <div class="alert alert-info">
-            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>{{ session('info') }}</span>
-        </div>
-    @endif
-
-    {{-- Reset Password Form --}}
-    <form method="POST" action="{{ route('password.update', $uuid) }}" id="resetPasswordForm">
-        @csrf
-        <input type="hidden" name="token" value="{{ $token }}">
-        <input type="hidden" name="email" value="{{ $email }}">
-
-        {{-- New Password --}}
-        <div class="form-group">
-            <label for="password" class="form-label">Password Baru</label>
-            <div class="form-input-wrapper">
-                <span class="form-input-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                    </svg>
-                </span>
-                <input type="password" class="form-input @error('password') is-invalid @enderror" id="password"
-                    name="password" placeholder="Minimal 8 karakter" required autofocus>
-                <button type="button" class="password-toggle" onclick="togglePassword('password')">
-                    <svg id="eyeIconPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
-                </button>
+        {{-- Alerts --}}
+        @if (session('success'))
+            <div class="alert alert-success">
+                <svg class="w-[18px] h-[18px] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{{ session('success') }}</span>
             </div>
-            <div class="password-strength" id="passwordStrength">
-                <div class="strength-bars" id="strengthBars">
-                    <div class="strength-bar"></div>
-                    <div class="strength-bar"></div>
-                    <div class="strength-bar"></div>
-                    <div class="strength-bar"></div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-error">
+                <svg class="w-[18px] h-[18px] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{{ session('error') }}</span>
+            </div>
+        @endif
+
+        @if (session('warning'))
+            <div class="alert alert-warning">
+                <svg class="w-[18px] h-[18px] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{{ session('warning') }}</span>
+            </div>
+        @endif
+
+        @if (session('info'))
+            <div class="alert alert-info">
+                <svg class="w-[18px] h-[18px] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{{ session('info') }}</span>
+            </div>
+        @endif
+
+        {{-- Form --}}
+        <form method="POST" action="{{ route('password.update', $uuid) }}" id="resetPasswordForm">
+            @csrf
+            <input type="hidden" name="token" value="{{ $token }}">
+            <input type="hidden" name="email" value="{{ $email }}">
+
+            {{-- New Password --}}
+            <div class="mb-3">
+                <label for="password" class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                    Password Baru <span class="text-red-500">*</span>
+                </label>
+                <div class="input-wrapper">
+                    <span class="input-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </span>
+                    <input type="password" class="form-input pl-10 pr-10 @error('password') is-invalid @enderror"
+                        id="password" name="password" placeholder="Minimal 8 karakter" required autofocus>
+                    <button type="button" onclick="togglePassword('password', 'eyeIconPassword')" class="input-icon-right">
+                        <svg id="eyeIconPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
                 </div>
-                <div class="strength-text" id="strengthText">Masukkan password</div>
+
+                {{-- Password Strength --}}
+                <div class="hidden mt-2" id="passwordStrength">
+                    <div class="flex gap-1 mb-1" id="strengthBars">
+                        <div class="strength-bar"></div>
+                        <div class="strength-bar"></div>
+                        <div class="strength-bar"></div>
+                        <div class="strength-bar"></div>
+                    </div>
+                    <span class="text-[11px] font-medium text-neutral-500" id="strengthText"></span>
+                </div>
+
+                @error('password')
+                    <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
+                @enderror
             </div>
-            @error('password')
-                <span class="invalid-feedback">{{ $message }}</span>
-            @enderror
-        </div>
 
-        {{-- Confirm Password --}}
-        <div class="form-group">
-            <label for="password_confirmation" class="form-label">Konfirmasi Password</label>
-            <div class="form-input-wrapper">
-                <span class="form-input-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                    </svg>
-                </span>
-                <input type="password" class="form-input @error('password_confirmation') is-invalid @enderror"
-                    id="password_confirmation" name="password_confirmation" placeholder="Ulangi password baru" required>
-                <button type="button" class="password-toggle" onclick="togglePassword('password_confirmation')">
-                    <svg id="eyeIconPasswordConfirmation" xmlns="http://www.w3.org/2000/svg" width="20"
-                        height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
-                </button>
+            {{-- Confirm Password --}}
+            <div class="mb-3">
+                <label for="password_confirmation" class="block text-[13px] font-medium text-neutral-700 mb-1.5">
+                    Konfirmasi Password <span class="text-red-500">*</span>
+                </label>
+                <div class="input-wrapper">
+                    <span class="input-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </span>
+                    <input type="password"
+                        class="form-input pl-10 pr-10 @error('password_confirmation') is-invalid @enderror"
+                        id="password_confirmation" name="password_confirmation" placeholder="Ulangi password baru"
+                        required>
+                    <button type="button" onclick="togglePassword('password_confirmation', 'eyeIconConfirmation')"
+                        class="input-icon-right">
+                        <svg id="eyeIconConfirmation" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
+                <span class="hidden mt-1 text-[12px] font-medium text-red-500" id="confirmationError"></span>
+                @error('password_confirmation')
+                    <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
+                @enderror
             </div>
-            <span class="invalid-feedback" id="confirmationError" style="display: none;"></span>
-            @error('password_confirmation')
-                <span class="invalid-feedback">{{ $message }}</span>
-            @enderror
+
+            {{-- Password Requirements --}}
+            <div
+                class="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-[10px] px-3.5 py-3 mb-3.5">
+                <h3 class="text-[12px] font-semibold text-neutral-700 mb-2">Password harus memenuhi:</h3>
+                <ul class="flex flex-col gap-1">
+                    <li id="req-length"
+                        class="flex items-center gap-1.5 text-[12px] text-neutral-400 transition-colors duration-200">
+                        <svg class="req-icon w-[14px] h-[14px] shrink-0" xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                        </svg>
+                        <span>Minimal 8 karakter</span>
+                    </li>
+                    <li id="req-case"
+                        class="flex items-center gap-1.5 text-[12px] text-neutral-400 transition-colors duration-200">
+                        <svg class="req-icon w-[14px] h-[14px] shrink-0" xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                        </svg>
+                        <span>Huruf besar dan kecil</span>
+                    </li>
+                    <li id="req-number"
+                        class="flex items-center gap-1.5 text-[12px] text-neutral-400 transition-colors duration-200">
+                        <svg class="req-icon w-[14px] h-[14px] shrink-0" xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                        </svg>
+                        <span>Mengandung angka</span>
+                    </li>
+                    <li id="req-special"
+                        class="flex items-center gap-1.5 text-[12px] text-neutral-400 transition-colors duration-200">
+                        <svg class="req-icon w-[14px] h-[14px] shrink-0" xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                        </svg>
+                        <span>Karakter khusus (!@#$%^&*)</span>
+                    </li>
+                </ul>
+            </div>
+
+            <input type="hidden" name="recaptcha_token" id="recaptcha_token">
+
+            {{-- Submit --}}
+            <button type="submit" class="btn-primary" id="submitBtn">
+                <span>Reset Password</span>
+            </button>
+        </form>
+
+        {{-- Back to Login --}}
+        <div class="mt-3.5 text-center text-[13px] text-neutral-500">
+            Ingat password Anda?
+            <a href="{{ route('login') }}" class="text-primary-600 font-semibold hover:underline">Kembali ke Login</a>
         </div>
 
-        {{-- Password Requirements --}}
-        <div class="password-requirements">
-            <h4>Password harus memenuhi:</h4>
-            <ul>
-                <li id="req-length">
-                    <svg class="req-icon unchecked" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                    </svg>
-                    <span>Minimal 8 karakter</span>
-                </li>
-                <li id="req-case">
-                    <svg class="req-icon unchecked" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                    </svg>
-                    <span>Huruf besar dan kecil</span>
-                </li>
-                <li id="req-number">
-                    <svg class="req-icon unchecked" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                    </svg>
-                    <span>Mengandung angka</span>
-                </li>
-                <li id="req-special">
-                    <svg class="req-icon unchecked" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                    </svg>
-                    <span>Karakter khusus (!@#$%^&*)</span>
-                </li>
-            </ul>
-        </div>
+        {{-- reCAPTCHA Notice --}}
+        @if (!empty($recaptchaSiteKey))
+            <div class="mt-2.5 text-[11px] text-neutral-400 text-center leading-relaxed">
+                This site is protected by reCAPTCHA and the Google
+                <a href="https://policies.google.com/privacy" target="_blank"
+                    class="text-neutral-500 hover:underline">Privacy Policy</a> and
+                <a href="https://policies.google.com/terms" target="_blank"
+                    class="text-neutral-500 hover:underline">Terms of Service</a> apply.
+            </div>
+        @else
+            <div class="mt-2.5 text-[11px] text-red-500 text-center">
+                ⚠️ Warning: reCAPTCHA is not configured. Please set RECAPTCHA_SITE_KEY in your .env file.
+            </div>
+        @endif
 
-        {{-- reCAPTCHA Token (Hidden) --}}
-        <input type="hidden" name="recaptcha_token" id="recaptcha_token">
-
-        {{-- Submit Button --}}
-        <button type="submit" class="btn-primary" id="submitBtn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            <span>Reset Password</span>
-        </button>
-    </form>
-
-    {{-- Back to Login --}}
-    <div class="auth-footer">
-        <p>Ingat password Anda? <a href="{{ route('login') }}">Kembali ke Login</a></p>
     </div>
 
-    {{-- reCAPTCHA Notice --}}
-    @if ($recaptchaSiteKey)
-        <div class="recaptcha-notice">
-            This site is protected by reCAPTCHA and the Google
-            <a href="https://policies.google.com/privacy" target="_blank">Privacy Policy</a> and
-            <a href="https://policies.google.com/terms" target="_blank">Terms of Service</a> apply.
-        </div>
-    @endif
 @endsection
 
-@push('styles')
-    <style>
-        /* Prevent body scroll */
-        html,
-        body {
-            height: 100%;
-            overflow: hidden;
-        }
-
-        /* Card scroll internal */
-        .auth-card {
-            max-height: 95vh;
-            overflow-y: auto;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-
-        .auth-card::-webkit-scrollbar {
-            display: none;
-        }
-
-        .recaptcha-notice {
-            margin-top: 8px;
-            font-size: 11px;
-        }
-
-        /* Password Strength */
-        .password-strength {
-            margin-top: 8px;
-            display: none;
-        }
-
-        .password-strength.show {
-            display: block;
-        }
-
-        .strength-bars {
-            display: flex;
-            gap: 4px;
-            margin-bottom: 6px;
-        }
-
-        .strength-bar {
-            height: 4px;
-            flex: 1;
-            background: #e5e7eb;
-            border-radius: 2px;
-            transition: background 0.3s ease;
-        }
-
-        .strength-bar.active {
-            background: #ef4444;
-        }
-
-        .strength-bars.medium .strength-bar.active {
-            background: #f59e0b;
-        }
-
-        .strength-bars.strong .strength-bar.active {
-            background: #10b981;
-        }
-
-        .strength-text {
-            font-size: 12px;
-            font-weight: 500;
-            color: #6b7280;
-        }
-
-        /* Password Requirements */
-        .password-requirements {
-            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 24px;
-        }
-
-        .password-requirements h4 {
-            font-size: 14px;
-            font-weight: 600;
-            color: #374151;
-            margin: 0 0 12px 0;
-        }
-
-        .password-requirements ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .password-requirements li {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 0;
-            font-size: 13px;
-            color: #6b7280;
-            transition: color 0.3s ease;
-        }
-
-        .password-requirements li.checked {
-            color: #10b981;
-        }
-
-        .req-icon {
-            flex-shrink: 0;
-            transition: all 0.3s ease;
-        }
-
-        .req-icon.unchecked {
-            stroke: #d1d5db;
-        }
-
-        .req-icon.checked {
-            stroke: #10b981;
-        }
-
-        /* Match indicator for confirmation */
-        .password-match {
-            color: #10b981 !important;
-            border-color: #10b981 !important;
-            background: #f0fdf4 !important;
-        }
-
-        .password-mismatch {
-            color: #ef4444 !important;
-            border-color: #ef4444 !important;
-            background: #fef2f2 !important;
-        }
-
-        /* Responsive */
-        @media (max-width: 480px) {
-            .password-requirements {
-                padding: 16px;
-            }
-
-            .password-requirements h4 {
-                font-size: 13px;
-            }
-
-            .password-requirements li {
-                font-size: 12px;
-            }
-        }
-
-        /* Compact layout */
-        .auth-header {
-            margin-bottom: 12px;
-        }
-
-        .auth-header h1 {
-            font-size: 22px;
-        }
-
-        .auth-header p {
-            font-size: 13px;
-        }
-
-        .form-group {
-            margin-bottom: 12px;
-        }
-
-        .form-label {
-            font-size: 13px;
-            margin-bottom: 4px;
-        }
-
-        .form-input {
-            padding: 8px 12px 8px 40px;
-            font-size: 13px;
-            height: 40px;
-        }
-
-        /* Requirements lebih compact */
-        .password-requirements {
-            padding: 12px 14px;
-            margin-bottom: 14px;
-        }
-
-        .password-requirements h4 {
-            font-size: 13px;
-            margin: 0 0 6px 0;
-        }
-
-        .password-requirements li {
-            padding: 3px 0;
-            font-size: 12px;
-        }
-
-        /* Button lebih kecil */
-        .btn-primary {
-            padding: 10px;
-            font-size: 14px;
-        }
-
-        .auth-footer {
-            margin-top: 12px;
-            font-size: 13px;
-        }
-    </style>
-@endpush
-
 @push('scripts')
-    @if ($recaptchaSiteKey)
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+
+    @if (!empty($recaptchaSiteKey))
         <script src="https://www.google.com/recaptcha/api.js?render={{ $recaptchaSiteKey }}"></script>
         <script>
             const RECAPTCHA_SITE_KEY = '{{ $recaptchaSiteKey }}';
@@ -398,215 +239,170 @@
     @endif
 
     <script>
-        // Toggle Password Visibility
-        function togglePassword(inputId) {
-            const input = document.getElementById(inputId);
-            const icon = document.getElementById('eyeIcon' + inputId.charAt(0).toUpperCase() + inputId.slice(1));
+        // Lottie
+        lottie.loadAnimation({
+            container: document.getElementById('lottie-logo'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: '{{ asset('Auth/Pin code Password Protection, Secure Login animation.json') }}'
+        });
 
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.innerHTML = `
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                <line x1="1" y1="1" x2="23" y2="23"></line>
-            `;
-            } else {
-                input.type = 'password';
-                icon.innerHTML = `
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-            `;
-            }
+        // Toggle password visibility
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            const isHidden = input.type === 'password';
+
+            input.type = isHidden ? 'text' : 'password';
+            icon.innerHTML = isHidden ?
+                `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>` :
+                `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>`;
         }
 
-        // Password strength checker
+        // Password strength
         const passwordInput = document.getElementById('password');
-        const passwordStrength = document.getElementById('passwordStrength');
-        const strengthBars = document.getElementById('strengthBars');
+        const strengthWrapper = document.getElementById('passwordStrength');
+        const strengthBarsEl = document.getElementById('strengthBars');
         const strengthText = document.getElementById('strengthText');
 
-        // Requirements elements
         const reqLength = document.getElementById('req-length');
         const reqCase = document.getElementById('req-case');
         const reqNumber = document.getElementById('req-number');
         const reqSpecial = document.getElementById('req-special');
 
-        passwordInput.addEventListener('input', function() {
-            const password = this.value;
+        const STRENGTH_COLORS = ['#ef4444', '#ef4444', '#f59e0b', '#10b981', '#10b981'];
+        const STRENGTH_LABELS = ['', 'Password lemah', 'Password lemah', 'Password sedang', 'Password kuat'];
 
-            if (password.length === 0) {
-                passwordStrength.classList.remove('show');
+        passwordInput.addEventListener('input', function() {
+            const val = this.value;
+
+            if (!val.length) {
+                strengthWrapper.classList.add('hidden');
                 resetRequirements();
                 return;
             }
 
-            passwordStrength.classList.add('show');
+            strengthWrapper.classList.remove('hidden');
 
-            let strength = 0;
-            const bars = strengthBars.querySelectorAll('.strength-bar');
+            const checks = {
+                length: val.length >= 8,
+                upper: /[A-Z]/.test(val),
+                lower: /[a-z]/.test(val),
+                number: /[0-9]/.test(val),
+                special: /[^a-zA-Z0-9]/.test(val),
+            };
 
-            // Reset bars
-            bars.forEach(bar => bar.classList.remove('active'));
-            strengthBars.className = 'strength-bars';
+            updateRequirement(reqLength, checks.length);
+            updateRequirement(reqCase, checks.upper && checks.lower);
+            updateRequirement(reqNumber, checks.number);
+            updateRequirement(reqSpecial, checks.special);
 
-            // Check requirements
-            const hasLength = password.length >= 8;
-            const hasCase = password.match(/[a-z]/) && password.match(/[A-Z]/);
-            const hasNumber = password.match(/[0-9]/);
-            const hasSpecial = password.match(/[^a-zA-Z0-9]/);
+            const strength = [checks.length, checks.upper && checks.lower, checks.number, checks.special]
+                .filter(Boolean).length;
 
-            // Update requirement indicators
-            updateRequirement(reqLength, hasLength);
-            updateRequirement(reqCase, hasCase);
-            updateRequirement(reqNumber, hasNumber);
-            updateRequirement(reqSpecial, hasSpecial);
+            const bars = strengthBarsEl.querySelectorAll('.strength-bar');
+            bars.forEach((bar, i) => {
+                bar.style.background = i < strength ? STRENGTH_COLORS[strength] : '#e5e7eb';
+            });
 
-            // Calculate strength
-            if (hasLength) strength++;
-            if (hasCase) strength++;
-            if (hasNumber) strength++;
-            if (hasSpecial) strength++;
+            strengthText.textContent = STRENGTH_LABELS[strength] || '';
+            strengthText.style.color = STRENGTH_COLORS[strength] || '#6b7280';
 
-            // Update bars
-            for (let i = 0; i < strength; i++) {
-                bars[i].classList.add('active');
-            }
-
-            // Update class and text
-            if (strength <= 1) {
-                strengthText.textContent = 'Password lemah';
-            } else if (strength <= 2) {
-                strengthBars.classList.add('medium');
-                strengthText.textContent = 'Password sedang';
-            } else {
-                strengthBars.classList.add('strong');
-                strengthText.textContent = 'Password kuat';
-            }
-
-            // Check confirmation match
             checkPasswordMatch();
         });
 
-        function updateRequirement(element, isValid) {
-            const icon = element.querySelector('.req-icon');
-
+        function updateRequirement(el, isValid) {
+            const icon = el.querySelector('.req-icon');
             if (isValid) {
-                element.classList.add('checked');
-                icon.classList.remove('unchecked');
-                icon.classList.add('checked');
-                icon.setAttribute('viewBox', '0 0 24 24');
-                icon.innerHTML = `
-            <circle cx="12" cy="12" r="10" fill="#10b981" stroke="#10b981"></circle>
-            <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
-        `;
+                el.classList.remove('text-neutral-400');
+                el.classList.add('text-green-600');
+                icon.innerHTML =
+                    `<circle cx="12" cy="12" r="10" fill="#10b981" stroke="#10b981"></circle><path d="M9 12l2 2 4-4" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>`;
             } else {
-                element.classList.remove('checked');
-                icon.classList.add('unchecked');
-                icon.classList.remove('checked');
-                icon.innerHTML = `<circle cx="12" cy="12" r="10" fill="white" stroke="#d1d5db" stroke-width="2"></circle>`;
+                el.classList.remove('text-green-600');
+                el.classList.add('text-neutral-400');
+                icon.innerHTML = `<circle cx="12" cy="12" r="10"></circle>`;
             }
         }
 
         function resetRequirements() {
-            [reqLength, reqCase, reqNumber, reqSpecial].forEach(req => {
-                updateRequirement(req, false);
-            });
+            [reqLength, reqCase, reqNumber, reqSpecial].forEach(req => updateRequirement(req, false));
         }
 
-        // Password confirmation checker
-        const confirmationInput = document.getElementById('password_confirmation');
-        const confirmationError = document.getElementById('confirmationError');
+        // Password confirmation match
+        const confirmInput = document.getElementById('password_confirmation');
+        const confirmError = document.getElementById('confirmationError');
 
-        confirmationInput.addEventListener('input', function() {
-            checkPasswordMatch();
-        });
+        confirmInput.addEventListener('input', checkPasswordMatch);
 
         function checkPasswordMatch() {
-            const password = passwordInput.value;
-            const confirmation = confirmationInput.value;
-
-            if (confirmation.length === 0) {
-                confirmationInput.classList.remove('password-match', 'password-mismatch');
-                confirmationError.style.display = 'none';
+            const val = confirmInput.value;
+            if (!val.length) {
+                confirmInput.classList.remove('is-invalid');
+                confirmError.classList.add('hidden');
                 return;
             }
-
-            if (password === confirmation) {
-                confirmationInput.classList.add('password-match');
-                confirmationInput.classList.remove('password-mismatch');
-                confirmationError.style.display = 'none';
+            if (passwordInput.value === val) {
+                confirmInput.classList.remove('is-invalid');
+                confirmError.classList.add('hidden');
             } else {
-                confirmationInput.classList.add('password-mismatch');
-                confirmationInput.classList.remove('password-match');
-                confirmationError.textContent = 'Password tidak cocok';
-                confirmationError.style.display = 'block';
+                confirmInput.classList.add('is-invalid');
+                confirmError.textContent = 'Password tidak cocok';
+                confirmError.classList.remove('hidden');
             }
         }
 
-        // Form Submission with reCAPTCHA
+        // Form submit + reCAPTCHA
         document.getElementById('resetPasswordForm').addEventListener('submit', function(e) {
-            const password = passwordInput.value;
-            const confirmation = confirmationInput.value;
-
-            // Validate password match
-            if (password !== confirmation) {
+            if (passwordInput.value !== confirmInput.value) {
                 e.preventDefault();
-                confirmationError.textContent = 'Password tidak cocok';
-                confirmationError.style.display = 'block';
-                confirmationInput.focus();
+                confirmInput.classList.add('is-invalid');
+                confirmError.textContent = 'Password tidak cocok';
+                confirmError.classList.remove('hidden');
+                confirmInput.focus();
                 return;
             }
 
-            // Validate password requirements
-            if (password.length < 8) {
+            if (passwordInput.value.length < 8) {
                 e.preventDefault();
                 alert('Password minimal 8 karakter');
                 passwordInput.focus();
                 return;
             }
 
-            @if ($recaptchaSiteKey)
+            @if (!empty($recaptchaSiteKey))
                 e.preventDefault();
-
-                const submitBtn = document.getElementById('submitBtn');
-                const originalContent = submitBtn.innerHTML;
-
-                // Disable button and show loading
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = `
-            <div class="spinner"></div>
-            <span>Memproses...</span>
-        `;
-
-                grecaptcha.ready(function() {
+                const btn = document.getElementById('submitBtn');
+                const orig = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = `<div class="spinner"></div><span>Memproses...</span>`;
+                grecaptcha.ready(() => {
                     grecaptcha.execute(RECAPTCHA_SITE_KEY, {
                             action: 'reset_password'
                         })
-                        .then(function(token) {
+                        .then(token => {
                             document.getElementById('recaptcha_token').value = token;
                             document.getElementById('resetPasswordForm').submit();
                         })
-                        .catch(function(error) {
-                            console.error('reCAPTCHA error:', error);
-                            submitBtn.disabled = false;
-                            submitBtn.innerHTML = originalContent;
+                        .catch(() => {
+                            btn.disabled = false;
+                            btn.innerHTML = orig;
                             alert('Terjadi kesalahan pada verifikasi reCAPTCHA. Silakan coba lagi.');
                         });
                 });
             @endif
         });
 
-        // Auto-hide alerts after 5 seconds
-        document.addEventListener('DOMContentLoaded', function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                setTimeout(function() {
-                    alert.style.opacity = '0';
-                    alert.style.transition = 'opacity 0.5s ease';
-                    setTimeout(function() {
-                        alert.remove();
-                    }, 500);
+        // Auto-dismiss alerts
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.alert').forEach(el => {
+                setTimeout(() => {
+                    el.style.opacity = '0';
+                    setTimeout(() => el.remove(), 500);
                 }, 5000);
             });
         });
     </script>
+
 @endpush

@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Pengaturan')
+@section('page-title', 'Setting')
 
 @section('content')
     <div class="container mx-auto">
@@ -480,16 +481,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const flashMessages = document.querySelectorAll('[class*="bg-green-50"], [class*="bg-red-50"]');
-            flashMessages.forEach(function(flashMessage) {
-                setTimeout(() => {
-                    flashMessage.style.opacity = '0';
-                    flashMessage.style.transition = 'opacity 0.5s ease';
-                    setTimeout(() => {
-                        flashMessage.remove();
-                    }, 500);
-                }, 5000);
-            });
+            // Script ini dikurangi karena sudah ada handler global di app.blade.php
+            // untuk menghindari penghapusan elemen UI yang tidak sengaja.
         });
     </script>
 @endpush
