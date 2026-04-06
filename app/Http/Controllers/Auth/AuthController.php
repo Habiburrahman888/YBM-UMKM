@@ -253,7 +253,10 @@ class AuthController extends Controller
 
     public function showLogin()
     {
-        return view('auth.login', ['recaptchaSiteKey' => $this->getRecaptchaSiteKey()]);
+        return view('auth.login', [
+            'recaptchaSiteKey' => $this->getRecaptchaSiteKey(),
+            'setting'          => SettingAdmin::first(),
+        ]);
     }
 
     public function login(Request $request)
@@ -304,6 +307,30 @@ class AuthController extends Controller
                 ->withErrors(['login' => 'Akun Anda tidak aktif. Silakan hubungi administrator.']);
         }
 
+        // ✅ TAMBAHAN: Cek status Unit atau UMKM yang menaungi
+        if ($user->role === 'umkm') {
+            $umkm = $user->umkm;
+            if ($umkm) {
+                if ($umkm->status === 'nonaktif') {
+                    return redirect()->back()
+                        ->withInput($request->only('login', 'remember'))
+                        ->withErrors(['login' => 'Akun UMKM Anda tidak aktif. Silakan hubungi administrator.']);
+                }
+                if ($umkm->unit && !$umkm->unit->is_active) {
+                    return redirect()->back()
+                        ->withInput($request->only('login', 'remember'))
+                        ->withErrors(['login' => 'Unit yang menaungi UMKM Anda sedang tidak aktif.']);
+                }
+            }
+        } elseif ($user->role === 'unit') {
+            $unit = $user->unit;
+            if ($unit && !$unit->is_active) {
+                return redirect()->back()
+                    ->withInput($request->only('login', 'remember'))
+                    ->withErrors(['login' => 'Akun Unit Anda sedang tidak aktif. Silakan hubungi administrator.']);
+            }
+        }
+
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
             return redirect()->intended(route('dashboard'))
@@ -321,7 +348,10 @@ class AuthController extends Controller
 
     public function showRegister()
     {
-        return view('auth.register', ['recaptchaSiteKey' => $this->getRecaptchaSiteKey()]);
+        return view('auth.register', [
+            'recaptchaSiteKey' => $this->getRecaptchaSiteKey(),
+            'setting'          => SettingAdmin::first(),
+        ]);
     }
 
     public function register(Request $request)
@@ -457,6 +487,7 @@ class AuthController extends Controller
             'expiresAt'        => $expiresAt->toIso8601String(),
             'canResendAt'      => Cache::get('otp_cooldown_' . $normalizedEmail),
             'recaptchaSiteKey' => $this->getRecaptchaSiteKey(),
+            'setting'          => SettingAdmin::first(),
         ]);
     }
 
@@ -619,6 +650,7 @@ class AuthController extends Controller
             'recaptchaSiteKey' => $this->getRecaptchaSiteKey(),
             'prefillEmail'     => $prefillEmail,
             'cooldownSeconds'  => $cooldownSeconds,
+            'setting'          => SettingAdmin::first(),
         ]);
     }
 
@@ -759,6 +791,7 @@ class AuthController extends Controller
             'countdownSeconds' => $countdownSeconds,
             'user'             => $user,
             'recaptchaSiteKey' => $this->getRecaptchaSiteKey(),
+            'setting'          => SettingAdmin::first(),
         ]);
     }
 
@@ -786,6 +819,7 @@ class AuthController extends Controller
             'token'            => $token,
             'uuid'             => $uuid,
             'recaptchaSiteKey' => $this->getRecaptchaSiteKey(),
+            'setting'          => SettingAdmin::first(),
         ]);
     }
 

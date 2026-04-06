@@ -4,9 +4,8 @@
 
 @section('content')
 
-    {{-- ── Left Panel ── --}}
     <div class="auth-left">
-        <div id="lottie-logo" class="w-[220px] h-[220px] relative z-10"></div>
+        <div id="lottie-logo" style="width: 280px; height: 280px;" class="relative z-10 mx-auto mb-4"></div>
         <div class="auth-left-text">
             <h2>Portal YBM UMKM</h2>
             <p>Yayasan Baitul Maal UMKM Indonesia</p>
@@ -25,8 +24,8 @@
         {{-- Alerts --}}
         @if (session('success'))
             <div class="alert alert-success">
-                <svg class="w-[18px] h-[18px] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
+                <svg class="w-[18px] h-[18px] shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -178,13 +177,16 @@
 
     <script>
         // ── Lottie ──
-        lottie.loadAnimation({
-            container: document.getElementById('lottie-logo'),
-            renderer: 'svg',
-            loop: true,
-            autoplay: true,
-            path: '{{ asset('Auth/Pin code Password Protection, Secure Login animation.json') }}'
-        });
+        const lottieContainer = document.getElementById('lottie-logo');
+        if (lottieContainer) {
+            lottie.loadAnimation({
+                container: lottieContainer,
+                renderer: 'svg',
+                loop: true,
+                autoplay: true,
+                path: '{{ asset('Auth/auth-logo.json') }}'
+            });
+        }
 
         // ── Cooldown Countdown ──
         const INITIAL_COOLDOWN = {{ !empty($cooldownSeconds) && $cooldownSeconds > 0 ? (int) $cooldownSeconds : 0 }};

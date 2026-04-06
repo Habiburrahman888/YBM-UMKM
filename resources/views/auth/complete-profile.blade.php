@@ -327,10 +327,11 @@
                                     </path>
                                 </svg>
                             </span>
+                            {{-- PERBAIKAN: tambah inputmode, pattern, maxlength --}}
                             <input type="tel"
                                 class="form-input pl-10 pr-3 @error('admin_telepon') is-invalid @enderror"
-                                id="admin_telepon" name="admin_telepon" placeholder="08xxxxxxxxxx"
-                                value="{{ old('admin_telepon') }}" required>
+                                id="admin_telepon" name="admin_telepon" placeholder="08xxxxxxxxxx" inputmode="numeric"
+                                pattern="[0-9\-\+\(\) ]+" maxlength="15" value="{{ old('admin_telepon') }}" required>
                         </div>
                         @error('admin_telepon')
                             <span class="block mt-1 text-[12px] text-red-500">{{ $message }}</span>
@@ -657,8 +658,10 @@
                                     </path>
                                 </svg>
                             </span>
+                            {{-- PERBAIKAN: tambah inputmode, pattern, maxlength --}}
                             <input type="tel" class="form-input pl-10 pr-3 @error('telepon') is-invalid @enderror"
                                 id="telepon" name="telepon" placeholder="021-xxxxxxx atau 08xxxxxxxxxx"
+                                inputmode="numeric" pattern="[0-9\-\+\(\) ]+" maxlength="15"
                                 value="{{ old('telepon') }}" required>
                         </div>
                         @error('telepon')
@@ -696,7 +699,7 @@
                         </svg>
                     </button>
                     <button type="submit" id="submitBtn"
-                        class="btn-primary w-auto h-auto px-5 py-2.5 hidden items-center gap-1.5">
+                        class="btn-primary w-auto h-auto px-5 py-2.5 flex items-center gap-1.5" style="display: none">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                             stroke-linejoin="round">
@@ -760,8 +763,8 @@
 
     <script>
         /* ─────────────────────────────────────────
-        AUTH-CARD OVERRIDE → single column
-        ───────────────────────────────────────── */
+                AUTH-CARD OVERRIDE → single column
+                ───────────────────────────────────────── */
         document.addEventListener('DOMContentLoaded', function() {
             const card = document.querySelector('.auth-card');
             if (card) {
@@ -1180,6 +1183,48 @@
         setupFileUpload('logo', 'logoBox', 'logoPreview');
 
         /* ─────────────────────────────────────────
+        PHONE NUMBER — hanya angka & karakter telepon
+        ───────────────────────────────────────── */
+        ['admin_telepon', 'telepon'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+
+            // Blokir karakter non-numerik saat mengetik
+            el.addEventListener('keydown', function(e) {
+                const allowed = [
+                    'Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
+                    'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+                    'Home', 'End'
+                ];
+                if (allowed.includes(e.key)) return;
+                // Izinkan: angka 0-9, +, -, (, ), spasi
+                if (!/^[0-9\+\-\(\) ]$/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+
+            // Bersihkan jika paste teks non-numerik
+            el.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pasted = (e.clipboardData || window.clipboardData).getData('text');
+                const cleaned = pasted.replace(/[^0-9\+\-\(\) ]/g, '');
+                const pos = this.selectionStart;
+                const current = this.value;
+                this.value = current.slice(0, pos) + cleaned + current.slice(this.selectionEnd);
+            });
+
+            // Sanitasi jika ada nilai yang lolos (misal autofill)
+            el.addEventListener('input', function() {
+                const pos = this.selectionStart;
+                const cleaned = this.value.replace(/[^0-9\+\-\(\) ]/g, '');
+                if (this.value !== cleaned) {
+                    this.value = cleaned;
+                    this.setSelectionRange(pos - 1, pos - 1);
+                }
+            });
+        });
+
+        /* ─────────────────────────────────────────
         LOCATION DROPDOWNS
         ───────────────────────────────────────── */
         const selProvinsi = document.getElementById('provinsi_kode');
@@ -1187,6 +1232,27 @@
         const selKecamatan = document.getElementById('kecamatan_kode');
         const selKelurahan = document.getElementById('kelurahan_kode');
         const inputKodePos = document.getElementById('kode_pos');
+
+        // Restore location if there's old input
+        document.addEventListener('DOMContentLoaded', function() {
+            const oldProv = '{{ old('provinsi_kode') }}';
+            const oldKota = '{{ old('kota_kode') }}';
+            const oldKec = '{{ old('kecamatan_kode') }}';
+            const oldKel = '{{ old('kelurahan_kode') }}';
+
+            if (oldProv) {
+                fetchOptions(`{{ route('get-cities') }}?province_code=${oldProv}`, selKota, 'cities',
+                        'Pilih kota/kabupaten', oldKota)
+                    .then(() => {
+                        if (oldKota) return fetchOptions(`{{ route('get-districts') }}?city_code=${oldKota}`,
+                            selKecamatan, 'districts', 'Pilih kecamatan', oldKec);
+                    })
+                    .then(() => {
+                        if (oldKec) return fetchOptions(`{{ route('get-villages') }}?district_code=${oldKec}`,
+                            selKelurahan, 'villages', 'Pilih kelurahan/desa', oldKel);
+                    });
+            }
+        });
 
         selProvinsi.addEventListener('change', function() {
             resetSelects([selKota, selKecamatan, selKelurahan]);
@@ -1229,10 +1295,16 @@
             });
         }
 
-        function fetchOptions(url, select, key, placeholder) {
-            fetch(url).then(r => r.json()).then(data => {
+        function fetchOptions(url, select, key, placeholder, selectedValue = null) {
+            return fetch(url).then(r => r.json()).then(data => {
                 select.disabled = false;
-                data[key].forEach(item => select.add(new Option(item.name, item.code)));
+                select.innerHTML = `<option value="">${placeholder}</option>`;
+                data[key].forEach(item => {
+                    const opt = new Option(item.name, item.code);
+                    if (selectedValue && item.code == selectedValue) opt.selected = true;
+                    select.add(opt);
+                });
+                return data;
             });
         }
 
@@ -1240,6 +1312,11 @@
         FORM SUBMIT + reCAPTCHA
         ───────────────────────────────────────── */
         document.getElementById('completeProfileForm').addEventListener('submit', function(e) {
+            if (!validateStep(currentStep)) {
+                e.preventDefault();
+                return;
+            }
+
             @if (!empty($recaptchaSiteKey))
                 e.preventDefault();
                 const btn = document.getElementById('submitBtn');

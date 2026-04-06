@@ -181,10 +181,18 @@ class UmkmController extends Controller
             $validated['tanggal_bergabung'] = now()->toDateString();
             $validated['created_by']        = auth()->id();
 
-            // Semua role langsung aktif saat mendaftarkan UMKM binaan
-            $validated['status']      = 'aktif';
-            $validated['verified_at'] = now();
-            $validated['verified_by'] = auth()->id();
+            // ✅ TAMBAHAN: Jika Unit tidak aktif, UMKM harus nonaktif
+            $unitForUmkm = Unit::find($validated['unit_id']);
+            if ($unitForUmkm && !$unitForUmkm->is_active) {
+                $validated['status']      = 'nonaktif';
+                $validated['verified_at'] = null;
+                $validated['verified_by'] = null;
+            } else {
+                // Semua role langsung aktif saat mendaftarkan UMKM binaan selama unit aktif
+                $validated['status']      = 'aktif';
+                $validated['verified_at'] = now();
+                $validated['verified_by'] = auth()->id();
+            }
 
             $umkm = Umkm::create([
                 'uuid'              => $validated['uuid'],
@@ -589,6 +597,11 @@ class UmkmController extends Controller
             }
         }
 
+        // ✅ TAMBAHAN: Cek status unit
+        if ($umkm->unit && !$umkm->unit->is_active) {
+            return redirect()->back()->with('error', 'Gagal mengaktifkan UMKM. Unit yang menaungi sedang tidak aktif.');
+        }
+
         $umkm->update([
             'status'      => 'aktif',
             'verified_at' => now(),
@@ -630,6 +643,11 @@ class UmkmController extends Controller
 
         if (!in_array($newStatus, ['aktif', 'nonaktif'])) {
             return back()->with('error', 'Status tidak valid.');
+        }
+
+        // ✅ TAMBAHAN: Cek status unit jika mau mengaktifkan
+        if ($newStatus === 'aktif' && $umkm->unit && !$umkm->unit->is_active) {
+            return back()->with('error', 'Gagal mengaktifkan UMKM. Unit yang menaungi sedang tidak aktif.');
         }
 
         $umkm->update([
@@ -712,7 +730,7 @@ class UmkmController extends Controller
             'email'             => $umkm->email,
             'password'          => Hash::make($password),
             'role'              => 'umkm',
-            'is_active'         => true,
+            'is_active'         => ($umkm->unit && $umkm->unit->is_active),
             'email_verified_at' => now(),
         ]);
 

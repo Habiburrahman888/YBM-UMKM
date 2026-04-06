@@ -43,9 +43,17 @@ class DashboardController extends Controller
     {
         // ===== STATISTICS CARDS =====
         $totalUsers = User::count();
-        $totalUnits = Unit::where('is_active', true)->count();
+        $totalUnits = Unit::count();
+        $unitAktif = Unit::where('is_active', true)->count();
+        $unitNonaktif = Unit::where('is_active', false)->count();
         $totalUmkm = Umkm::count();
-        $umkmAktif = Umkm::where('status', 'aktif')->count();
+        $umkmAktif = Umkm::where('status', 'aktif')
+            ->where(function($q) {
+                $q->whereNull('unit_id')
+                  ->orWhereHas('unit', function($uq) {
+                      $uq->where('is_active', true);
+                  });
+            })->count();
         $totalKategori = Kategori::count();
 
         // ===== GROWTH METRICS =====
@@ -59,7 +67,12 @@ class DashboardController extends Controller
         $statusUmkm = [
             'aktif'    => $umkmAktif,
             'pending'  => 0,
-            'nonaktif' => Umkm::where('status', 'nonaktif')->count(),
+            'nonaktif' => $totalUmkm - $umkmAktif,
+        ];
+
+        $statusUnit = [
+            'aktif'    => Unit::where('is_active', true)->count(),
+            'nonaktif' => Unit::where('is_active', false)->count(),
         ];
 
         // ===== DISTRIBUSI USERS BY ROLE =====
@@ -108,7 +121,7 @@ class DashboardController extends Controller
         $umkmSummary = [
             'total'      => $totalUmkm,
             'aktif'      => $umkmAktif,
-            'nonaktif'   => $statusUmkm['nonaktif'],
+            'nonaktif'   => $totalUmkm - $umkmAktif,
             'verified'   => Umkm::whereNotNull('verified_at')->count(),
             'unverified' => Umkm::whereNull('verified_at')->count(),
         ];
@@ -127,6 +140,8 @@ class DashboardController extends Controller
         return view('dashboard.admin', compact(
             'totalUsers',
             'totalUnits',
+            'unitAktif',
+            'unitNonaktif',
             'totalUmkm',
             'umkmAktif',
             'totalKategori',
@@ -135,6 +150,7 @@ class DashboardController extends Controller
             'umkmGrowth',
             'grafikRegistrasi',
             'statusUmkm',
+            'statusUnit',
             'distribusiRole',
             'topProvinsi',
             'umkmTerbaru',
@@ -724,6 +740,10 @@ class DashboardController extends Controller
             'produkTerbaru',
             'produkHariIni',
             'produkBulanIni',
+            'totalPesanan',  
+            'pesananPending',
+            'pesananTerbaru',
+            'pesananHariIni',
             'quickStats',
             'umkmSummary',
             'breadcrumbs',

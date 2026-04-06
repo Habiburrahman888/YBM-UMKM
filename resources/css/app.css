@@ -2,37 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─────────────────────────────────────────
-   BASE OVERRIDES
-───────────────────────────────────────── */
 @layer base {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     @apply box-border m-0 p-0;
   }
 
-  html,
-  body {
-    @apply w-full h-full overflow-hidden font-sans;
+  html {
+    @apply w-full h-full font-sans;
   }
 
   body {
-    @apply flex items-center justify-center;
-    background: linear-gradient(135deg, #EBF4FF 0%, #C3DAFE 100%);
-  }
-
-  body::before {
-    content: '';
-    @apply fixed inset-0 pointer-events-none z-0;
-    background-image:
-      radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+    @apply w-full font-sans;
   }
 }
 
+body.auth-page {
+  @apply min-h-screen flex items-center justify-center overflow-hidden;
+  background: linear-gradient(135deg, #EBF4FF 0%, #C3DAFE 100%);
+}
+
+body.auth-page::before {
+  content: '';
+  @apply fixed inset-0 pointer-events-none z-0;
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+}
+
 /* ─────────────────────────────────────────
-   COMPONENTS
+COMPONENTS
 ───────────────────────────────────────── */
 @layer components {
 
@@ -72,12 +70,12 @@
   }
 
   .auth-left-text h2 {
-    @apply text-2xl font-bold mb-1.5;
+    @apply text-[32px] font-bold mb-2;
   }
 
   .auth-left-text p {
-    @apply text-[13px] leading-relaxed;
-    opacity: 0.85;
+    @apply text-[15px] leading-relaxed;
+    opacity: 0.9;
   }
 
   /* ── Right Panel ── */

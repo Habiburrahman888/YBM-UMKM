@@ -11,10 +11,11 @@
 
         <!-- Statistics Cards -->
         @php
-            // Default values untuk menghindari error jika variabel tidak dikirim dari controller
             $totalUsers = $totalUsers ?? 0;
             $usersGrowth = $usersGrowth ?? 0;
             $totalUnits = $totalUnits ?? 0;
+            $unitAktif = $unitAktif ?? 0;
+            $unitNonaktif = $unitNonaktif ?? 0;
             $unitsGrowth = $unitsGrowth ?? 0;
             $totalUmkm = $totalUmkm ?? 0;
             $umkmGrowth = $umkmGrowth ?? 0;
@@ -22,7 +23,7 @@
             $totalKategori = $totalKategori ?? 0;
         @endphp
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <!-- Total Users Card -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
                 <div class="flex items-center justify-between mb-3">
@@ -32,13 +33,6 @@
                                 d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
                         </svg>
                     </div>
-                    @if ($usersGrowth > 0)
-                        <span
-                            class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">+{{ $usersGrowth }}%</span>
-                    @elseif($usersGrowth < 0)
-                        <span
-                            class="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">{{ $usersGrowth }}%</span>
-                    @endif
                 </div>
                 <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ number_format($totalUsers) }}</h3>
                 <p class="text-sm text-gray-600">Total Users</p>
@@ -54,16 +48,39 @@
                                 clip-rule="evenodd" />
                         </svg>
                     </div>
-                    @if ($unitsGrowth > 0)
-                        <span
-                            class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">+{{ $unitsGrowth }}%</span>
-                    @elseif($unitsGrowth < 0)
-                        <span
-                            class="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">{{ $unitsGrowth }}%</span>
-                    @endif
                 </div>
                 <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ number_format($totalUnits) }}</h3>
                 <p class="text-sm text-gray-600">Total Units</p>
+            </div>
+
+            <!-- Unit Aktif Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ number_format($unitAktif) }}</h3>
+                <p class="text-sm text-gray-600">Unit Aktif</p>
+            </div>
+
+            <!-- Unit Nonaktif Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ number_format($unitNonaktif) }}</h3>
+                <p class="text-sm text-gray-600">Unit Nonaktif</p>
             </div>
 
             <!-- Total UMKM Card -->
@@ -76,13 +93,6 @@
                                 clip-rule="evenodd" />
                         </svg>
                     </div>
-                    @if ($umkmGrowth > 0)
-                        <span
-                            class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">+{{ $umkmGrowth }}%</span>
-                    @elseif($umkmGrowth < 0)
-                        <span
-                            class="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">{{ $umkmGrowth }}%</span>
-                    @endif
                 </div>
                 <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ number_format($totalUmkm) }}</h3>
                 <p class="text-sm text-gray-600">Total UMKM</p>
@@ -101,6 +111,21 @@
                 </div>
                 <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ number_format($umkmAktif) }}</h3>
                 <p class="text-sm text-gray-600">UMKM Aktif</p>
+            </div>
+
+            <!-- UMKM Nonaktif Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ number_format($totalUmkm - $umkmAktif) }}</h3>
+                <p class="text-sm text-gray-600">UMKM Nonaktif</p>
             </div>
 
             <!-- Kategori Produk Card -->
@@ -122,6 +147,7 @@
         @php
             $grafikRegistrasi = $grafikRegistrasi ?? ['labels' => [], 'umkm' => [], 'users' => [], 'units' => []];
             $statusUmkm = $statusUmkm ?? ['aktif' => 0, 'nonaktif' => 0];
+            $statusUnit = $statusUnit ?? ['aktif' => 0, 'nonaktif' => 0];
             $topProvinsi = $topProvinsi ?? [];
         @endphp
 
@@ -129,11 +155,6 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-lg font-semibold text-gray-900">Tren Registrasi (6 Bulan Terakhir)</h2>
-                <div class="flex gap-2">
-                    <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">UMKM</span>
-                    <span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-medium">Users</span>
-                    <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">Units</span>
-                </div>
             </div>
             <div class="h-80">
                 @if (!empty($grafikRegistrasi['labels']))
@@ -153,8 +174,8 @@
             </div>
         </div>
 
-        <!-- Status UMKM & Top Provinsi -->
-        <div class="grid lg:grid-cols-2 gap-6 mb-6">
+        <!-- Status Charts & Top Provinsi -->
+        <div class="grid lg:grid-cols-3 gap-6 mb-6">
             <!-- Status UMKM Chart -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Status UMKM</h2>
@@ -188,6 +209,41 @@
                             <span class="text-sm text-gray-700">Nonaktif</span>
                         </div>
                         <span class="text-sm font-bold text-gray-900">{{ number_format($statusUmkm['nonaktif']) }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Unit Chart -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Status Unit</h2>
+                <div class="h-64 flex items-center justify-center">
+                    @if ($statusUnit['aktif'] + $statusUnit['nonaktif'] > 0)
+                        <canvas id="statusUnitChart"></canvas>
+                    @else
+                        <div class="text-center">
+                            <svg class="w-16 h-16 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            <p class="text-gray-400 text-sm">Tidak ada data</p>
+                        </div>
+                    @endif
+                </div>
+                <div class="space-y-2 mt-4">
+                    <div class="flex items-center justify-between p-2 bg-purple-50 rounded-lg">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+                            <span class="text-sm text-gray-700">Aktif</span>
+                        </div>
+                        <span class="text-sm font-bold text-gray-900">{{ number_format($statusUnit['aktif']) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2 bg-red-50 rounded-lg">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                            <span class="text-sm text-gray-700">Nonaktif</span>
+                        </div>
+                        <span class="text-sm font-bold text-gray-900">{{ number_format($statusUnit['nonaktif']) }}</span>
                     </div>
                 </div>
             </div>
@@ -488,6 +544,59 @@
                                     ],
                                     borderColor: [
                                         'rgb(34, 197, 94)',
+                                        'rgb(239, 68, 68)'
+                                    ],
+                                    borderWidth: 2
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    },
+                                    tooltip: {
+                                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                        padding: 12,
+                                        callbacks: {
+                                            label: function(context) {
+                                                const label = context.label || '';
+                                                const value = context.parsed || 0;
+                                                const total = context.dataset.data.reduce((a, b) => a + b,
+                                                    0);
+                                                const percentage = total > 0 ? ((value / total) * 100)
+                                                    .toFixed(1) : 0;
+                                                return `${label}: ${value} (${percentage}%)`;
+                                            }
+                                        }
+                                    }
+                                },
+                                cutout: '70%'
+                            }
+                        });
+                    }
+                @endif
+
+                // Status Unit Chart
+                @if ($statusUnit['aktif'] + $statusUnit['nonaktif'] > 0)
+                    const ctxStatusUnit = document.getElementById('statusUnitChart');
+                    if (ctxStatusUnit) {
+                        new Chart(ctxStatusUnit, {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['Aktif', 'Nonaktif'],
+                                datasets: [{
+                                    data: [
+                                        @json($statusUnit['aktif']),
+                                        @json($statusUnit['nonaktif'])
+                                    ],
+                                    backgroundColor: [
+                                        'rgba(168, 85, 247, 0.8)',
+                                        'rgba(239, 68, 68, 0.8)'
+                                    ],
+                                    borderColor: [
+                                        'rgb(168, 85, 247)',
                                         'rgb(239, 68, 68)'
                                     ],
                                     borderWidth: 2

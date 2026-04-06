@@ -158,7 +158,7 @@
             renderer: 'svg',
             loop: true,
             autoplay: true,
-            path: '{{ asset('Auth/Pin code Password Protection, Secure Login animation.json') }}'
+            path: '{{ $setting && $setting->logo_expo ? $setting->logo_expo_url : asset('Auth/auth-logo.json') }}'
         });
 
         let linkExpirySeconds = {{ $countdownSeconds }};

@@ -4,9 +4,8 @@
 
 @section('content')
 
-    {{-- ── Left Panel ── --}}
     <div class="auth-left">
-        <div id="lottie-logo" class="w-[220px] h-[220px] relative z-10"></div>
+        <div id="lottie-logo" style="width: 280px; height: 280px;" class="relative z-10 mx-auto mb-4"></div>
         <div class="auth-left-text">
             <h2>Portal YBM UMKM</h2>
             <p>Yayasan Baitul Maal UMKM Indonesia</p>
@@ -202,13 +201,16 @@
 
     <script>
         // Lottie
-        lottie.loadAnimation({
-            container: document.getElementById('lottie-logo'),
-            renderer: 'svg',
-            loop: true,
-            autoplay: true,
-            path: '{{ asset('Auth/Pin code Password Protection, Secure Login animation.json') }}'
-        });
+        const lottieContainer = document.getElementById('lottie-logo');
+        if (lottieContainer) {
+            lottie.loadAnimation({
+                container: lottieContainer,
+                renderer: 'svg',
+                loop: true,
+                autoplay: true,
+                path: '{{ asset('Auth/auth-logo.json') }}'
+            });
+        }
 
         // OTP Input Handler
         const otpInputs = document.querySelectorAll('.otp-input');

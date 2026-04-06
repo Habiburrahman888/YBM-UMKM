@@ -411,7 +411,7 @@
 
                                             {{-- Status --}}
                                             <td class="px-4 py-4">
-                                                @if ($item->status === 'aktif')
+                                                @if ($item->status === 'aktif' && (!$item->unit || $item->unit->is_active))
                                                     <span
                                                         class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-xs font-medium">
                                                         <span
@@ -520,7 +520,7 @@
 
                                         {{-- Status --}}
                                         <td class="px-4 py-4">
-                                            @if ($item->status === 'aktif')
+                                            @if ($item->status === 'aktif' && (!$item->unit || $item->unit->is_active))
                                                 <span
                                                     class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-xs font-medium">
                                                     <span
@@ -592,7 +592,7 @@
                                             <div class="flex items-center gap-2 flex-wrap">
                                                 <h3 class="text-sm font-semibold text-gray-900 truncate">
                                                     {{ $item->nama_usaha }}</h3>
-                                                @if ($item->status === 'aktif')
+                                                @if ($item->status === 'aktif' && (!$item->unit || $item->unit->is_active))
                                                     <span
                                                         class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-green-50 text-green-600 text-xs font-medium">
                                                         <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>Aktif

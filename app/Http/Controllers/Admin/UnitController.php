@@ -342,6 +342,26 @@ class UnitController extends Controller
 
         $unit->update($data);
 
+        // ✅ TAMBAHAN: Cascade status ke UMKM & User jika unit dinonaktifkan
+        if ($unit->is_active === false) {
+            // Nonaktifkan semua UMKM di bawah unit ini
+            $unit->umkm()->update(['status' => 'nonaktif']);
+            
+            // Nonaktifkan user unit 
+            if ($unit->user) {
+                $unit->user->update(['is_active' => false]);
+            }
+            
+            // Nonaktifkan semua user UMKM di bawah unit ini
+            $umkmUserIds = $unit->umkm()->pluck('user_id');
+            Users::whereIn('id', $umkmUserIds)->update(['is_active' => false]);
+        } elseif ($unit->is_active === true) {
+            // Jika unit diaktifkan kembali, aktifkan user unitnya
+            if ($unit->user) {
+                $unit->user->update(['is_active' => true]);
+            }
+        }
+
         return redirect()
             ->route('unit.index')
             ->with('success', 'Unit berhasil diupdate');
@@ -378,6 +398,26 @@ class UnitController extends Controller
         $unit->update([
             'is_active' => !$unit->is_active
         ]);
+
+        // ✅ TAMBAHAN: Cascade status ke UMKM & User jika unit dinonaktifkan
+        if (!$unit->is_active) {
+            // Nonaktifkan semua UMKM di bawah unit ini
+            $unit->umkm()->update(['status' => 'nonaktif']);
+            
+            // Nonaktifkan user unit 
+            if ($unit->user) {
+                $unit->user->update(['is_active' => false]);
+            }
+            
+            // Nonaktifkan semua user UMKM di bawah unit ini
+            $umkmUserIds = $unit->umkm()->pluck('user_id');
+            Users::whereIn('id', $umkmUserIds)->update(['is_active' => false]);
+        } else {
+            // Jika unit diaktifkan kembali, aktifkan user unitnya
+            if ($unit->user) {
+                $unit->user->update(['is_active' => true]);
+            }
+        }
 
         $status = $unit->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
