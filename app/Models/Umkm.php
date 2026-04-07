@@ -274,6 +274,30 @@ class Umkm extends Model
         return implode(', ', $parts) ?: '-';
     }
 
+    public function getFacebookAttribute($value)
+    {
+        if (!$value) return null;
+        return (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) ? $value : 'https://' . $value;
+    }
+
+    public function getInstagramAttribute($value)
+    {
+        if (!$value) return null;
+        return (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) ? $value : 'https://' . $value;
+    }
+
+    public function getYoutubeAttribute($value)
+    {
+        if (!$value) return null;
+        return (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) ? $value : 'https://' . $value;
+    }
+
+    public function getTiktokAttribute($value)
+    {
+        if (!$value) return null;
+        return (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) ? $value : 'https://' . $value;
+    }
+
     // ─── Accessors: Total Modal ───────────────────────────────────────────────────
 
     // Total nilai seluruh modal UMKM

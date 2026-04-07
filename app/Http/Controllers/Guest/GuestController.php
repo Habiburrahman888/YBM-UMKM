@@ -66,6 +66,7 @@ class GuestController extends Controller
             'jumlah'          => $orderItems[0]['jumlah'],
             'total_harga'     => $totalHarga,
             'bukti_transfer'  => $path,
+            'metode_pembayaran' => $request->metode_pembayaran,
             'catatan'         => $request->catatan,
             'status'          => 'pending',
         ]);
@@ -488,4 +489,4 @@ class GuestController extends Controller
 
         return view('guest.cek-pesanan', compact('setting', 'sosmed', 'kategori', 'pesanan'));
     }
-}
+}

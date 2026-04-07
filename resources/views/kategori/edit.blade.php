@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Edit Kategori')
+@section('page-title', 'Edit Kategori')
 
 @section('content')
     <div class="space-y-4 sm:space-y-6">

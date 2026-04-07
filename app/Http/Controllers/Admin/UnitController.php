@@ -216,7 +216,7 @@ class UnitController extends Controller
 
         $breadcrumbs = [
             ['name' => 'Kelola Unit', 'url' => route('unit.index')],
-            ['name' => 'Ubah Unit', 'url' => route('unit.edit', $uuid)]
+            ['name' => 'Edit Unit', 'url' => route('unit.edit', $uuid)]
         ];
 
         return view('unit.edit', compact('unit', 'breadcrumbs', 'provinces', 'cities', 'districts', 'villages', 'availableUsers')); // ✅ PASS availableUsers

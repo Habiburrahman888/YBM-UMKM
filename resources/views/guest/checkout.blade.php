@@ -403,16 +403,48 @@
             border: none;
             cursor: pointer;
             box-shadow: 0 8px 20px rgba(26,49,153,0.22);
-            transition: background 0.3s var(--ease), transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+            transition: all 0.3s var(--ease);
             margin-top: 1.25rem;
             text-decoration: none;
+            position: relative;
         }
 
-        .buy-button:hover {
+        .buy-button:hover:not(:disabled) {
             background: var(--brand-dark);
             transform: translateY(-2px);
             box-shadow: 0 14px 28px rgba(26,49,153,0.32);
             color: white;
+        }
+
+        .buy-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            filter: grayscale(0.5);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
         }
 
         /* ── BACK LINK ── */
@@ -466,7 +498,7 @@
     <div class="bg-neutral-50 min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 pb-24">
 
-            <form action="{{ route('guest.store-checkout', $produk->uuid) }}" method="POST" enctype="multipart/form-data">
+            <form id="checkoutForm" action="{{ route('guest.store-checkout', $produk->uuid) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="checkout-grid">
 
@@ -590,7 +622,7 @@
                                 </p>
 
                                 <input type="file" name="bukti_transfer" id="bukti_transfer"
-                                    style="display: none;" accept="image/*" required
+                                    class="sr-only" accept="image/*" required
                                     onchange="previewImage(this)">
 
                                 <div class="upload-area @error('bukti_transfer') border-red-500 @enderror"
@@ -673,9 +705,10 @@
                             </div>
 
                             {{-- Submit --}}
-                            <button type="submit" class="buy-button">
-                                <i class="fas fa-check-circle text-sm"></i>
-                                Konfirmasi Pembelian
+                            <button type="submit" class="buy-button" id="btnSubmit">
+                                <i class="fas fa-check-circle text-sm" id="btnIcon"></i>
+                                <div class="spinner" id="btnSpinner"></div>
+                                <span id="btnText">Konfirmasi Pembelian</span>
                             </button>
 
                             <a href="{{ route('guest.detail-produk', $produk->uuid) }}" class="back-link">
@@ -816,6 +849,21 @@
                     <p style="font-size:0.75rem;color:var(--brand);cursor:pointer;">Ganti Gambar</p>`;
             };
             reader.readAsDataURL(input.files[0]);
+        }
+        const checkoutForm = document.getElementById('checkoutForm');
+        if (checkoutForm) {
+            checkoutForm.addEventListener('submit', function(e) {
+                const btn = document.getElementById('btnSubmit');
+                if (btn) {
+                    btn.disabled = true;
+                    const text = document.getElementById('btnText');
+                    const spinner = document.getElementById('btnSpinner');
+                    const icon = document.getElementById('btnIcon');
+                    if (text) text.textContent = 'Memproses...';
+                    if (spinner) spinner.style.display = 'block';
+                    if (icon) icon.style.display = 'none';
+                }
+            });
         }
     </script>
 @endpush

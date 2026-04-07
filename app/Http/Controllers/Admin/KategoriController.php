@@ -63,7 +63,7 @@ class KategoriController extends Controller
 
         $breadcrumbs = [
             ['name' => 'Kelola Kategori', 'url' => route('kategori.index')],
-            ['name' => 'Ubah Kategori', 'url' => route('kategori.edit', $uuid)]
+            ['name' => 'Edit Kategori', 'url' => route('kategori.edit', $uuid)]
         ];
 
         return view('kategori.edit', compact('kategori', 'breadcrumbs'));

@@ -350,7 +350,7 @@
 
             const indonesiaBounds = [
                 [-15.0, 92.0], // Southwestern limit
-                [10.0, 145.0]  // Northeastern limit
+                [10.0, 145.0] // Northeastern limit
             ];
 
             const map = L.map('umkm-map', {
@@ -425,9 +425,9 @@
                             </td>
                         </tr>
                         ${ umkm.alamat ? `<tr>
-                                            <td style="color:#94a3b8;padding:3px 0;vertical-align:top;">Alamat</td>
-                                            <td style="color:#1e293b;font-weight:600;padding:3px 0 3px 8px;">${umkm.alamat}</td>
-                                        </tr>` : '' }
+                                                <td style="color:#94a3b8;padding:3px 0;vertical-align:top;">Alamat</td>
+                                                <td style="color:#1e293b;font-weight:600;padding:3px 0 3px 8px;">${umkm.alamat}</td>
+                                            </tr>` : '' }
                     </table>
                     <a href="{{ route('umkm.show', '') }}/${umkm.uuid}"
                        style="display:block;margin-top:10px;background:#1e293b;color:white;text-align:center;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;">

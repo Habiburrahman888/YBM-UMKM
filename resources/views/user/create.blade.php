@@ -1,12 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah User')
+@section('title', 'Tambah Pengguna')
+@section('page-title', 'Tambah Pengguna')
 
 @section('content')
     <div class="space-y-4 sm:space-y-6">
         <div class="bg-white rounded-xl sm:rounded-2xl shadow-card border border-gray-100 overflow-hidden animate-slide-up">
             <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
-                <h2 class="text-base sm:text-lg font-semibold text-gray-900">Tambah User Baru</h2>
+                <h2 class="text-base sm:text-lg font-semibold text-gray-900">Tambah Pengguna Baru</h2>
                 <p class="text-xs sm:text-sm text-gray-500 mt-1">Lengkapi form berikut untuk menambahkan user baru</p>
             </div>
 

@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Edit Pengaturan')
+@section('page-title', 'Edit Setting')
 
 @section('content')
     <div class="container mx-auto">
@@ -663,7 +664,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Auto-hide flash messages (Hanya untuk elemen dengan ID specifik if needed)
             // Namun secara global sudah dihandle di app.blade.php
-            
+
             const logoInput = document.getElementById('logo_expo');
             if (logoInput) {
                 logoInput.addEventListener('change', function(e) {

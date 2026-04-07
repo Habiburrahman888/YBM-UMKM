@@ -21,6 +21,7 @@ class Pesanan extends Model
         'jumlah',
         'total_harga',
         'bukti_transfer',
+        'metode_pembayaran',
         'status',
         'catatan',
     ];

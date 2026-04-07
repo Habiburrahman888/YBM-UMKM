@@ -103,7 +103,7 @@ class UserController extends Controller
 
         $breadcrumbs = [
             ['name' => 'Kelola Pengguna', 'url' => route('user.index')],
-            ['name' => 'Ubah Pengguna', 'url' => route('user.edit', $uuid)]
+            ['name' => 'Edit Pengguna', 'url' => route('user.edit', $uuid)]
         ];
 
         return view('user.edit', compact('user', 'breadcrumbs'));

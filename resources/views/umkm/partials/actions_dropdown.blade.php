@@ -31,14 +31,14 @@
                 <div class="border-t border-gray-100 mt-1 pt-1">
                     <p class="px-4 py-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
                         Ubah Status</p>
-                    @if ($item->status !== 'aktif')
+                    @if ($item->status !== 'aktif' || ($item->user && !$item->user->is_active))
                         <button type="button" onclick="submitAction('{{ route('umkm.verify', $item->uuid) }}', 'POST')"
                             class="flex items-center w-full px-4 py-2 text-sm text-green-600 hover:bg-green-50 transition-colors">
                             <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            Aktifkan
+                            {{ ($item->status === 'aktif' && $item->user && !$item->user->is_active) ? 'Aktifkan Akun' : 'Aktifkan' }}
                         </button>
                     @endif
                     @if ($item->status !== 'nonaktif')
@@ -55,8 +55,7 @@
             @endif
             @if ($permissions['canCreateAccount'] && !$item->user_id)
                 <div class="{{ $permissions['canVerify'] ? '' : 'border-t border-gray-100 mt-1 pt-1' }}">
-                    <button type="button"
-                        onclick="submitAction('{{ route('umkm.create-account', $item->uuid) }}', 'POST')"
+                    <button type="button" onclick="submitAction('{{ route('umkm.create-account', $item->uuid) }}', 'POST')"
                         class="flex items-center w-full px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 transition-colors">
                         <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -68,8 +67,7 @@
             @endif
             @if ($permissions['canDelete'])
                 <div class="border-t border-gray-100 mt-1 pt-1">
-                    <button type="button"
-                        onclick="confirmDelete('{{ $item->uuid }}','{{ addslashes($item->nama_usaha) }}')"
+                    <button type="button" onclick="confirmDelete('{{ $item->uuid }}','{{ addslashes($item->nama_usaha) }}')"
                         class="flex items-center w-full px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors">
                         <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

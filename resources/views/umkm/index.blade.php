@@ -55,7 +55,7 @@
                         @endif
 
                         {{-- Tombol Filter --}}
-                        @php $hasFilter = request()->hasAny(['status','kategori_id','province_code','city_code','unit_id']); @endphp
+                        @php $hasFilter = request()->hasAny(['status', 'kategori_id', 'province_code', 'city_code', 'unit_id']); @endphp
                         <button type="button" onclick="toggleFilter()"
                             class="inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded-lg transition-all {{ $hasFilter ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -339,7 +339,7 @@
 
                                     {{-- Unit Items --}}
                                     @foreach ($group as $item)
-                                        @php $rowClass = 'unit-group-'.($unitId ?: '0').' hidden'; @endphp
+                                        @php $rowClass = 'unit-group-' . ($unitId ?: '0') . ' hidden'; @endphp
 
                                         {{-- Baris Utama --}}
                                         <tr class="{{ $rowClass }} hover:bg-gray-50 transition-colors cursor-pointer"
@@ -411,11 +411,18 @@
 
                                             {{-- Status --}}
                                             <td class="px-4 py-4">
-                                                @if ($item->status === 'aktif' && (!$item->unit || $item->unit->is_active))
+                                                @if ($item->status === 'aktif' && (!$item->unit || $item->unit->is_active) && ($item->user && $item->user->is_active))
                                                     <span
                                                         class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-xs font-medium">
                                                         <span
                                                             class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></span>Aktif
+                                                    </span>
+                                                @elseif ($item->status === 'aktif' && $item->user && !$item->user->is_active)
+                                                    <span
+                                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-50 text-yellow-600 text-xs font-medium"
+                                                        title="Produk tayang di guest, tapi UMKM tidak bisa login. Silakan klik Aktifkan Akun di menu aksi.">
+                                                        <span
+                                                            class="w-1.5 h-1.5 rounded-full bg-yellow-400 flex-shrink-0"></span>Akun Inaktif
                                                     </span>
                                                 @else
                                                     <span
@@ -520,11 +527,18 @@
 
                                         {{-- Status --}}
                                         <td class="px-4 py-4">
-                                            @if ($item->status === 'aktif' && (!$item->unit || $item->unit->is_active))
+                                            @if ($item->status === 'aktif' && (!$item->unit || $item->unit->is_active) && ($item->user && $item->user->is_active))
                                                 <span
                                                     class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-xs font-medium">
                                                     <span
                                                         class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></span>Aktif
+                                                </span>
+                                            @elseif ($item->status === 'aktif' && $item->user && !$item->user->is_active)
+                                                <span
+                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-50 text-yellow-600 text-xs font-medium"
+                                                    title="Produk tayang di guest, tapi UMKM tidak bisa login. Silakan klik Aktifkan Akun di menu aksi.">
+                                                    <span
+                                                        class="w-1.5 h-1.5 rounded-full bg-yellow-400 flex-shrink-0"></span>Akun Inaktif
                                                 </span>
                                             @else
                                                 <span
@@ -592,10 +606,15 @@
                                             <div class="flex items-center gap-2 flex-wrap">
                                                 <h3 class="text-sm font-semibold text-gray-900 truncate">
                                                     {{ $item->nama_usaha }}</h3>
-                                                @if ($item->status === 'aktif' && (!$item->unit || $item->unit->is_active))
+                                                @if ($item->status === 'aktif' && (!$item->unit || $item->unit->is_active) && ($item->user && $item->user->is_active))
                                                     <span
                                                         class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-green-50 text-green-600 text-xs font-medium">
                                                         <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>Aktif
+                                                    </span>
+                                                @elseif ($item->status === 'aktif' && $item->user && !$item->user->is_active)
+                                                    <span
+                                                        class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-yellow-50 text-yellow-600 text-xs font-medium">
+                                                        <span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span>Akun Inaktif
                                                     </span>
                                                 @else
                                                     <span
@@ -673,28 +692,28 @@
                     @include('partials.pagination', ['paginator' => $umkmList])
                 </div>
             @else
-                {{-- ── EMPTY STATE ── --}}
-                <div class="px-4 sm:px-6 py-8 sm:py-12 text-center">
-                    <svg class="mx-auto h-12 sm:h-16 w-12 sm:w-16 text-gray-400 mb-4" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                    <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">
-                        {{ request()->hasAny(['q', 'status', 'kategori_id', 'province_code', 'city_code']) ? 'Data UMKM Tidak Ditemukan' : 'Belum Ada Data UMKM' }}
-                    </h3>
-                    <p class="text-sm text-gray-500 mb-4 sm:mb-6">
-                        {{ request()->hasAny(['q', 'status', 'kategori_id', 'province_code', 'city_code'])
-                            ? 'Coba ubah filter atau kata kunci pencarian Anda.'
-                            : 'Mulai tambahkan data UMKM untuk mengelola usaha mikro, kecil, dan menengah.' }}
-                    </p>
-                    @if ($permissions['canCreate'] && !request()->hasAny(['q', 'status', 'kategori_id', 'province_code', 'city_code']))
-                        <a href="{{ route('umkm.create') }}"
-                            class="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary-600 text-white text-sm font-medium rounded-xl transition-all shadow-sm">
-                            Tambah UMKM
-                        </a>
-                    @endif
-                </div>
+                        {{-- ── EMPTY STATE ── --}}
+                        <div class="px-4 sm:px-6 py-8 sm:py-12 text-center">
+                            <svg class="mx-auto h-12 sm:h-16 w-12 sm:w-16 text-gray-400 mb-4" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">
+                                {{ request()->hasAny(['q', 'status', 'kategori_id', 'province_code', 'city_code']) ? 'Data UMKM Tidak Ditemukan' : 'Belum Ada Data UMKM' }}
+                            </h3>
+                            <p class="text-sm text-gray-500 mb-4 sm:mb-6">
+                                {{ request()->hasAny(['q', 'status', 'kategori_id', 'province_code', 'city_code'])
+                ? 'Coba ubah filter atau kata kunci pencarian Anda.'
+                : 'Mulai tambahkan data UMKM untuk mengelola usaha mikro, kecil, dan menengah.' }}
+                            </p>
+                            @if ($permissions['canCreate'] && !request()->hasAny(['q', 'status', 'kategori_id', 'province_code', 'city_code']))
+                                <a href="{{ route('umkm.create') }}"
+                                    class="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary-600 text-white text-sm font-medium rounded-xl transition-all shadow-sm">
+                                    Tambah UMKM
+                                </a>
+                            @endif
+                        </div>
 
             @endif
         </div>
