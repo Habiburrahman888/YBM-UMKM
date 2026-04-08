@@ -67,6 +67,13 @@ class ProdukController extends Controller
     {
         $umkm = $this->getUmkm();
 
+        if ($request->has('harga')) {
+            $harga = preg_replace('/[^0-9]/', '', $request->harga);
+            $request->merge([
+                'harga' => (int) $harga
+            ]);
+        }
+
         $validator = Validator::make($request->all(), [
             'nama_produk'      => 'required|string|max:255',
             'deskripsi_produk' => 'required|string',
@@ -74,12 +81,14 @@ class ProdukController extends Controller
             'kategori_satuan'  => 'required|in:pcs,bungkus,gram,kg,liter,ml,box,pack',
             'stok'             => 'nullable|integer|min:0',
             'foto_produk'      => 'nullable|array|max:5',
-            'foto_produk.*'    => 'image|mimes:jpeg,png,jpg,webp|max:2048',
+            'foto_produk.*'    => 'image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
+
+        $hargaFix = preg_replace('/[^0-9]/', '', $request->harga);
 
         try {
             DB::beginTransaction();
@@ -87,11 +96,11 @@ class ProdukController extends Controller
             $fotos = $this->uploadFotos($request);
 
             ProdukUmkm::create([
-                'uuid'             => Str::uuid(),
+                'uuid'             => (string) Str::uuid(),
                 'umkm_id'          => $umkm->id,
                 'nama_produk'      => $request->nama_produk,
                 'deskripsi_produk' => $request->deskripsi_produk,
-                'harga'            => $request->harga,
+                'harga'            => (int) $hargaFix,
                 'kategori_satuan'  => $request->kategori_satuan,
                 'stok'             => $request->stok,
                 'foto_produk'      => $fotos,
@@ -137,6 +146,13 @@ class ProdukController extends Controller
                     ->where('umkm_id', $umkm->id)
                     ->firstOrFail();
 
+        if ($request->has('harga')) {
+            $harga = preg_replace('/[^0-9]/', '', $request->harga);
+            $request->merge([
+                'harga' => (int) $harga
+            ]);
+        }
+
         $validator = Validator::make($request->all(), [
             'nama_produk'      => 'required|string|max:255',
             'deskripsi_produk' => 'required|string',
@@ -144,7 +160,7 @@ class ProdukController extends Controller
             'kategori_satuan'  => 'required|in:pcs,bungkus,gram,kg,liter,ml,box,pack',
             'stok'             => 'nullable|integer|min:0',
             'foto_produk'      => 'nullable|array|max:5',
-            'foto_produk.*'    => 'image|mimes:jpeg,png,jpg,webp|max:2048',
+            'foto_produk.*'    => 'image|mimes:jpeg,png,jpg,webp|max:5120',
             'foto_hapus'       => 'nullable|array',
             'foto_hapus.*'     => 'nullable|string',
         ]);
@@ -173,7 +189,7 @@ class ProdukController extends Controller
             $produk->update([
                 'nama_produk'      => $request->nama_produk,
                 'deskripsi_produk' => $request->deskripsi_produk,
-                'harga'            => $request->harga,
+                'harga'            => (int) preg_replace('/[^0-9]/', '', $request->harga),
                 'kategori_satuan'  => $request->kategori_satuan,
                 'stok'             => $request->stok,
                 'foto_produk'      => $finalFotos,
@@ -190,6 +206,40 @@ class ProdukController extends Controller
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
                 ->withInput();
+        }
+    }
+
+    // ── TAMBAH STOK (AJAX) ──────────────────────────────────────────────
+    public function tambahStok(Request $request, string $uuid)
+    {
+        $umkm   = $this->getUmkm();
+        $produk = ProdukUmkm::where('uuid', $uuid)
+                    ->where('umkm_id', $umkm->id)
+                    ->firstOrFail();
+
+        $validator = Validator::make($request->all(), [
+            'stok' => 'required|integer|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        try {
+            $currentStok = $produk->stok ?? 0;
+            $newStok = $currentStok + $request->stok;
+
+            $produk->update([
+                'stok' => $newStok,
+                'updated_by' => Auth::id(),
+            ]);
+
+            return redirect()->route('umkm.produk.index')
+                ->with('success', 'Stok berhasil ditambahkan!');
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 

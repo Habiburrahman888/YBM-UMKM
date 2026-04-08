@@ -39,11 +39,10 @@
                             <div class="relative">
                                 <span
                                     class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-medium select-none">Rp</span>
-                                <input type="number" name="harga" id="harga" value="{{ old('harga') }}"
-                                    placeholder="0" min="0" step="100"
+                                <input type="text" name="harga" id="harga" value="{{ old('harga') }}"
+                                    placeholder="0"
                                     class="block w-full pl-10 pr-3 py-2 text-sm sm:text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary @error('harga') border-red-500 @enderror">
                             </div>
-                            <p class="mt-1 text-xs text-gray-400" id="harga-preview"></p>
                             @error('harga')
                                 <p class="mt-1 text-xs sm:text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -135,7 +134,7 @@
                                 <div class="text-sm text-gray-600">
                                     <span class="text-primary font-medium">Klik untuk upload</span> atau drag & drop
                                 </div>
-                                <p class="text-xs text-gray-500">PNG, JPG, JPEG, WEBP (Maks. 2MB per foto) — Bisa pilih
+                                <p class="text-xs text-gray-500">PNG, JPG, JPEG, WEBP (Maks. 5MB per foto) — Bisa pilih
                                     hingga 5 foto</p>
                             </div>
                         </div>
@@ -193,12 +192,36 @@
             const MAX_FOTO = 5;
             let selectedFiles = [];
 
-            // ── Harga preview ─────────────────────────────────────────────────
-            hargaInput.addEventListener('input', function() {
-                const val = parseInt(this.value);
-                hargaPreview.textContent = (!isNaN(val) && val >= 0) ?
-                    'Rp ' + val.toLocaleString('id-ID') :
-                    '';
+            // ── Harga formatter ───────────────────────────────────────────────
+            function formatRupiah(angka, prefix) {
+                let number_string = angka.replace(/[^,\d]/g, '').toString(),
+                    split = number_string.split(','),
+                    sisa = split[0].length % 3,
+                    rupiah = split[0].substr(0, sisa),
+                    ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+                if (ribuan) {
+                    let separator = sisa ? '.' : '';
+                    rupiah += separator + ribuan.join('.');
+                }
+
+                rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+                return prefix == undefined ? rupiah : (rupiah ? rupiah : '');
+            }
+
+            hargaInput.addEventListener('input', function(e) {
+                this.value = formatRupiah(this.value);
+            });
+
+            // Initial format if any
+            if (hargaInput.value) {
+                hargaInput.value = formatRupiah(hargaInput.value);
+            }
+
+            // Strip dots before submit
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function() {
+                hargaInput.value = hargaInput.value.replace(/\./g, '');
             });
 
             // ── Character count deskripsi ─────────────────────────────────────
@@ -239,8 +262,8 @@
                         alert(`File "${file.name}" tidak didukung. Gunakan PNG, JPG, atau WEBP.`);
                         return;
                     }
-                    if (file.size > 2 * 1024 * 1024) {
-                        alert(`File "${file.name}" terlalu besar. Maksimal 2MB.`);
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert(`File "${file.name}" terlalu besar. Maksimal 5MB per foto.`);
                         return;
                     }
                     if (selectedFiles.length >= MAX_FOTO) {
@@ -252,6 +275,14 @@
 
                 updateFileInput();
                 refreshPreviews();
+            }
+
+            function updateFotoCountInfo() {
+                if (fotoCountInfo) {
+                    fotoCountInfo.textContent = selectedFiles.length > 0 ?
+                        `${selectedFiles.length} dari ${MAX_FOTO} foto digunakan` :
+                        '';
+                }
             }
 
             function addPreview(file, index) {
@@ -288,9 +319,7 @@
             function refreshPreviews() {
                 previewContainer.innerHTML = '';
                 selectedFiles.forEach((file, index) => addPreview(file, index));
-                fotoCountInfo.textContent = selectedFiles.length > 0 ?
-                    selectedFiles.length + ' foto dipilih' :
-                    '';
+                updateFotoCountInfo();
             }
 
             function updateFileInput() {

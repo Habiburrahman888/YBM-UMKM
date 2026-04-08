@@ -191,8 +191,8 @@
 
                     @if ($isVerified && $umkm->verified_at)
                         <div class="flex items-start gap-3">
-                            <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
-                                <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <div class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd"
                                         d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
                                         clip-rule="evenodd" />
@@ -248,7 +248,7 @@
                                 {{-- Info --}}
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-semibold text-gray-900 truncate">{{ $produk->nama_produk }}</p>
-                                    <p class="text-xs font-bold text-blue-600 mt-0.5">Rp
+                                    <p class="text-xs font-bold text-gray-900 mt-0.5">Rp
                                         {{ number_format($produk->harga, 0, ',', '.') }}</p>
                                     <p class="text-xs text-gray-400 mt-0.5">{{ $produk->created_at->diffForHumans() }}</p>
                                 </div>
@@ -288,10 +288,9 @@
         {{-- ===== RINGKASAN USAHA + MEDIA SOSIAL ===== --}}
         <div class="grid lg:grid-cols-3 gap-6 mb-6">
 
-            {{-- Ringkasan Usaha --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Ringkasan Usaha</h2>
-                <div class="space-y-3">
+                <div class="divide-y divide-gray-100">
 
                     @php
                         $summaryRows = [
@@ -302,45 +301,22 @@
                     @endphp
 
                     @foreach ($summaryRows as $row)
-                        <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                        <div class="flex items-center justify-between py-3">
                             <span class="text-sm text-gray-600">{{ $row['label'] }}</span>
                             <span class="text-sm font-bold text-gray-900">{{ $row['value'] }}</span>
                         </div>
                     @endforeach
 
-                    <div
-                        class="flex items-center justify-between p-2 rounded-lg
-                        @if ($umkmSummary['status'] === 'aktif') bg-emerald-50
-                        @elseif($umkmSummary['status'] === 'pending') bg-amber-50
-                        @else bg-red-50 @endif">
-                        <div class="flex items-center gap-2">
-                            <div
-                                class="w-3 h-3 rounded-full
-                                @if ($umkmSummary['status'] === 'aktif') bg-emerald-500
-                                @elseif($umkmSummary['status'] === 'pending') bg-amber-500
-                                @else bg-red-500 @endif">
-                            </div>
-                            <span class="text-sm text-gray-600">Status</span>
-                        </div>
-                        <span
-                            class="text-sm font-bold
-                            @if ($umkmSummary['status'] === 'aktif') text-emerald-700
-                            @elseif($umkmSummary['status'] === 'pending') text-amber-700
-                            @else text-red-700 @endif">
+                    <div class="flex items-center justify-between py-3">
+                        <span class="text-sm text-gray-600">Status</span>
+                        <span class="text-sm font-bold text-gray-900">
                             {{ ucfirst($umkmSummary['status']) }}
                         </span>
                     </div>
 
-                    <div
-                        class="flex items-center justify-between p-2 {{ $umkmSummary['verified'] ? 'bg-blue-50' : 'bg-gray-50' }} rounded-lg">
-                        <div class="flex items-center gap-2">
-                            <div
-                                class="w-3 h-3 rounded-full {{ $umkmSummary['verified'] ? 'bg-blue-500' : 'bg-gray-400' }}">
-                            </div>
-                            <span class="text-sm text-gray-600">Verifikasi</span>
-                        </div>
-                        <span
-                            class="text-sm font-bold {{ $umkmSummary['verified'] ? 'text-blue-700' : 'text-gray-500' }}">
+                    <div class="flex items-center justify-between py-3">
+                        <span class="text-sm text-gray-600">Verifikasi</span>
+                        <span class="text-sm font-bold text-gray-900">
                             {{ $umkmSummary['verified'] ? 'Terverifikasi' : 'Belum' }}
                         </span>
                     </div>
@@ -357,7 +333,7 @@
 
                         @if ($umkm->instagram)
                             <a href="{{ $umkm->instagram }}" target="_blank"
-                                class="flex items-center gap-2.5 p-4 bg-pink-50 rounded-xl border border-pink-100 hover:shadow-md transition-all group">
+                                class="flex items-center gap-2.5 p-4 bg-white rounded-xl border border-gray-100 hover:shadow-md transition-all group">
                                 <div
                                     class="w-10 h-10 bg-gradient-to-br from-pink-400 to-purple-500 rounded-lg flex items-center justify-center shrink-0">
                                     <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -374,7 +350,7 @@
 
                         @if ($umkm->facebook)
                             <a href="{{ $umkm->facebook }}" target="_blank"
-                                class="flex items-center gap-2.5 p-4 bg-blue-50 rounded-xl border border-blue-100 hover:shadow-md transition-all group">
+                                class="flex items-center gap-2.5 p-4 bg-white rounded-xl border border-gray-100 hover:shadow-md transition-all group">
                                 <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
                                     <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                                         <path
@@ -390,7 +366,7 @@
 
                         @if ($umkm->youtube)
                             <a href="{{ $umkm->youtube }}" target="_blank"
-                                class="flex items-center gap-2.5 p-4 bg-red-50 rounded-xl border border-red-100 hover:shadow-md transition-all group">
+                                class="flex items-center gap-2.5 p-4 bg-white rounded-xl border border-gray-100 hover:shadow-md transition-all group">
                                 <div class="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center shrink-0">
                                     <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                                         <path
@@ -406,7 +382,7 @@
 
                         @if ($umkm->tiktok)
                             <a href="{{ $umkm->tiktok }}" target="_blank"
-                                class="flex items-center gap-2.5 p-4 bg-gray-50 rounded-xl border border-gray-200 hover:shadow-md transition-all group">
+                                class="flex items-center gap-2.5 p-4 bg-white rounded-xl border border-gray-100 hover:shadow-md transition-all group">
                                 <div class="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center shrink-0">
                                     <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                                         <path

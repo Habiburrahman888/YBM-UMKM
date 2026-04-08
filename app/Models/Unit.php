@@ -185,17 +185,34 @@ class Unit extends Model
 
     public function activate(): bool
     {
+        // Mengaktifkan unit, UMKM binaan TIDAK otomatis aktif
+        // (admin yang menentukan mana UMKM yang mau diaktifkan kembali)
         return $this->update(['is_active' => true]);
     }
 
     public function deactivate(): bool
     {
-        return $this->update(['is_active' => false]);
+        $result = $this->update(['is_active' => false]);
+
+        if ($result) {
+            // Otomatis nonaktifkan semua UMKM binaan saat unit dinonaktifkan
+            $this->umkm()->update(['status' => 'nonaktif']);
+        }
+
+        return $result;
     }
 
     public function toggleActive(): bool
     {
-        return $this->update(['is_active' => !$this->is_active]);
+        $newState = !$this->is_active;
+        $result   = $this->update(['is_active' => $newState]);
+
+        if ($result && !$newState) {
+            // Unit berubah jadi nonaktif → cascade ke semua UMKM binaan
+            $this->umkm()->update(['status' => 'nonaktif']);
+        }
+
+        return $result;
     }
 
     public function syncWilayahNames(): void

@@ -32,20 +32,19 @@ class LaporanUmkmAllController extends Controller
             $umkmList = Umkm::with(['unit', 'kategori', 'modalUmkm', 'produkUmkm', 'province', 'city', 'district', 'village'])
                 ->whereNull('unit_id')
                 ->get();
+            $unitList = collect([null]); // To handle the special "Tanpa Unit" case if needed, but let's be safe
         } else {
             $unit = Unit::findOrFail($unitId);
             $unitName = $unit->nama_unit;
             $umkmList = Umkm::with(['unit', 'kategori', 'modalUmkm', 'produkUmkm', 'province', 'city', 'district', 'village'])
                 ->where('unit_id', $unitId)
                 ->get();
-        }
-
-        if ($umkmList->isEmpty()) {
-            return back()->with('error', 'Tidak ada data UMKM untuk unit ini.');
+            $unitList = collect([$unit]);
         }
 
         $pdf = Pdf::loadView('admin.report-unit.pdf', [
-            'umkmList' => $umkmList->groupBy('unit_id')
+            'umkmList' => $umkmList->groupBy('unit_id'),
+            'unitList' => $unitList
         ])->setPaper('a4', 'portrait')
           ->setOption(['defaultFont' => 'sans-serif', 'isHtml5ParserEnabled' => true]);
 
@@ -94,21 +93,26 @@ class LaporanUmkmAllController extends Controller
             ->orderByDesc('total_modal_sum')
             ->get();
 
-        if ($umkmList->isEmpty()) {
-            return back()->with('error', 'Tidak ada data UMKM yang ditemukan.');
-        }
-
         if (auth()->user()->role === 'admin') {
             $pdfList = $umkmList->groupBy('unit_id');
             $viewName = 'admin.report-unit.pdf';
+            $unitList = Unit::orderBy('nama_unit')
+                ->when($request->filled('unit_id'), fn($q) => $q->where('id', $request->unit_id))
+                ->get();
+            $data = [
+                'umkmList' => $pdfList,
+                'unitList' => $unitList
+            ];
         } else {
             $pdfList = $umkmList;
             $viewName = 'umkm.pdf.report_all';
+            $data = [
+                'umkmList' => $pdfList
+            ];
         }
 
-        $pdf = Pdf::loadView($viewName, [
-            'umkmList' => $pdfList
-        ])->setPaper('a4', auth()->user()->role === 'admin' ? 'portrait' : 'landscape')
+        $pdf = Pdf::loadView($viewName, $data)
+          ->setPaper('a4', auth()->user()->role === 'admin' ? 'portrait' : 'landscape')
           ->setOption(['defaultFont' => 'sans-serif', 'isHtml5ParserEnabled' => true]);
 
         $filename = 'laporan-rekapitulasi-umkm-' . now()->format('Ymd') . '.pdf';

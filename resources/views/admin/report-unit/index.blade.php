@@ -21,7 +21,7 @@
 
                         {{-- Tombol Filter --}}
                         <button type="button" onclick="toggleFilter()"
-                            class="inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded-lg transition-all {{ request()->hasAny(['tahun', 'tahun_berdiri', 'status', 'kategori_id', 'unit_id']) ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                            class="inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded-lg transition-all {{ request()->hasAny(['status', 'kategori_id', 'unit_id', 'unit_status']) ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -44,35 +44,27 @@
 
             {{-- ── PANEL FILTER ── --}}
             <div id="filter-section"
-                class="{{ request()->hasAny(['tahun', 'tahun_berdiri', 'status', 'kategori_id', 'unit_id']) ? '' : 'hidden' }} border-b border-gray-200 transition-all duration-300">
+                class="{{ request()->hasAny(['status', 'kategori_id', 'unit_id', 'unit_status']) ? '' : 'hidden' }} border-b border-gray-200 transition-all duration-300">
                 <div class="px-4 sm:px-6 py-4 bg-gray-50">
                     <form method="GET" action="{{ url()->current() }}">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1">Tahun Bergabung</label>
-                                <select name="tahun"
+                        <div class="flex flex-wrap lg:flex-nowrap gap-3 items-end">
+
+                            {{-- Filter Status Unit --}}
+                            <div class="w-full sm:w-auto flex-1 min-w-[140px]">
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Status Unit</label>
+                                <select name="unit_status"
                                     class="block w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
-                                    <option value="">Semua Tahun</option>
-                                    @foreach ($tahunBergabungList as $t)
-                                        <option value="{{ $t }}" {{ request('tahun') == $t ? 'selected' : '' }}>
-                                            {{ $t }}</option>
-                                    @endforeach
+                                    <option value="">Semua Unit</option>
+                                    <option value="aktif" {{ request('unit_status') === 'aktif' ? 'selected' : '' }}>Unit
+                                        Aktif</option>
+                                    <option value="nonaktif" {{ request('unit_status') === 'nonaktif' ? 'selected' : '' }}>
+                                        Unit Nonaktif</option>
                                 </select>
                             </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1">Tahun Berdiri</label>
-                                <select name="tahun_berdiri"
-                                    class="block w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
-                                    <option value="">Semua Tahun</option>
-                                    @foreach ($tahunBerdiriList as $t)
-                                        <option value="{{ $t }}"
-                                            {{ request('tahun_berdiri') == $t ? 'selected' : '' }}>{{ $t }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1">Status</label>
+
+                            {{-- Filter Status UMKM --}}
+                            <div class="w-full sm:w-auto flex-1 min-w-[120px]">
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Status UMKM</label>
                                 <select name="status"
                                     class="block w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
                                     <option value="">Semua Status</option>
@@ -82,7 +74,9 @@
                                         Nonaktif</option>
                                 </select>
                             </div>
-                            <div>
+
+                            {{-- Filter Kategori --}}
+                            <div class="w-full sm:w-auto flex-1 min-w-[130px]">
                                 <label class="block text-xs font-medium text-gray-500 mb-1">Kategori</label>
                                 <select name="kategori_id"
                                     class="block w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
@@ -94,25 +88,28 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div>
+
+                            {{-- Filter Unit --}}
+                            <div class="w-full sm:w-auto flex-1 min-w-[130px]">
                                 <label class="block text-xs font-medium text-gray-500 mb-1">Unit</label>
                                 <select name="unit_id"
                                     class="block w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
                                     <option value="">Semua Unit</option>
                                     @foreach ($unitList as $unit)
                                         <option value="{{ $unit->id }}"
-                                            {{ request('unit_id') == $unit->id ? 'selected' : '' }}>{{ $unit->nama }}
+                                            {{ request('unit_id') == $unit->id ? 'selected' : '' }}>{{ $unit->nama_unit }}
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="flex items-center gap-2 lg:col-span-5 lg:justify-end">
-                                <a href="{{ url()->current() }}"
-                                    class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium rounded-lg transition-colors">
+
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                <a href="{{ route('umkm.report.preview') }}"
+                                    class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium rounded-lg transition-colors whitespace-nowrap">
                                     Reset
                                 </a>
                                 <button type="submit"
-                                    class="inline-flex items-center justify-center px-6 py-2 bg-primary hover:bg-primary-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                                    class="inline-flex items-center justify-center px-6 py-2 bg-primary hover:bg-primary-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm whitespace-nowrap">
                                     Terapkan Filter
                                 </button>
                             </div>
@@ -142,6 +139,20 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
+                    {{-- Badge filter unit aktif/nonaktif jika ada filter --}}
+                    @if (request('unit_status') === 'nonaktif')
+                        <span
+                            class="flex items-center gap-1.5 px-3 py-1 bg-orange-50 text-orange-600 rounded-full text-xs font-medium">
+                            <span class="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+                            Menampilkan Unit Nonaktif
+                        </span>
+                    @elseif (request('unit_status') === 'aktif')
+                        <span
+                            class="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-medium">
+                            <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                            Menampilkan Unit Aktif
+                        </span>
+                    @endif
                     <span
                         class="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-medium">
                         <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
@@ -155,7 +166,7 @@
                 </div>
             </div>
 
-            @if ($totalUmkm > 0)
+            @if ($unitList->isNotEmpty())
                 <div class="overflow-x-auto">
                     <table class="w-full">
                         <thead class="bg-gray-50 border-b border-gray-200">
@@ -173,12 +184,15 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach ($umkmList as $unitId => $group)
-                                @php $unit = $group->first()->unit; @endphp
+                            @foreach ($unitList as $unit)
+                                @php
+                                    $unitId = $unit->id;
+                                    $group = $umkmList->get($unitId, collect());
+                                @endphp
 
                                 {{-- Unit Group Header --}}
                                 <tr class="bg-gray-50/80 cursor-pointer border-y border-gray-100 hover:bg-gray-100/50 transition-colors"
-                                    onclick="toggleUnitGroup('unit-group-{{ $unitId ?: '0' }}', this)">
+                                    onclick="toggleUnitGroup('unit-group-{{ $unitId }}', this)">
 
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-3">
@@ -196,8 +210,22 @@
                                                 </svg>
                                             </div>
                                             <div>
-                                                <h3 class="text-sm font-semibold text-gray-900 leading-tight">
-                                                    {{ $unit->nama_unit ?? 'PUSAT / TANPA UNIT' }}</h3>
+                                                <div class="flex items-center gap-2">
+                                                    <h3 class="text-sm font-semibold text-gray-900 leading-tight">
+                                                        {{ $unit->nama_unit ?? 'PUSAT / TANPA UNIT' }}</h3>
+                                                    {{-- Badge status unit --}}
+                                                    @if ($unit->is_active)
+                                                        <span
+                                                            class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-green-50 text-green-600 text-[10px] font-medium">
+                                                            <span class="w-1 h-1 rounded-full bg-green-500"></span>Aktif
+                                                        </span>
+                                                    @else
+                                                        <span
+                                                            class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-red-50 text-red-500 text-[10px] font-medium">
+                                                            <span class="w-1 h-1 rounded-full bg-red-400"></span>Nonaktif
+                                                        </span>
+                                                    @endif
+                                                </div>
                                                 <p class="text-xs text-gray-400 mt-0.5">{{ $unit->kode_unit ?? '-' }}</p>
                                             </div>
                                         </div>
@@ -232,7 +260,7 @@
                                     </td>
 
                                     <td class="px-6 py-4 text-right" onclick="event.stopPropagation()">
-                                        <a href="{{ route('umkm.report.unit', ['unitId' => $unitId ?: 0, 'slug' => Str::slug($unit->nama_unit ?? 'pusat')]) }}"
+                                        <a href="{{ route('umkm.report.unit', ['unitId' => $unitId, 'slug' => Str::slug($unit->nama_unit ?? 'pusat')]) }}"
                                             target="_blank"
                                             class="inline-flex items-center p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                             title="Download PDF Unit">
@@ -246,8 +274,8 @@
                                 </tr>
 
                                 {{-- Group Items --}}
-                                @foreach ($group as $item)
-                                    <tr class="unit-group-{{ $unitId ?: '0' }} hidden hover:bg-gray-50 transition-colors cursor-pointer"
+                                @forelse ($group as $item)
+                                    <tr class="unit-group-{{ $unitId }} hidden hover:bg-gray-50 transition-colors cursor-pointer"
                                         onclick="toggleDetail('{{ $item->uuid }}')">
 
                                         {{-- Informasi UMKM --}}
@@ -336,12 +364,18 @@
 
                                     {{-- Accordion Detail --}}
                                     <tr id="detail-{{ $item->uuid }}"
-                                        class="unit-group-{{ $unitId ?: '0' }} hidden bg-gray-50">
+                                        class="unit-group-{{ $unitId }} hidden bg-gray-50">
                                         <td colspan="5" class="px-4 sm:px-6 py-3">
                                             @include('umkm.partials.detail_accordion', ['item' => $item])
                                         </td>
                                     </tr>
-                                @endforeach
+                                @empty
+                                    <tr class="unit-group-{{ $unitId }} hidden">
+                                        <td colspan="5" class="px-6 py-6 text-center text-gray-400 italic text-sm">
+                                            Belum ada data UMKM yang terdaftar di unit ini yang sesuai dengan filter.
+                                        </td>
+                                    </tr>
+                                @endforelse
                             @endforeach
                         </tbody>
                     </table>

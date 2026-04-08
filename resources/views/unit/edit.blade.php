@@ -256,6 +256,26 @@
                                 @enderror
                             </div>
 
+                            {{-- Alamat --}}
+                            <div class="sm:col-span-2">
+                                <label for="alamat" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Alamat Lengkap <span class="text-red-500">*</span>
+                                </label>
+                                <textarea name="alamat" id="alamat" rows="2"
+                                    placeholder="Jl. Contoh No. 123, RT 01/RW 02"
+                                    class="block w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all resize-none @error('alamat') border-red-500 ring-1 ring-red-500 @enderror">{{ old('alamat', $unit->alamat) }}</textarea>
+                                @error('alamat')
+                                    <p class="mt-1.5 text-xs text-red-500 flex items-center">
+                                        <svg class="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
+
                         </div>
                     </div>
 
@@ -710,7 +730,7 @@
                 resetSelect(kecamatanSelect, '— Pilih Kecamatan —');
                 resetSelect(kelurahanSelect, '— Pilih Kelurahan —');
                 if (!this.value) return;
-                loadOptions('/api/region/cities', {
+                loadOptions('{{ route('umkm.ajax.cities') }}', {
                     province_code: this.value
                 }, kotaSelect, '— Pilih Kota —');
             });
@@ -719,7 +739,7 @@
                 resetSelect(kecamatanSelect, '— Pilih Kecamatan —');
                 resetSelect(kelurahanSelect, '— Pilih Kelurahan —');
                 if (!this.value) return;
-                loadOptions('/api/region/districts', {
+                loadOptions('{{ route('umkm.ajax.districts') }}', {
                     city_code: this.value
                 }, kecamatanSelect, '— Pilih Kecamatan —');
             });
@@ -727,7 +747,7 @@
             kecamatanSelect.addEventListener('change', function() {
                 resetSelect(kelurahanSelect, '— Pilih Kelurahan —');
                 if (!this.value) return;
-                loadOptions('/api/region/villages', {
+                loadOptions('{{ route('umkm.ajax.villages') }}', {
                     district_code: this.value
                 }, kelurahanSelect, '— Pilih Kelurahan —');
             });
@@ -741,18 +761,18 @@
 
                 provinsiSelect.value = oldProvinsi;
 
-                loadOptions('/api/region/cities', {
+                loadOptions('{{ route('umkm.ajax.cities') }}', {
                         province_code: oldProvinsi
                     }, kotaSelect, '— Pilih Kota —', oldKota)
                     .then(() => {
                         if (!oldKota) return;
-                        return loadOptions('/api/region/districts', {
+                        return loadOptions('{{ route('umkm.ajax.districts') }}', {
                             city_code: oldKota
                         }, kecamatanSelect, '— Pilih Kecamatan —', oldKecamatan);
                     })
                     .then(() => {
                         if (!oldKecamatan) return;
-                        return loadOptions('/api/region/villages', {
+                        return loadOptions('{{ route('umkm.ajax.villages') }}', {
                             district_code: oldKecamatan
                         }, kelurahanSelect, '— Pilih Kelurahan —', oldKelurahan);
                     })

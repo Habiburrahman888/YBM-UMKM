@@ -185,6 +185,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{uuid}/edit', [ProdukController::class, 'edit'])->name('edit');
             Route::put('/{uuid}', [ProdukController::class, 'update'])->name('update');
             Route::delete('/{uuid}', [ProdukController::class, 'destroy'])->name('destroy');
+            Route::post('/{uuid}/tambah-stok', [ProdukController::class, 'tambahStok'])->name('tambah-stok');
             Route::delete('/{uuid}/foto', [ProdukController::class, 'destroyFoto'])->name('foto.destroy');
         });
 

@@ -55,7 +55,11 @@ class ReportUnitDanUmkmController extends Controller
 
         $kategoriList = Kategori::orderBy('nama')->get();
         $unitList     = auth()->user()->role === 'admin'
-            ? Unit::orderBy('id')->get()
+            ? Unit::orderBy('nama_unit')
+                ->when($request->filled('unit_id'), fn($q) => $q->where('id', $request->unit_id))
+                ->when($request->unit_status === 'aktif', fn($q) => $q->where('is_active', true))
+                ->when($request->unit_status === 'nonaktif', fn($q) => $q->where('is_active', false))
+                ->get()
             : collect();
 
         // Data for filters
@@ -77,6 +81,11 @@ class ReportUnitDanUmkmController extends Controller
 
         // Group by unit if admin
         if (auth()->user()->role === 'admin') {
+            // Jika ada filter unit_status, filter umkmList hanya dari unit yg lolos filter
+            if ($request->filled('unit_status')) {
+                $filteredUnitIds = $unitList->pluck('id');
+                $umkmList = $umkmList->filter(fn($u) => $filteredUnitIds->contains($u->unit_id));
+            }
             $umkmList = $umkmList->groupBy('unit_id');
             return view('admin.report-unit.index', compact(
                 'umkmList',
@@ -139,8 +148,18 @@ class ReportUnitDanUmkmController extends Controller
             ->get();
 
         if (auth()->user()->role === 'admin') {
+            $unitList = Unit::orderBy('nama_unit')
+                ->when($request->filled('unit_id'), fn($q) => $q->where('id', $request->unit_id))
+                ->when($request->unit_status === 'aktif', fn($q) => $q->where('is_active', true))
+                ->when($request->unit_status === 'nonaktif', fn($q) => $q->where('is_active', false))
+                ->get();
+            if ($request->filled('unit_status')) {
+                $filteredUnitIds = $unitList->pluck('id');
+                $umkmList = $umkmList->filter(fn($u) => $filteredUnitIds->contains($u->unit_id));
+            }
             $umkmList = $umkmList->groupBy('unit_id');
-            $pdf = Pdf::loadView('admin.report-unit.pdf', compact('umkmList'))
+
+            $pdf = Pdf::loadView('admin.report-unit.pdf', compact('umkmList', 'unitList'))
                 ->setPaper('a4', 'portrait')
                 ->setOption(['defaultFont' => 'sans-serif', 'isHtml5ParserEnabled' => true]);
 

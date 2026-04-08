@@ -141,9 +141,9 @@
 
                                     {{-- Stok --}}
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        @if ($produk->stok !== null)
+                                        @if ($produk->stok !== null && $produk->stok > 0)
                                             <span
-                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $produk->stok > 0 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800' }}">
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                                 {{ number_format($produk->stok, 0, ',', '.') }} Item
                                             </span>
                                         @else
@@ -156,6 +156,7 @@
                                         <div class="relative inline-block text-left">
                                             <button type="button" data-dropdown-toggle="{{ $produk->uuid }}"
                                                 data-nama="{{ $produk->nama_produk }}"
+                                                data-stok="{{ $produk->stok ?? 0 }}"
                                                 class="dropdown-toggle inline-flex items-center p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                                     <path
@@ -211,11 +212,13 @@
                                             <div class="flex items-center gap-2 mb-1">
                                                 <h3 class="text-sm font-semibold text-gray-900">{{ $produk->nama_produk }}
                                                 </h3>
-                                                @if ($produk->stok !== null)
+                                                @if ($produk->stok !== null && $produk->stok > 0)
                                                     <span
-                                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $produk->stok > 0 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800' }}">
-                                                        {{ $produk->stok > 0 ? 'Ada' : 'Habis' }}
+                                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                        Ada
                                                     </span>
+                                                @else
+                                                    <span class="text-xs text-gray-400 italic">Unlimited</span>
                                                 @endif
                                             </div>
                                             <p class="text-xs text-gray-600 line-clamp-2">{{ $produk->deskripsi_produk }}
@@ -228,6 +231,7 @@
                                         </div>
                                         <button type="button" data-dropdown-toggle="{{ $produk->uuid }}"
                                             data-nama="{{ $produk->nama_produk }}"
+                                            data-stok="{{ $produk->stok ?? 0 }}"
                                             class="dropdown-toggle flex-shrink-0 ml-2 inline-flex items-center p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                                 <path
@@ -288,6 +292,14 @@
                     </svg>
                     Lihat
                 </a>
+                <button type="button" id="dropdown-add-stok-btn"
+                    class="flex items-center w-full px-3 sm:px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                    <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Tambah Stok
+                </button>
                 <a href="#" id="dropdown-edit-link"
                     class="flex items-center px-3 sm:px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                     <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -338,6 +350,39 @@
                     Hapus
                 </button>
             </div>
+        </div>
+    </div>
+    {{-- Tambah Stok Modal --}}
+    <div id="stok-modal"
+        class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="p-4 sm:p-6 border border-gray-200 w-full max-w-sm shadow-lg rounded-xl sm:rounded-2xl bg-white">
+            <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-4 text-center">Tambah Stok Produk</h3>
+            <p class="text-xs sm:text-sm text-gray-500 mb-4 text-center">
+                Masukkan jumlah stok yang ingin ditambahkan untuk produk
+                "<span id="stok-modal-produk-name" class="font-semibold text-gray-700"></span>".
+            </p>
+            <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-100 text-center">
+                <span class="text-xs text-gray-500 block mb-1">Stok Saat Ini</span>
+                <span id="stok-modal-current" class="text-lg font-bold text-primary">0</span>
+            </div>
+            <form id="stok-form" method="POST">
+                @csrf
+                <div class="mb-5">
+                    <label for="stok-input" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Tambahan</label>
+                    <input type="number" name="stok" id="stok-input" min="0" value="0" required
+                        class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary sm:text-sm">
+                </div>
+                <div class="flex justify-center gap-2 sm:gap-3">
+                    <button type="button" id="cancel-stok-btn"
+                        class="w-24 sm:w-28 rounded-lg border border-gray-300 shadow-sm px-3 sm:px-4 py-2 sm:py-2.5 bg-white text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit"
+                        class="w-24 sm:w-28 rounded-lg shadow-sm px-3 sm:px-4 py-2 sm:py-2.5 bg-primary text-xs sm:text-sm font-medium text-white hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">
+                        Simpan
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
     {{-- Gallery Modal --}}
@@ -417,6 +462,7 @@
             const showLink = document.getElementById('dropdown-show-link');
             const editLink = document.getElementById('dropdown-edit-link');
             const deleteBtn = document.getElementById('dropdown-delete-btn');
+            const addStokBtn = document.getElementById('dropdown-add-stok-btn');
             const tableContainer = document.getElementById('table-container');
 
             // Handle dropdown toggle
@@ -427,6 +473,7 @@
                     e.stopPropagation();
                     const dropdownId = toggle.getAttribute('data-dropdown-toggle');
                     const namaProduk = toggle.getAttribute('data-nama');
+                    const stokProduk = toggle.getAttribute('data-stok');
 
                     if (dropdownContainer.getAttribute('data-current-id') === dropdownId &&
                         !dropdownContainer.classList.contains('hidden')) {
@@ -465,7 +512,8 @@
 
                     currentDropdownData = {
                         id: dropdownId,
-                        nama: namaProduk
+                        nama: namaProduk,
+                        stok: stokProduk
                     };
 
                     dropdownContainer.classList.remove('hidden');
@@ -485,6 +533,23 @@
 
                 const modal = document.getElementById('delete-modal');
                 document.getElementById('modal-produk-name').textContent = currentDropdownData.nama;
+                modal.classList.remove('hidden');
+            });
+
+            // Add stock button handler
+            addStokBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (!currentDropdownData) return;
+
+                dropdownContainer.classList.add('hidden');
+                dropdownContainer.removeAttribute('data-current-id');
+
+                const modal = document.getElementById('stok-modal');
+                const form = document.getElementById('stok-form');
+                document.getElementById('stok-modal-produk-name').textContent = currentDropdownData.nama;
+                document.getElementById('stok-modal-current').textContent = currentDropdownData.stok;
+                document.getElementById('stok-input').value = 0;
+                form.action = `/produk/${currentDropdownData.id}/tambah-stok`;
                 modal.classList.remove('hidden');
             });
 
@@ -517,8 +582,18 @@
                 document.getElementById('delete-modal').classList.add('hidden');
             });
 
+            document.getElementById('cancel-stok-btn').addEventListener('click', function() {
+                document.getElementById('stok-modal').classList.add('hidden');
+            });
+
             // Close modal on backdrop click
             document.getElementById('delete-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('stok-modal').addEventListener('click', function(e) {
                 if (e.target === this) {
                     this.classList.add('hidden');
                 }
@@ -528,6 +603,7 @@
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
                     document.getElementById('delete-modal').classList.add('hidden');
+                    document.getElementById('stok-modal').classList.add('hidden');
                 }
             });
 

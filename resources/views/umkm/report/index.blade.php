@@ -122,7 +122,7 @@
                                         @foreach ($unitList as $unit)
                                             <option value="{{ $unit->id }}"
                                                 {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
-                                                {{ $unit->nama ?? 'Unit #' . $unit->id }}
+                                                {{ $unit->nama_unit ?? 'Unit #' . $unit->id }}
                                             </option>
                                         @endforeach
                                     </select>
