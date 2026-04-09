@@ -13,7 +13,6 @@ use App\Http\Controllers\Umkm\ProdukController;
 use App\Http\Controllers\Unit\UmkmController;
 use App\Http\Controllers\Admin\ReportUnitDanUmkmController;
 use App\Http\Controllers\Guest\GuestController;
-use App\Http\Controllers\Report\LaporanUmkmAllController;
 
 Route::get('/', [GuestController::class, 'beranda'])->name('root');
 
@@ -146,10 +145,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create', [UmkmController::class, 'create'])->name('create');
         Route::post('/', [UmkmController::class, 'store'])->name('store');
 
-        Route::get('/report', [LaporanUmkmAllController::class, 'downloadAll'])->name('report.all');
+        // ── Laporan PDF ── dipindah dari LaporanUmkmAllController
+        Route::get('/report', [ReportUnitDanUmkmController::class, 'downloadAll'])->name('report.all');
         Route::get('/report-preview', [ReportUnitDanUmkmController::class, 'preview'])->name('report.preview');
-        Route::get('/report/unit/{unitId}/{slug?}', [LaporanUmkmAllController::class, 'downloadByUnit'])->name('report.unit');
-        Route::get('/{umkm}/report', [LaporanUmkmAllController::class, 'downloadSingle'])->name('report.single');
+        Route::get('/report/unit/{unitId}/{slug?}', [ReportUnitDanUmkmController::class, 'downloadByUnit'])->name('report.unit');
+        Route::get('/{umkm}/report', [UmkmController::class, 'downloadSingle'])->name('report.single');
 
         Route::get('/{umkm}', [UmkmController::class, 'show'])->name('show');
         Route::get('/{umkm}/edit', [UmkmController::class, 'edit'])->name('edit');

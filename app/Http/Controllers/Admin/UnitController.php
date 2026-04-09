@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Umkm;
 use App\Models\Unit;
 use App\Models\Users;
 use App\Mail\UnitCreatedMail;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Laravolt\Indonesia\Models\Province;
 use Laravolt\Indonesia\Models\City;
@@ -22,14 +25,12 @@ class UnitController extends Controller
     {
         $query = Unit::with('user');
 
-        // Search
         if ($request->filled('q')) {
             $query->where(function ($q) use ($request) {
                 $q->where('nama_unit', 'LIKE', '%' . $request->q . '%')
                   ->orWhere('kode_unit', 'LIKE', '%' . $request->q . '%')
                   ->orWhere('admin_nama', 'LIKE', '%' . $request->q . '%')
                   ->orWhere('admin_email', 'LIKE', '%' . $request->q . '%')
-                  // ✅ TAMBAHAN: Search berdasarkan user
                   ->orWhereHas('user', function($userQuery) use ($request) {
                       $userQuery->where('username', 'LIKE', '%' . $request->q . '%')
                                ->orWhere('email', 'LIKE', '%' . $request->q . '%');
@@ -37,27 +38,23 @@ class UnitController extends Controller
             });
         }
 
-        // Filter by provinsi
         if ($request->filled('provinsi')) {
             $query->where('provinsi_kode', $request->provinsi);
         }
 
-        // Filter by kota
         if ($request->filled('kota')) {
             $query->where('kota_kode', $request->kota);
         }
 
-        // Filter by status
         if ($request->filled('status')) {
             $query->where('is_active', $request->status === 'aktif');
         }
 
         $units = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
 
-        // Data untuk filter
         $provinces = Province::orderBy('name')->get();
         $cities = collect();
-        
+
         if ($request->filled('provinsi')) {
             $cities = City::where('province_code', $request->provinsi)->orderBy('name')->get();
         }
@@ -72,10 +69,9 @@ class UnitController extends Controller
     public function create()
     {
         $provinces = Province::orderBy('name')->get();
-        
-        // ✅ TAMBAHAN: Ambil user yang belum punya unit (role = unit)
+
         $availableUsers = Users::role('unit')
-            ->doesntHave('unit') // User yang belum punya unit
+            ->doesntHave('unit')
             ->active()
             ->verified()
             ->orderBy('email')
@@ -86,7 +82,7 @@ class UnitController extends Controller
             ['name' => 'Tambah Unit', 'url' => route('unit.create')]
         ];
 
-        return view('unit.create', compact('breadcrumbs', 'provinces', 'availableUsers')); // ✅ PASS availableUsers
+        return view('unit.create', compact('breadcrumbs', 'provinces', 'availableUsers'));
     }
 
     public function store(Request $request)
@@ -115,7 +111,7 @@ class UnitController extends Controller
             'user_id.exists'   => 'User tidak ditemukan',
             'user_id.unique'   => 'User sudah memiliki unit',
         ]);
-    
+
         $data = [
             'user_id'           => $request->user_id,
             'admin_nama'        => $request->admin_nama,
@@ -134,8 +130,7 @@ class UnitController extends Controller
             'alamat'            => $request->alamat,
             'is_active'         => $request->boolean('is_active', true),
         ];
-    
-        // Nama wilayah (denormalized)
+
         if ($request->provinsi_kode) {
             $provinsi = Province::where('code', $request->provinsi_kode)->first();
             $data['provinsi_nama'] = $provinsi?->name;
@@ -152,43 +147,36 @@ class UnitController extends Controller
             $kelurahan = Village::where('code', $request->kelurahan_kode)->first();
             $data['kelurahan_nama'] = $kelurahan?->name;
         }
-    
-        // Upload admin foto
+
         if ($request->hasFile('admin_foto')) {
             $data['admin_foto'] = $request->file('admin_foto')->store('units/admin', 'public');
         }
-    
-        // Upload logo
+
         if ($request->hasFile('logo')) {
             $data['logo'] = $request->file('logo')->store('units/logos', 'public');
         }
-    
-        // ── Buat unit ──────────────────────────────────────────────────────────────
+
         $unit = Unit::create($data);
-    
-        // ── Set password default untuk user unit ──────────────────────────────────
+
         $defaultPassword = '12345678';
         $userUnit = Users::find($request->user_id);
-    
+
         if ($userUnit) {
             $userUnit->update([
                 'password' => Hash::make($defaultPassword),
             ]);
-    
-            // ── Kirim email notifikasi ─────────────────────────────────────────────
+
             try {
                 Mail::to($userUnit->email)
                     ->send(new UnitCreatedMail($unit, $userUnit->email, $defaultPassword));
             } catch (\Exception $e) {
-                // Email gagal terkirim — jangan gagalkan proses utama,
-                // cukup log agar bisa dicek di storage/logs/laravel.log
                 \Log::error('Gagal kirim email unit created: ' . $e->getMessage(), [
                     'unit_id' => $unit->id,
                     'user_id' => $userUnit->id,
                 ]);
             }
         }
-    
+
         return redirect()
             ->route('unit.index')
             ->with('success', 'Unit berhasil ditambahkan. Email notifikasi telah dikirim ke ' . ($userUnit?->email ?? '-'));
@@ -196,7 +184,7 @@ class UnitController extends Controller
 
     public function edit($uuid)
     {
-        $unit = Unit::with('user')->where('uuid', $uuid)->first(); // ✅ EAGER LOAD user
+        $unit = Unit::with('user')->where('uuid', $uuid)->first();
 
         if (!$unit) {
             return redirect()->route('unit.index')
@@ -211,16 +199,13 @@ class UnitController extends Controller
         if ($unit->provinsi_kode) {
             $cities = City::where('province_code', $unit->provinsi_kode)->orderBy('name')->get();
         }
-        
         if ($unit->kota_kode) {
             $districts = District::where('city_code', $unit->kota_kode)->orderBy('name')->get();
         }
-        
         if ($unit->kecamatan_kode) {
             $villages = Village::where('district_code', $unit->kecamatan_kode)->orderBy('name')->get();
         }
 
-        // ✅ TAMBAHAN: Ambil user yang belum punya unit ATAU user ini
         $availableUsers = Users::role('unit')
             ->where(function($q) use ($unit) {
                 $q->doesntHave('unit')
@@ -236,7 +221,7 @@ class UnitController extends Controller
             ['name' => 'Edit Unit', 'url' => route('unit.edit', $uuid)]
         ];
 
-        return view('unit.edit', compact('unit', 'breadcrumbs', 'provinces', 'cities', 'districts', 'villages', 'availableUsers')); // ✅ PASS availableUsers
+        return view('unit.edit', compact('unit', 'breadcrumbs', 'provinces', 'cities', 'districts', 'villages', 'availableUsers'));
     }
 
     public function update(Request $request, $uuid)
@@ -244,31 +229,22 @@ class UnitController extends Controller
         $unit = Unit::where('uuid', $uuid)->firstOrFail();
 
         $request->validate([
-            // ✅ TAMBAHAN: Validasi user_id (ignore unit ini)
             'user_id'           => [
                 'required',
                 'exists:users,id',
                 Rule::unique('units', 'user_id')->ignore($unit->id)
             ],
-            
-            // Data Admin
             'admin_nama'        => 'nullable|string|max:255',
             'admin_telepon'     => 'nullable|string|max:20',
             'admin_email'       => 'nullable|email|max:255',
             'admin_foto'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            
-            // Data Unit
             'nama_unit'         => ['required', 'string', 'max:255', Rule::unique('units', 'nama_unit')->ignore($unit->id)],
             'kode_unit'         => ['required', 'string', 'max:50', Rule::unique('units', 'kode_unit')->ignore($unit->id)],
             'logo'              => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
-            
-            // Wilayah
             'provinsi_kode'     => 'nullable|exists:indonesia_provinces,code',
             'kota_kode'         => 'nullable|exists:indonesia_cities,code',
             'kecamatan_kode'    => 'nullable|exists:indonesia_districts,code',
             'kelurahan_kode'    => 'nullable|exists:indonesia_villages,code',
-            
-            // Kontak
             'kode_pos'          => 'nullable|string|max:10',
             'telepon'           => 'nullable|string|max:20',
             'email'             => 'nullable|email|max:255',
@@ -282,7 +258,7 @@ class UnitController extends Controller
         ]);
 
         $data = [
-            'user_id'           => $request->user_id, // ✅ TAMBAHKAN
+            'user_id'           => $request->user_id,
             'admin_nama'        => $request->admin_nama,
             'admin_telepon'     => $request->admin_telepon,
             'admin_email'       => $request->admin_email,
@@ -300,28 +276,24 @@ class UnitController extends Controller
             'is_active'         => $request->boolean('is_active', true),
         ];
 
-        // Get nama wilayah (denormalized)
         if ($request->provinsi_kode) {
             $provinsi = Province::where('code', $request->provinsi_kode)->first();
             $data['provinsi_nama'] = $provinsi ? $provinsi->name : null;
         } else {
             $data['provinsi_nama'] = null;
         }
-        
         if ($request->kota_kode) {
             $kota = City::where('code', $request->kota_kode)->first();
             $data['kota_nama'] = $kota ? $kota->name : null;
         } else {
             $data['kota_nama'] = null;
         }
-        
         if ($request->kecamatan_kode) {
             $kecamatan = District::where('code', $request->kecamatan_kode)->first();
             $data['kecamatan_nama'] = $kecamatan ? $kecamatan->name : null;
         } else {
             $data['kecamatan_nama'] = null;
         }
-        
         if ($request->kelurahan_kode) {
             $kelurahan = Village::where('code', $request->kelurahan_kode)->first();
             $data['kelurahan_nama'] = $kelurahan ? $kelurahan->name : null;
@@ -329,31 +301,25 @@ class UnitController extends Controller
             $data['kelurahan_nama'] = null;
         }
 
-        // Upload admin foto baru
         if ($request->hasFile('admin_foto')) {
-            // Hapus foto lama
             if ($unit->admin_foto) {
                 Storage::disk('public')->delete($unit->admin_foto);
             }
             $data['admin_foto'] = $request->file('admin_foto')->store('units/admin', 'public');
         }
 
-        // Hapus admin foto jika diminta
         if ($request->boolean('remove_admin_foto') && $unit->admin_foto) {
             Storage::disk('public')->delete($unit->admin_foto);
             $data['admin_foto'] = null;
         }
 
-        // Upload logo baru
         if ($request->hasFile('logo')) {
-            // Hapus logo lama
             if ($unit->logo) {
                 Storage::disk('public')->delete($unit->logo);
             }
             $data['logo'] = $request->file('logo')->store('units/logos', 'public');
         }
 
-        // Hapus logo jika diminta
         if ($request->boolean('remove_logo') && $unit->logo) {
             Storage::disk('public')->delete($unit->logo);
             $data['logo'] = null;
@@ -361,21 +327,14 @@ class UnitController extends Controller
 
         $unit->update($data);
 
-        // ✅ TAMBAHAN: Cascade status ke UMKM & User jika unit dinonaktifkan
         if ($unit->is_active === false) {
-            // Nonaktifkan semua UMKM di bawah unit ini
             $unit->umkm()->update(['status' => 'nonaktif']);
-            
-            // Nonaktifkan user unit 
             if ($unit->user) {
                 $unit->user->update(['is_active' => false]);
             }
-            
-            // Nonaktifkan semua user UMKM di bawah unit ini
             $umkmUserIds = $unit->umkm()->pluck('user_id');
             Users::whereIn('id', $umkmUserIds)->update(['is_active' => false]);
         } elseif ($unit->is_active === true) {
-            // Jika unit diaktifkan kembali, aktifkan user unitnya
             if ($unit->user) {
                 $unit->user->update(['is_active' => true]);
             }
@@ -390,12 +349,9 @@ class UnitController extends Controller
     {
         $unit = Unit::where('uuid', $uuid)->firstOrFail();
 
-        // Hapus admin foto
         if ($unit->admin_foto) {
             Storage::disk('public')->delete($unit->admin_foto);
         }
-
-        // Hapus logo
         if ($unit->logo) {
             Storage::disk('public')->delete($unit->logo);
         }
@@ -407,9 +363,6 @@ class UnitController extends Controller
             ->with('success', 'Unit berhasil dihapus');
     }
 
-    /**
-     * Toggle unit active status
-     */
     public function toggleStatus($uuid)
     {
         $unit = Unit::where('uuid', $uuid)->firstOrFail();
@@ -418,21 +371,14 @@ class UnitController extends Controller
             'is_active' => !$unit->is_active
         ]);
 
-        // ✅ TAMBAHAN: Cascade status ke UMKM & User jika unit dinonaktifkan
         if (!$unit->is_active) {
-            // Nonaktifkan semua UMKM di bawah unit ini
             $unit->umkm()->update(['status' => 'nonaktif']);
-            
-            // Nonaktifkan user unit 
             if ($unit->user) {
                 $unit->user->update(['is_active' => false]);
             }
-            
-            // Nonaktifkan semua user UMKM di bawah unit ini
             $umkmUserIds = $unit->umkm()->pluck('user_id');
             Users::whereIn('id', $umkmUserIds)->update(['is_active' => false]);
         } else {
-            // Jika unit diaktifkan kembali, aktifkan user unitnya
             if ($unit->user) {
                 $unit->user->update(['is_active' => true]);
             }
@@ -445,39 +391,147 @@ class UnitController extends Controller
             ->with('success', "Unit berhasil {$status}");
     }
 
+    // =========================================================================
+    // LAPORAN PDF
+    // =========================================================================
+
     /**
-     * API untuk get cities berdasarkan province
+     * Download Laporan UMKM per Unit
      */
+    public function downloadByUnit($unitId)
+    {
+        if (!in_array(auth()->user()->role, ['admin', 'unit'])) {
+            abort(403);
+        }
+
+        if (auth()->user()->role !== 'admin') {
+            $userUnit = Unit::where('user_id', auth()->id())->first();
+            if (!$userUnit || $userUnit->id != $unitId) {
+                abort(403, 'Anda tidak memiliki akses ke unit ini.');
+            }
+        }
+
+        if ($unitId == 0 || $unitId == '0') {
+            $unitName = 'Pusat atau Tanpa Unit';
+            $umkmList = Umkm::with(['unit', 'kategori', 'modalUmkm', 'produkUmkm', 'province', 'city', 'district', 'village'])
+                ->whereNull('unit_id')
+                ->get();
+            $unitList = collect([null]);
+        } else {
+            $unit = Unit::findOrFail($unitId);
+            $unitName = $unit->nama_unit;
+            $umkmList = Umkm::with(['unit', 'kategori', 'modalUmkm', 'produkUmkm', 'province', 'city', 'district', 'village'])
+                ->where('unit_id', $unitId)
+                ->get();
+            $unitList = collect([$unit]);
+        }
+
+        $pdf = Pdf::loadView('admin.report-unit.pdf', [
+            'umkmList' => $umkmList->groupBy('unit_id'),
+            'unitList' => $unitList
+        ])->setPaper('a4', 'portrait')
+          ->setOption(['defaultFont' => 'sans-serif', 'isHtml5ParserEnabled' => true]);
+
+        $filename = 'laporan-umkm-' . Str::slug($unitName) . '-' . now()->format('Ymd') . '.pdf';
+
+        return $pdf->stream($filename);
+    }
+
+    /**
+     * Download Semua Laporan UMKM (Berdasarkan Filter)
+     */
+    public function downloadAll(Request $request)
+    {
+        if (!in_array(auth()->user()->role, ['admin', 'unit'])) {
+            abort(403);
+        }
+
+        $query = Umkm::with(['unit', 'kategori', 'modalUmkm', 'produkUmkm', 'province', 'city', 'district', 'village']);
+
+        if (auth()->user()->role !== 'admin') {
+            $userUnit = Unit::where('user_id', auth()->id())->first();
+            if ($userUnit) {
+                $query->where('unit_id', $userUnit->id);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        }
+
+        if ($request->filled('tahun')) {
+            $query->whereYear('tanggal_bergabung', $request->tahun);
+        }
+        if ($request->filled('tahun_berdiri')) {
+            $query->where('tahun_berdiri', $request->tahun_berdiri);
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('kategori_id')) {
+            $query->where('kategori_id', $request->kategori_id);
+        }
+        if (auth()->user()->role === 'admin' && $request->filled('unit_id')) {
+            $query->where('unit_id', $request->unit_id);
+        }
+
+        $umkmList = $query->withSum('modalUmkm as total_modal_sum', 'nilai_modal')
+            ->orderByDesc('total_modal_sum')
+            ->get();
+
+        if (auth()->user()->role === 'admin') {
+            $pdfList  = $umkmList->groupBy('unit_id');
+            $viewName = 'admin.report-unit.pdf';
+            $unitList = Unit::orderBy('nama_unit')
+                ->when($request->filled('unit_id'), fn($q) => $q->where('id', $request->unit_id))
+                ->get();
+            $data = [
+                'umkmList' => $pdfList,
+                'unitList' => $unitList,
+            ];
+        } else {
+            $pdfList  = $umkmList;
+            $viewName = 'umkm.pdf.report_all';
+            $data     = [
+                'umkmList' => $pdfList,
+            ];
+        }
+
+        $pdf = Pdf::loadView($viewName, $data)
+            ->setPaper('a4', auth()->user()->role === 'admin' ? 'portrait' : 'landscape')
+            ->setOption(['defaultFont' => 'sans-serif', 'isHtml5ParserEnabled' => true]);
+
+        $filename = 'laporan-rekapitulasi-umkm-' . now()->format('Ymd') . '.pdf';
+
+        return $pdf->stream($filename);
+    }
+
+    // =========================================================================
+    // API WILAYAH
+    // =========================================================================
+
     public function getCities($provinceCode)
     {
         $cities = City::where('province_code', $provinceCode)
             ->orderBy('name')
             ->get(['code', 'name']);
-        
+
         return response()->json($cities);
     }
 
-    /**
-     * API untuk get districts berdasarkan city
-     */
     public function getDistricts($cityCode)
     {
         $districts = District::where('city_code', $cityCode)
             ->orderBy('name')
             ->get(['code', 'name']);
-        
+
         return response()->json($districts);
     }
 
-    /**
-     * API untuk get villages berdasarkan district
-     */
     public function getVillages($districtCode)
     {
         $villages = Village::where('district_code', $districtCode)
             ->orderBy('name')
             ->get(['code', 'name']);
-        
+
         return response()->json($villages);
     }
 }

@@ -39,12 +39,8 @@ class ReportUnitDanUmkmController extends Controller
         if ($request->filled('tahun_berdiri')) {
             $query->where('tahun_berdiri', $request->tahun_berdiri);
         }
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-        if ($request->filled('kategori_id')) {
-            $query->where('kategori_id', $request->kategori_id);
-        }
+
+
         if (auth()->user()->role === 'admin' && $request->filled('unit_id')) {
             $query->where('unit_id', $request->unit_id);
         }
@@ -81,12 +77,18 @@ class ReportUnitDanUmkmController extends Controller
 
         // Group by unit if admin
         if (auth()->user()->role === 'admin') {
-            // Jika ada filter unit_status, filter umkmList hanya dari unit yg lolos filter
             if ($request->filled('unit_status')) {
                 $filteredUnitIds = $unitList->pluck('id');
                 $umkmList = $umkmList->filter(fn($u) => $filteredUnitIds->contains($u->unit_id));
             }
             $umkmList = $umkmList->groupBy('unit_id');
+
+            // Jika filter UMKM diisi, sembunyikan unit yang tidak punya data matching
+            if ($request->filled(['tahun', 'tahun_berdiri'])) {
+                $unitIdsWithData = $umkmList->keys();
+                $unitList = $unitList->whereIn('id', $unitIdsWithData);
+            }
+
             return view('admin.report-unit.index', compact(
                 'umkmList',
                 'kategoriList',
@@ -133,12 +135,8 @@ class ReportUnitDanUmkmController extends Controller
         if ($request->filled('tahun_berdiri')) {
             $query->where('tahun_berdiri', $request->tahun_berdiri);
         }
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-        if ($request->filled('kategori_id')) {
-            $query->where('kategori_id', $request->kategori_id);
-        }
+
+
         if (auth()->user()->role === 'admin' && $request->filled('unit_id')) {
             $query->where('unit_id', $request->unit_id);
         }
@@ -153,11 +151,21 @@ class ReportUnitDanUmkmController extends Controller
                 ->when($request->unit_status === 'aktif', fn($q) => $q->where('is_active', true))
                 ->when($request->unit_status === 'nonaktif', fn($q) => $q->where('is_active', false))
                 ->get();
+
+            // Saring umkmList agar hanya berisi unit yang lolos filter unit_status
             if ($request->filled('unit_status')) {
                 $filteredUnitIds = $unitList->pluck('id');
                 $umkmList = $umkmList->filter(fn($u) => $filteredUnitIds->contains($u->unit_id));
             }
+
+            // Group by unit_id
             $umkmList = $umkmList->groupBy('unit_id');
+
+            // Jika filter UMKM diisi, sembunyikan unit yang tidak punya data matching
+            if ($request->filled(['tahun', 'tahun_berdiri'])) {
+                $unitIdsWithData = $umkmList->keys();
+                $unitList = $unitList->whereIn('id', $unitIdsWithData);
+            }
 
             $pdf = Pdf::loadView('admin.report-unit.pdf', compact('umkmList', 'unitList'))
                 ->setPaper('a4', 'portrait')
@@ -210,6 +218,56 @@ class ReportUnitDanUmkmController extends Controller
             ->setOption(['defaultFont' => 'sans-serif', 'isHtml5ParserEnabled' => true]);
 
         $filename = 'laporan-' . Str::slug($umkm->nama_usaha) . '-' . now()->format('Ymd') . '.pdf';
+        return $pdf->stream($filename);
+    }
+
+    /**
+     * Download Laporan UMKM per Unit (Support Filters)
+     */
+    public function downloadByUnit(Request $request, $unitId)
+    {
+        if (!in_array(auth()->user()->role, ['admin', 'unit'])) {
+            abort(403);
+        }
+
+        if (auth()->user()->role !== 'admin') {
+            $userUnit = Unit::where('user_id', auth()->id())->first();
+            if (!$userUnit || $userUnit->id != $unitId) {
+                abort(403, 'Anda tidak memiliki akses ke unit ini.');
+            }
+        }
+
+        $query = Umkm::with(['unit', 'kategori', 'modalUmkm', 'produkUmkm', 'province', 'city', 'district', 'village']);
+
+        if ($unitId == 0 || $unitId == '0') {
+            $unitName = 'Pusat atau Tanpa Unit';
+            $query->whereNull('unit_id');
+            $unitList = collect([null]);
+        } else {
+            $unit = Unit::findOrFail($unitId);
+            $unitName = $unit->nama_unit;
+            $query->where('unit_id', $unitId);
+            $unitList = collect([$unit]);
+        }
+
+        // Apply Filters if any
+        if ($request->filled('tahun')) {
+            $query->whereYear('tanggal_bergabung', $request->tahun);
+        }
+
+
+
+        $umkmList = $query->withSum('modalUmkm as total_modal_sum', 'nilai_modal')
+            ->orderByDesc('total_modal_sum')
+            ->get();
+
+        $pdf = Pdf::loadView('admin.report-unit.pdf', [
+            'umkmList' => $umkmList->groupBy('unit_id'),
+            'unitList' => $unitList
+        ])->setPaper('a4', 'portrait')
+          ->setOption(['defaultFont' => 'sans-serif', 'isHtml5ParserEnabled' => true]);
+
+        $filename = 'laporan-umkm-' . Str::slug($unitName) . '-' . now()->format('Ymd') . '.pdf';
         return $pdf->stream($filename);
     }
 }

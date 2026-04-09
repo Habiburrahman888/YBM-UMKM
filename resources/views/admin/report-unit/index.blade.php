@@ -3,6 +3,19 @@
 @section('title', 'Laporan Unit & UMKM Binaan')
 @section('page-title', 'Rekapitulasi Unit')
 
+@push('styles')
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <style>
+        .ts-control { border-radius: 0.5rem !important; padding: 0.5rem 0.75rem !important; font-size: 0.875rem !important; }
+        .ts-wrapper.single .ts-control { background-image: none !important; }
+        .ts-wrapper.single .ts-control::after {
+            content: ""; display: block; width: 10px; height: 10px;
+            border-right: 2px solid #94a3b8; border-bottom: 2px solid #94a3b8;
+            transform: rotate(45deg); position: absolute; right: 12px; top: 14px;
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="space-y-4 sm:space-y-6">
 
@@ -21,7 +34,7 @@
 
                         {{-- Tombol Filter --}}
                         <button type="button" onclick="toggleFilter()"
-                            class="inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded-lg transition-all {{ request()->hasAny(['status', 'kategori_id', 'unit_id', 'unit_status']) ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                            class="inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded-lg transition-all {{ request()->hasAny(['unit_id', 'unit_status']) ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -44,7 +57,7 @@
 
             {{-- ── PANEL FILTER ── --}}
             <div id="filter-section"
-                class="{{ request()->hasAny(['status', 'kategori_id', 'unit_id', 'unit_status']) ? '' : 'hidden' }} border-b border-gray-200 transition-all duration-300">
+                class="{{ request()->hasAny(['unit_id', 'unit_status']) ? '' : 'hidden' }} border-b border-gray-200 transition-all duration-300">
                 <div class="px-4 sm:px-6 py-4 bg-gray-50">
                     <form method="GET" action="{{ url()->current() }}">
                         <div class="flex flex-wrap lg:flex-nowrap gap-3 items-end">
@@ -62,37 +75,14 @@
                                 </select>
                             </div>
 
-                            {{-- Filter Status UMKM --}}
-                            <div class="w-full sm:w-auto flex-1 min-w-[120px]">
-                                <label class="block text-xs font-medium text-gray-500 mb-1">Status UMKM</label>
-                                <select name="status"
-                                    class="block w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
-                                    <option value="">Semua Status</option>
-                                    <option value="aktif" {{ request('status') === 'aktif' ? 'selected' : '' }}>Aktif
-                                    </option>
-                                    <option value="nonaktif" {{ request('status') === 'nonaktif' ? 'selected' : '' }}>
-                                        Nonaktif</option>
-                                </select>
-                            </div>
 
-                            {{-- Filter Kategori --}}
-                            <div class="w-full sm:w-auto flex-1 min-w-[130px]">
-                                <label class="block text-xs font-medium text-gray-500 mb-1">Kategori</label>
-                                <select name="kategori_id"
-                                    class="block w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
-                                    <option value="">Semua Kategori</option>
-                                    @foreach ($kategoriList as $kat)
-                                        <option value="{{ $kat->id }}"
-                                            {{ request('kategori_id') == $kat->id ? 'selected' : '' }}>{{ $kat->nama }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
+
+
 
                             {{-- Filter Unit --}}
                             <div class="w-full sm:w-auto flex-1 min-w-[130px]">
                                 <label class="block text-xs font-medium text-gray-500 mb-1">Unit</label>
-                                <select name="unit_id"
+                                <select name="unit_id" id="unit-select"
                                     class="block w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
                                     <option value="">Semua Unit</option>
                                     @foreach ($unitList as $unit)
@@ -260,7 +250,7 @@
                                     </td>
 
                                     <td class="px-6 py-4 text-right" onclick="event.stopPropagation()">
-                                        <a href="{{ route('umkm.report.unit', ['unitId' => $unitId, 'slug' => Str::slug($unit->nama_unit ?? 'pusat')]) }}"
+                                        <a href="{{ route('umkm.report.unit', array_merge(['unitId' => $unitId, 'slug' => Str::slug($unit->nama_unit ?? 'pusat')], request()->query())) }}"
                                             target="_blank"
                                             class="inline-flex items-center p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                             title="Download PDF Unit">
@@ -398,7 +388,17 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            new TomSelect('#unit-select', {
+                create: false,
+                sortField: { field: 'text', direction: 'asc' },
+                placeholder: 'Cari Unit...',
+                allowEmptyOption: true,
+            });
+        });
+
         function toggleFilter() {
             document.getElementById('filter-section').classList.toggle('hidden');
         }
