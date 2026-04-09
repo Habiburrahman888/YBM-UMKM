@@ -85,19 +85,12 @@
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
             <!-- Total UMKM -->
             <div class="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-sm transition-shadow col-span-1">
-                <div class="flex items-center justify-between mb-3">
+                <div class="mb-3">
                     <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd"
                             d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z"
                             clip-rule="evenodd" />
                     </svg>
-                    @if ($umkmGrowth > 0)
-                        <span
-                            class="text-xs font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-md">+{{ $umkmGrowth }}%</span>
-                    @elseif ($umkmGrowth < 0)
-                        <span
-                            class="text-xs font-medium text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-md">{{ $umkmGrowth }}%</span>
-                    @endif
                 </div>
                 <h3 class="text-2xl font-bold text-gray-900 mb-0.5">{{ number_format($totalUmkm) }}</h3>
                 <p class="text-xs text-gray-400">Total UMKM</p>
@@ -425,9 +418,9 @@
                             </td>
                         </tr>
                         ${ umkm.alamat ? `<tr>
-                                                <td style="color:#94a3b8;padding:3px 0;vertical-align:top;">Alamat</td>
-                                                <td style="color:#1e293b;font-weight:600;padding:3px 0 3px 8px;">${umkm.alamat}</td>
-                                            </tr>` : '' }
+                                                    <td style="color:#94a3b8;padding:3px 0;vertical-align:top;">Alamat</td>
+                                                    <td style="color:#1e293b;font-weight:600;padding:3px 0 3px 8px;">${umkm.alamat}</td>
+                                                </tr>` : '' }
                     </table>
                     <a href="{{ route('umkm.show', '') }}/${umkm.uuid}"
                        style="display:block;margin-top:10px;background:#1e293b;color:white;text-align:center;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;">

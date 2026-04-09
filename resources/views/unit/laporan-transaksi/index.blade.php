@@ -4,6 +4,29 @@
 @section('page-title', 'Laporan Transaksi')
 
 @section('content')
+@push('styles')
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <style>
+        .ts-wrapper .ts-control {
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            border-color: #e5e7eb;
+            background-color: white !important;
+        }
+        .ts-wrapper.focus .ts-control {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+        }
+        .ts-dropdown {
+            border-radius: 0.5rem;
+            margin-top: 4px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-color: #e5e7eb;
+        }
+    </style>
+@endpush
+
 
     {{-- PAGE HEADER --}}
     <div class="mb-6">
@@ -56,13 +79,13 @@
 
             {{-- Filter Panel (hidden by default) --}}
             <div id="filter-panel"
-                class="{{ request()->hasAny(['umkm_id', 'dari', 'sampai']) ? '' : 'hidden' }} mt-4 pt-4 border-t border-gray-100">
-                <form method="GET" action="{{ route('unit.laporan-transaksi.index') }}">
-                    <div class="flex flex-wrap gap-3 items-end">
-                        <div class="flex-1 min-w-[160px]">
-                            <label class="block text-xs font-medium text-gray-500 mb-1">UMKM Binaan</label>
-                            <select name="umkm_id"
-                                class="block w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                class="{{ request()->hasAny(['umkm_id', 'dari', 'sampai']) ? '' : 'hidden' }} mt-4">
+                <div class="bg-gray-50/80 p-4 rounded-xl border border-gray-100">
+                    <form method="GET" action="{{ route('unit.laporan-transaksi.index') }}" class="flex flex-wrap items-end gap-3">
+                        <div class="flex-1 min-w-[200px]">
+                            <label class="block text-[11px] font-medium text-gray-400 mb-1 ml-0.5">UMKM Binaan</label>
+                            <select name="umkm_id" id="umkm_select"
+                                class="block w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
                                 <option value="">Semua UMKM</option>
                                 @foreach ($umkmList as $u)
                                     <option value="{{ $u->id }}"
@@ -72,34 +95,34 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500 mb-1">Dari Tanggal</label>
+                        <div class="w-full sm:w-44">
+                            <label class="block text-[11px] font-medium text-gray-400 mb-1 ml-0.5">Dari Tanggal</label>
                             <input type="date" name="dari" value="{{ request('dari') }}"
-                                class="block text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                                class="block w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
                         </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500 mb-1">Sampai Tanggal</label>
+                        <div class="w-full sm:w-44">
+                            <label class="block text-[11px] font-medium text-gray-400 mb-1 ml-0.5">Sampai Tanggal</label>
                             <input type="date" name="sampai" value="{{ request('sampai') }}"
-                                class="block text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                                class="block w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
                         </div>
                         <div class="flex items-center gap-2">
                             <button type="submit"
-                                class="inline-flex items-center justify-center px-4 py-2 bg-primary hover:bg-primary-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm whitespace-nowrap">
+                                class="inline-flex items-center justify-center px-8 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-all shadow-sm">
                                 Terapkan Filter
                             </button>
                             @if (request()->hasAny(['umkm_id', 'status', 'dari', 'sampai']))
                                 <a href="{{ route('unit.laporan-transaksi.index') }}"
-                                    class="inline-flex items-center p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-colors"
+                                    class="inline-flex items-center justify-center p-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-400 rounded-lg transition-colors shadow-sm"
                                     title="Reset Filter">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </a>
                             @endif
                         </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
 
@@ -153,7 +176,19 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            new TomSelect('#umkm_select', {
+                create: false,
+                sortField: {
+                    field: "text",
+                    direction: "asc"
+                },
+                placeholder: "Cari UMKM..."
+            });
+        });
+
         function toggleFilter() {
             document.getElementById('filter-panel').classList.toggle('hidden');
         }
