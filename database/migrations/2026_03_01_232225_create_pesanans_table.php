@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -22,7 +21,8 @@ return new class extends Migration
             $table->integer('jumlah');
             $table->decimal('total_harga', 15, 2);
             $table->string('bukti_transfer')->nullable();
-            $table->enum('status', ['pending', 'diproses', 'selesai', 'dibatalkan'])->default('pending');
+            $table->string('metode_pembayaran')->nullable();
+            $table->enum('status', ['pending', 'diproses', 'dikirim', 'selesai', 'dibatalkan'])->default('pending');
             $table->text('catatan')->nullable();
             $table->timestamps();
         });

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Models\Users;
 use App\Models\Unit;
 use App\Models\Umkm;
 use App\Models\Kategori;
@@ -42,22 +42,22 @@ class DashboardController extends Controller
     private function adminDashboard()
     {
         // ===== STATISTICS CARDS =====
-        $totalUsers = User::count();
+        $totalUsers = Users::count();
         $totalUnits = Unit::count();
         $unitAktif = Unit::where('is_active', true)->count();
         $unitNonaktif = Unit::where('is_active', false)->count();
         $totalUmkm = Umkm::count();
         $umkmAktif = Umkm::where('status', 'aktif')
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNull('unit_id')
-                  ->orWhereHas('unit', function($uq) {
-                      $uq->where('is_active', true);
-                  });
+                    ->orWhereHas('unit', function ($uq) {
+                        $uq->where('is_active', true);
+                    });
             })->count();
         $totalKategori = Kategori::count();
 
         // ===== GROWTH METRICS =====
-        $usersGrowth = $this->calculateGrowth(User::class);
+        $usersGrowth = $this->calculateGrowth(Users::class);
         $unitsGrowth = $this->calculateGrowth(Unit::class);
         $umkmGrowth = $this->calculateGrowth(Umkm::class);
 
@@ -65,18 +65,18 @@ class DashboardController extends Controller
         $grafikRegistrasi = $this->getRegistrasiChart();
 
         $statusUmkm = [
-            'aktif'    => $umkmAktif,
-            'pending'  => 0,
+            'aktif' => $umkmAktif,
+            'pending' => 0,
             'nonaktif' => $totalUmkm - $umkmAktif,
         ];
 
         $statusUnit = [
-            'aktif'    => Unit::where('is_active', true)->count(),
+            'aktif' => Unit::where('is_active', true)->count(),
             'nonaktif' => Unit::where('is_active', false)->count(),
         ];
 
         // ===== DISTRIBUSI USERS BY ROLE =====
-        $distribusiRole = User::select('role', DB::raw('count(*) as total'))
+        $distribusiRole = Users::select('role', DB::raw('count(*) as total'))
             ->groupBy('role')
             ->get()
             ->mapWithKeys(fn($item) => [$item->role => $item->total]);
@@ -102,39 +102,39 @@ class DashboardController extends Controller
 
         // ===== STATISTIK HARI INI =====
         $today = Carbon::today();
-        $umkmHariIni      = Umkm::whereDate('created_at', $today)->count();
-        $userHariIni      = User::whereDate('created_at', $today)->count();
+        $umkmHariIni = Umkm::whereDate('created_at', $today)->count();
+        $userHariIni = Users::whereDate('created_at', $today)->count();
         $verifikasiHariIni = Umkm::whereDate('verified_at', $today)->count();
 
         // ===== STATISTIK BULAN INI =====
-        $startOfMonth  = Carbon::now()->startOfMonth();
-        $umkmBulanIni  = Umkm::where('created_at', '>=', $startOfMonth)->count();
-        $userBulanIni  = User::where('created_at', '>=', $startOfMonth)->count();
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $umkmBulanIni = Umkm::where('created_at', '>=', $startOfMonth)->count();
+        $userBulanIni = Users::where('created_at', '>=', $startOfMonth)->count();
 
         // ===== TARGET PROGRESS =====
         $targetUmkmBulan = 50;
         $targetUserBulan = 30;
-        $progressUmkm    = min(100, ($umkmBulanIni / $targetUmkmBulan) * 100);
-        $progressUser    = min(100, ($userBulanIni / $targetUserBulan) * 100);
+        $progressUmkm = min(100, ($umkmBulanIni / $targetUmkmBulan) * 100);
+        $progressUser = min(100, ($userBulanIni / $targetUserBulan) * 100);
 
         // ===== SUMMARY =====
         $umkmSummary = [
-            'total'      => $totalUmkm,
-            'aktif'      => $umkmAktif,
-            'nonaktif'   => $totalUmkm - $umkmAktif,
-            'verified'   => Umkm::whereNotNull('verified_at')->count(),
+            'total' => $totalUmkm,
+            'aktif' => $umkmAktif,
+            'nonaktif' => $totalUmkm - $umkmAktif,
+            'verified' => Umkm::whereNotNull('verified_at')->count(),
             'unverified' => Umkm::whereNull('verified_at')->count(),
         ];
 
         $userVerification = [
-            'verified'   => User::whereNotNull('email_verified_at')->count(),
-            'unverified' => User::whereNull('email_verified_at')->count(),
+            'verified' => Users::whereNotNull('email_verified_at')->count(),
+            'unverified' => Users::whereNull('email_verified_at')->count(),
         ];
 
         $quickStats = [
-            'inactive_units'    => Unit::where('is_active', false)->count(),
+            'inactive_units' => Unit::where('is_active', false)->count(),
             'unverified_emails' => $userVerification['unverified'],
-            'umkm_no_user'      => Umkm::whereNull('user_id')->count(),
+            'umkm_no_user' => Umkm::whereNull('user_id')->count(),
         ];
 
         return view('dashboard.admin', compact(
@@ -212,7 +212,7 @@ class DashboardController extends Controller
                 $date->copy()->endOfMonth()
             ])->count();
 
-            $userData[] = User::whereBetween('created_at', [
+            $userData[] = Users::whereBetween('created_at', [
                 $date->copy()->startOfMonth(),
                 $date->copy()->endOfMonth()
             ])->count();
@@ -321,7 +321,7 @@ class DashboardController extends Controller
         }
 
         // Users (1 terbaru)
-        $recentUsers = User::orderBy('created_at', 'desc')
+        $recentUsers = Users::orderBy('created_at', 'desc')
             ->limit(1)
             ->get();
 
@@ -346,7 +346,8 @@ class DashboardController extends Controller
 
     private function calculatePercentage($value, $total)
     {
-        if ($total == 0) return 0;
+        if ($total == 0)
+            return 0;
         return round(($value / $total) * 100, 1);
     }
 
@@ -369,8 +370,8 @@ class DashboardController extends Controller
         $baseQuery = Umkm::where('unit_id', $unit->id);
 
         // ===== STATISTICS =====
-        $totalUmkm    = (clone $baseQuery)->count();
-        $umkmAktif    = (clone $baseQuery)->where('status', 'aktif')->count();
+        $totalUmkm = (clone $baseQuery)->count();
+        $umkmAktif = (clone $baseQuery)->where('status', 'aktif')->count();
         $umkmNonaktif = (clone $baseQuery)->where('status', 'nonaktif')->count();
 
         // ===== GROWTH METRICS =====
@@ -456,8 +457,8 @@ class DashboardController extends Controller
                 $kategori = Kategori::find($item->kategori_id);
 
                 return [
-                    'nama'       => $kategori->nama ?? 'Unknown',
-                    'total'      => $item->total,
+                    'nama' => $kategori->nama ?? 'Unknown',
+                    'total' => $item->total,
                     'percentage' => $this->calculatePercentage($item->total, $totalUmkm),
                 ];
             });
@@ -512,17 +513,26 @@ class DashboardController extends Controller
             ->where('unit_id', $unitId)
             ->whereNotNull('province_code')
             ->select([
-                'uuid', 'nama_usaha', 'nama_pemilik', 'status', 'kode_umkm',
-                'province_code', 'city_code', 'district_code', 'village_code',
-                'alamat', 'kategori_id', 'verified_at',
+                'uuid',
+                'nama_usaha',
+                'nama_pemilik',
+                'status',
+                'kode_umkm',
+                'province_code',
+                'city_code',
+                'district_code',
+                'village_code',
+                'alamat',
+                'kategori_id',
+                'verified_at',
             ])
             ->get();
 
         $mapped = $umkmList->map(function ($umkm) use ($provinceCoords) {
             $districtName = optional($umkm->district)->name;
-            $villageName  = optional($umkm->village)->name;
-            $cityName     = optional($umkm->city)->name;
-            $provCode     = $umkm->province_code;
+            $villageName = optional($umkm->village)->name;
+            $cityName = optional($umkm->city)->name;
+            $provCode = $umkm->province_code;
 
             // ── Coba geocode berdasarkan wilayah ──────────────────────────
             $coords = null;
@@ -530,10 +540,10 @@ class DashboardController extends Controller
             // 1. Coba Desa/Kelurahan + Kecamatan + Kota
             if ($villageName && $districtName && $cityName) {
                 $cacheKey = 'geocode_v2_vill_' . md5(strtolower($villageName . '_' . $districtName . '_' . $cityName));
-                $coords   = \Illuminate\Support\Facades\Cache::remember(
+                $coords = \Illuminate\Support\Facades\Cache::remember(
                     $cacheKey,
                     now()->addDays(30),
-                    function() use ($villageName, $districtName, $cityName) {
+                    function () use ($villageName, $districtName, $cityName) {
                         return $this->geocodeByNominatim($villageName . ', Kecamatan ' . $districtName, $cityName);
                     }
                 );
@@ -542,10 +552,10 @@ class DashboardController extends Controller
             // 2. Coba Kecamatan + Kota (jika kelurahan gagal/tidak ada)
             if (!$coords && $districtName && $cityName) {
                 $cacheKey = 'geocode_v2_dist_' . md5(strtolower($districtName . '_' . $cityName));
-                $coords   = \Illuminate\Support\Facades\Cache::remember(
+                $coords = \Illuminate\Support\Facades\Cache::remember(
                     $cacheKey,
                     now()->addDays(30),
-                    function() use ($districtName, $cityName) {
+                    function () use ($districtName, $cityName) {
                         return $this->geocodeByNominatim('Kecamatan ' . $districtName, $cityName);
                     }
                 );
@@ -554,10 +564,10 @@ class DashboardController extends Controller
             // 3. Fallback: hanya kota
             if (!$coords && $cityName) {
                 $cacheKey = 'geocode_v2_city_' . md5(strtolower($cityName));
-                $coords   = \Illuminate\Support\Facades\Cache::remember(
+                $coords = \Illuminate\Support\Facades\Cache::remember(
                     $cacheKey,
                     now()->addDays(30),
-                    function() use ($cityName) {
+                    function () use ($cityName) {
                         return $this->geocodeByNominatim(null, $cityName);
                     }
                 );
@@ -566,7 +576,7 @@ class DashboardController extends Controller
             // 4. Fallback Terakhir: koordinat provinsi 
             if (!$coords) {
                 $provKey = substr((string) $provCode, 0, 2);
-                $coords  = $provinceCoords[$provKey] ?? [-2.5, 118.0];
+                $coords = $provinceCoords[$provKey] ?? [-2.5, 118.0];
             }
 
             // ── Tambahkan Jitter Deterministik ──────────────────────────────
@@ -577,19 +587,19 @@ class DashboardController extends Controller
             $offsetY = ((floor($seed / 100) % 100) - 50) / 10000;
 
             return [
-                'uuid'         => $umkm->uuid,
-                'nama_usaha'   => $umkm->nama_usaha,
+                'uuid' => $umkm->uuid,
+                'nama_usaha' => $umkm->nama_usaha,
                 'nama_pemilik' => $umkm->nama_pemilik,
-                'kode_umkm'    => $umkm->kode_umkm,
-                'status'       => $umkm->status,
-                'verified'     => !is_null($umkm->verified_at),
-                'kategori'     => optional($umkm->kategori)->nama ?? '-',
-                'alamat'       => $umkm->alamat,
-                'kecamatan'    => $districtName,
-                'kelurahan'    => $villageName,
-                'kota'         => $cityName,
-                'lat'          => $coords[0] + $offsetX,
-                'lng'          => $coords[1] + $offsetY,
+                'kode_umkm' => $umkm->kode_umkm,
+                'status' => $umkm->status,
+                'verified' => !is_null($umkm->verified_at),
+                'kategori' => optional($umkm->kategori)->nama ?? '-',
+                'alamat' => $umkm->alamat,
+                'kecamatan' => $districtName,
+                'kelurahan' => $villageName,
+                'kota' => $cityName,
+                'lat' => $coords[0] + $offsetX,
+                'lng' => $coords[1] + $offsetY,
             ];
         })->values();
 
@@ -612,22 +622,22 @@ class DashboardController extends Controller
                 : "{$cityName}, Indonesia";
 
             $url = 'https://nominatim.openstreetmap.org/search?' . http_build_query([
-                'q'              => $query,
-                'format'         => 'json',
-                'limit'          => 1,
-                'countrycodes'   => 'id',
+                'q' => $query,
+                'format' => 'json',
+                'limit' => 1,
+                'countrycodes' => 'id',
                 'addressdetails' => 0,
             ]);
 
             $opts = [
                 'http' => [
-                    'method'  => 'GET',
-                    'header'  => "User-Agent: YBM-UMKM-App/1.0\r\n",
+                    'method' => 'GET',
+                    'header' => "User-Agent: YBM-UMKM-App/1.0\r\n",
                     'timeout' => 5,
                 ],
             ];
 
-            $context  = stream_context_create($opts);
+            $context = stream_context_create($opts);
             $response = @file_get_contents($url, false, $context);
 
             if ($response === false) {
@@ -652,12 +662,12 @@ class DashboardController extends Controller
     private function getGrafikRegistrasiUnit($unitId)
     {
         $labels = [];
-        $data   = [];
+        $data = [];
 
         for ($i = 5; $i >= 0; $i--) {
-            $date     = Carbon::now()->subMonths($i);
+            $date = Carbon::now()->subMonths($i);
             $labels[] = $date->translatedFormat('M Y');
-            $data[]   = Umkm::where('unit_id', $unitId)
+            $data[] = Umkm::where('unit_id', $unitId)
                 ->whereBetween('created_at', [
                     $date->copy()->startOfMonth(),
                     $date->copy()->endOfMonth(),
@@ -688,44 +698,44 @@ class DashboardController extends Controller
 
         // ===== INFORMASI PRODUK (hasMany) =====
         $startOfMonth = Carbon::now()->startOfMonth();
-        $produk       = $umkm->produkUmkm; // Returns a Collection
+        $produk = $umkm->produkUmkm; // Returns a Collection
 
-        $totalProduk    = $produk->count();
-        $produkTerbaru  = $produk->sortByDesc('created_at')->take(5);
-        $produkHariIni  = $produk->filter(fn($p) => $p->created_at->isToday())->count();
+        $totalProduk = $produk->count();
+        $produkTerbaru = $produk->sortByDesc('created_at')->take(5);
+        $produkHariIni = $produk->filter(fn($p) => $p->created_at->isToday())->count();
         $produkBulanIni = $produk->filter(fn($p) => $p->created_at->gte($startOfMonth))->count();
 
         // ===== INFORMASI PESANAN =====
-        $pesanan        = \App\Models\Pesanan::where('umkm_id', $umkm->id)->get();
-        $totalPesanan   = $pesanan->count();
+        $pesanan = \App\Models\Pesanan::where('umkm_id', $umkm->id)->get();
+        $totalPesanan = $pesanan->count();
         $pesananPending = $pesanan->where('status', 'pending')->count();
         $pesananTerbaru = $pesanan->sortByDesc('created_at')->take(5);
         $pesananHariIni = $pesanan->filter(fn($p) => $p->created_at->isToday())->count();
 
         // ===== QUICK STATS =====
         $quickStats = [
-            'total_produk'       => $totalProduk,
-            'produk_hari_ini'    => $produkHariIni,
-            'total_pesanan'      => $totalPesanan,
-            'pesanan_pending'    => $pesananPending,
-            'pesanan_hari_ini'   => $pesananHariIni,
-            'status'             => $statusUmkm,
-            'is_verified'        => $isVerified,
+            'total_produk' => $totalProduk,
+            'produk_hari_ini' => $produkHariIni,
+            'total_pesanan' => $totalPesanan,
+            'pesanan_pending' => $pesananPending,
+            'pesanan_hari_ini' => $pesananHariIni,
+            'status' => $statusUmkm,
+            'is_verified' => $isVerified,
         ];
 
         // ===== SUMMARY =====
         $umkmSummary = [
-            'nama_usaha'        => $umkm->nama_usaha,
-            'nama_pemilik'      => $umkm->nama_pemilik,
-            'status'            => $statusUmkm,
-            'verified'          => $isVerified,
-            'verified_at'       => $umkm->verified_at,
+            'nama_usaha' => $umkm->nama_usaha,
+            'nama_pemilik' => $umkm->nama_pemilik,
+            'status' => $statusUmkm,
+            'verified' => $isVerified,
+            'verified_at' => $umkm->verified_at,
             'tanggal_bergabung' => $umkm->tanggal_bergabung,
-            'unit'              => $umkm->unit?->nama_unit ?? '-',
-            'kategori'          => $umkm->kategori?->nama ?? '-',
-            'total_produk'      => $totalProduk,
-            'total_pesanan'     => $totalPesanan,
-            'pesanan_pending'   => $pesananPending,
+            'unit' => $umkm->unit?->nama_unit ?? '-',
+            'kategori' => $umkm->kategori?->nama ?? '-',
+            'total_produk' => $totalProduk,
+            'total_pesanan' => $totalPesanan,
+            'pesanan_pending' => $pesananPending,
         ];
 
         $breadcrumbs = [
@@ -740,7 +750,7 @@ class DashboardController extends Controller
             'produkTerbaru',
             'produkHariIni',
             'produkBulanIni',
-            'totalPesanan',  
+            'totalPesanan',
             'pesananPending',
             'pesananTerbaru',
             'pesananHariIni',

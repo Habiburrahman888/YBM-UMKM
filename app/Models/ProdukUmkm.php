@@ -27,7 +27,7 @@ class ProdukUmkm extends Model
 
     protected $casts = [
         'foto_produk' => 'array',
-        'harga'       => 'decimal:2',
+        'harga' => 'decimal:2',
     ];
 
     // -----------------------------------------------------------------------
@@ -62,7 +62,7 @@ class ProdukUmkm extends Model
      */
     public function createdBy()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(Users::class, 'created_by');
     }
 
     /**
@@ -70,7 +70,7 @@ class ProdukUmkm extends Model
      */
     public function updatedBy()
     {
-        return $this->belongsTo(User::class, 'updated_by');
+        return $this->belongsTo(Users::class, 'updated_by');
     }
 
     // -----------------------------------------------------------------------

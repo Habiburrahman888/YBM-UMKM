@@ -139,6 +139,27 @@
             return 1 - Math.pow(1 - t, 3);
         }
 
+        // ✅ FIX: Fungsi untuk dismiss splash seketika tanpa jeda
+        function dismissSplash() {
+            if (done) return;
+            done = true;
+            cancelAnimationFrame(animId);
+
+            // Langsung disable pointer events agar scroll/klik bisa langsung
+            splash.style.pointerEvents = 'none';
+
+            // CSS transition fade out
+            splash.style.transition = 'opacity 0.4s ease-out';
+            splash.style.opacity = '0';
+
+            // Hapus elemen setelah transisi selesai
+            setTimeout(() => {
+                if (splash && splash.parentNode) {
+                    splash.parentNode.removeChild(splash);
+                }
+            }, 420);
+        }
+
         function animate(ts) {
             if (done) return;
             if (!startTime) startTime = ts;
@@ -185,7 +206,8 @@
                 }
                 if (offFull) ctx.drawImage(offFull, 0, 0);
 
-            } else if (e < D.LOGO_IN + D.RING_SPIN + D.RING_OUT + D.TEXT_IN + D.FULL_HOLD + D.FADE_OUT) {
+            } else if (e < TOTAL - D.GAP) {
+                // ✅ FIX: Fade out dikerjakan oleh canvas dulu, LALU CSS transition
                 const p = (e - D.LOGO_IN - D.RING_SPIN - D.RING_OUT - D.TEXT_IN - D.FULL_HOLD) / D.FADE_OUT;
                 if (offFull) {
                     ctx.globalAlpha = 1 - p;
@@ -194,13 +216,14 @@
                 }
 
             } else {
-                phase = 'idle';
+                // ✅ FIX: Animasi selesai → dismiss langsung dari rAF loop
+                dismissSplash();
+                return;
             }
 
             animId = requestAnimationFrame(animate);
         }
 
-        logoImg.onload = buildOffFull;
         resize();
         window.addEventListener('resize', () => {
             resize();
@@ -208,14 +231,11 @@
         });
         animId = requestAnimationFrame(animate);
 
+        // FIX: window.load sebagai fallback safety net saja
+        // Jika halaman lambat load, splash tetap akan selesai via rAF loop di atas
+        // Tapi kalau rAF sudah done duluan, ini tidak akan double-trigger
         window.addEventListener('load', function() {
-            setTimeout(function() {
-                done = true;
-                cancelAnimationFrame(animId);
-                splash.style.transition = 'opacity 0.6s ease-out';
-                splash.style.opacity = '0';
-                setTimeout(() => splash && splash.remove(), 600);
-            }, TOTAL);
+            setTimeout(dismissSplash, TOTAL);
         });
     });
 </script>

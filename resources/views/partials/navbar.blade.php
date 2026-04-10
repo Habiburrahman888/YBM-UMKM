@@ -2,7 +2,8 @@
     <div class="flex items-center justify-between">
         <button onclick="toggleSidebar()" class="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
+                </path>
             </svg>
         </button>
 
@@ -25,8 +26,8 @@
                             <div
                                 class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary-600 flex items-center justify-center border-2 border-gray-300 overflow-hidden">
                                 @if (auth()->user()->foto_profil && file_exists(storage_path('app/public/' . auth()->user()->foto_profil)))
-                                    <img src="{{ asset('storage/' . auth()->user()->foto_profil) }}"
-                                        alt="Foto Profil" class="w-full h-full object-cover">
+                                    <img src="{{ asset('storage/' . auth()->user()->foto_profil) }}" alt="Foto Profil"
+                                        class="w-full h-full object-cover">
                                 @else
                                     {{-- Tampilkan inisial jika tidak ada foto --}}
                                     <span class="text-white text-xs font-bold">
@@ -37,7 +38,7 @@
                             <div class="hidden md:block text-left">
                                 {{-- PERBAIKAN: Hapus dataPribadi, langsung gunakan username --}}
                                 <p class="text-sm font-semibold text-gray-900">
-                                    {{ auth()->user()->username ?? 'User' }}
+                                    {{ auth()->user()->username ?? 'Pengguna' }}
                                 </p>
                                 <p class="text-xs text-gray-600 capitalize">
                                     {{ ucfirst(auth()->user()->role) }}
@@ -55,7 +56,7 @@
                         <div class="px-4 py-3 border-b border-gray-100">
                             {{-- PERBAIKAN: Username langsung dari tabel users --}}
                             <p class="text-sm font-medium text-gray-900">
-                                {{ auth()->user()->username ?? 'User' }}
+                                {{ auth()->user()->username ?? 'Pengguna' }}
                             </p>
                             <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
                         </div>
