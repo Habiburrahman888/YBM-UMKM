@@ -2,6 +2,7 @@
 
 @section('title', 'Kelola Data Unit')
 @section('page-title', 'Data Unit')
+@section('page-subtitle', 'Manajemen data unit dan informasi operasional')
 
 @push('styles')
     <style>
@@ -29,10 +30,10 @@
 
 @section('content')
     <div class="space-y-4 sm:space-y-6">
-        <div class="bg-white rounded-xl sm:rounded-2xl shadow-card border border-gray-100 animate-slide-up">
+        <div class="bg-white rounded-xl sm:rounded-2xl shadow-card animate-slide-up">
 
             {{-- ── HEADER ── --}}
-            <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+            <div class="px-4 sm:px-6 py-3 sm:py-4">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                     <div>
                         <h2 class="text-base sm:text-lg font-semibold text-gray-900">Daftar Unit</h2>
@@ -117,7 +118,7 @@
 
                 {{-- ── PANEL FILTER ── --}}
                 <div id="filter-panel"
-                    class="{{ request()->hasAny(['provinsi', 'kota', 'status']) ? '' : 'hidden' }} mt-4 pt-4 border-t border-gray-100">
+                    class="{{ request()->hasAny(['provinsi', 'kota', 'status']) ? '' : 'hidden' }} mt-4 pt-4">
                     <form method="GET" action="{{ route('unit.index') }}">
                         @if (request('q'))
                             <input type="hidden" name="q" value="{{ request('q') }}">
@@ -204,22 +205,21 @@
                                     Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach ($units as $item)
+                        <tbody class="bg-white div                            @foreach ($units as $unit)
                                 {{-- Baris Utama --}}
                                 <tr class="hover:bg-gray-50 transition-colors cursor-pointer"
-                                    onclick="toggleDetail('{{ $item->uuid }}')">
-
+                                    onclick="toggleDetail('{{ $unit->uuid }}')">
+ 
                                     <td class="px-4 py-4 whitespace-nowrap w-80">
                                         <div class="flex items-center gap-3">
-                                            <svg id="icon-{{ $item->uuid }}"
+                                            <svg id="icon-{{ $unit->uuid }}"
                                                 class="w-3.5 h-3.5 flex-shrink-0 text-gray-400 transition-transform duration-200"
                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M9 5l7 7-7 7" />
                                             </svg>
-                                            @if ($item->logo)
-                                                <img src="{{ Storage::url($item->logo) }}" alt="{{ $item->nama_unit }}"
+                                            @if ($unit->logo)
+                                                <img src="{{ Storage::url($unit->logo) }}" alt="{{ $unit->nama_unit }}"
                                                     class="w-10 h-10 rounded-lg object-cover border border-gray-200 flex-shrink-0">
                                             @else
                                                 <div
@@ -233,26 +233,26 @@
                                                 </div>
                                             @endif
                                             <div>
-                                                <div class="text-sm font-semibold text-gray-900">{{ $item->nama_unit }}
+                                                <div class="text-sm font-semibold text-gray-900">{{ $unit->nama_unit }}
                                                 </div>
-                                                <div class="text-xs text-gray-500">{{ $item->kode_unit }}</div>
+                                                <div class="text-xs text-gray-500">{{ $unit->kode_unit }}</div>
                                             </div>
                                         </div>
                                     </td>
-
+ 
                                     <td class="px-4 py-4 whitespace-nowrap w-64">
-                                        @if ($item->kota_nama)
-                                            <div class="text-sm text-gray-700">{{ $item->kota_nama }}</div>
+                                        @if ($unit->kota_nama)
+                                            <div class="text-sm text-gray-700">{{ $unit->kota_nama }}</div>
                                         @endif
-                                        @if ($item->provinsi_nama)
-                                            <div class="text-xs text-gray-400">{{ $item->provinsi_nama }}</div>
+                                        @if ($unit->provinsi_nama)
+                                            <div class="text-xs text-gray-400">{{ $unit->provinsi_nama }}</div>
                                         @else
                                             <span class="text-xs text-gray-400">—</span>
                                         @endif
                                     </td>
-
+ 
                                     <td class="px-4 py-4 whitespace-nowrap w-36">
-                                        @if ($item->is_active)
+                                        @if ($unit->is_active)
                                             <span
                                                 class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
                                                 <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>Aktif
@@ -264,24 +264,24 @@
                                             </span>
                                         @endif
                                     </td>
-
+ 
                                     {{-- Kolom Aksi: inline dropdown, stop propagation --}}
                                     <td class="px-6 py-4 whitespace-nowrap text-center w-16"
                                         onclick="event.stopPropagation()">
                                         <div class="dropdown-wrapper">
                                             <button type="button"
-                                                onclick="toggleDropdown('menu-{{ $item->uuid }}', this)"
+                                                onclick="toggleDropdown('menu-{{ $unit->uuid }}', this)"
                                                 class="inline-flex items-center p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                                     <path
                                                         d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
                                                 </svg>
                                             </button>
-                                            <div id="menu-{{ $item->uuid }}" class="dropdown-menu">
+                                            <div id="menu-{{ $unit->uuid }}" class="dropdown-menu">
                                                 <div class="py-1">
-
+ 
                                                     {{-- Edit --}}
-                                                    <a href="{{ route('unit.edit', $item->uuid) }}"
+                                                    <a href="{{ route('unit.edit', $unit->uuid) }}"
                                                         class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                                                         <svg class="w-4 h-4 mr-3 text-gray-400" fill="none"
                                                             stroke="currentColor" viewBox="0 0 24 24">
@@ -291,11 +291,11 @@
                                                         </svg>
                                                         Edit
                                                     </a>
-
+ 
                                                     {{-- Toggle Status --}}
                                                     <div class="border-t border-gray-100 mt-1 pt-1">
                                                         <button type="button"
-                                                            onclick="confirmToggleStatus('{{ $item->uuid }}','{{ addslashes($item->nama_unit) }}')"
+                                                            onclick="confirmToggleStatus('{{ $unit->uuid }}','{{ addslashes($unit->nama_unit) }}')"
                                                             class="flex items-center w-full px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 transition-colors">
                                                             <svg class="w-4 h-4 mr-3" fill="none"
                                                                 stroke="currentColor" viewBox="0 0 24 24">
@@ -303,14 +303,14 @@
                                                                     stroke-width="2"
                                                                     d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                                                             </svg>
-                                                            {{ $item->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                                                            {{ $unit->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                                                         </button>
                                                     </div>
-
+ 
                                                     {{-- Hapus --}}
                                                     <div class="border-t border-gray-100 mt-1 pt-1">
                                                         <button type="button"
-                                                            onclick="confirmDelete('{{ $item->uuid }}','{{ addslashes($item->nama_unit) }}')"
+                                                            onclick="confirmDelete('{{ $unit->uuid }}','{{ addslashes($unit->nama_unit) }}')"
                                                             class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
                                                             <svg class="w-4 h-4 mr-3" fill="none"
                                                                 stroke="currentColor" viewBox="0 0 24 24">
@@ -321,95 +321,93 @@
                                                             Hapus
                                                         </button>
                                                     </div>
-
+ 
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
-                                </tr>
-
-                                {{-- Baris Detail Accordion --}}
-                                <tr id="detail-{{ $item->uuid }}" class="hidden">
+                                </tr>                                  {{-- Baris Detail Accordion --}}
+                                <tr id="detail-{{ $unit->uuid }}" class="hidden">
                                     <td colspan="4" class="p-0">
                                         <div
                                             class="mx-6 my-3 bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
-
+ 
                                             {{-- Baris 1: Informasi Unit + Kontak & Wilayah --}}
                                             <div class="grid grid-cols-2 divide-x divide-gray-200">
-
+ 
                                                 {{-- Kolom Kiri: Informasi Unit --}}
-                                                <div class="px-6 py-4">
+                                                <div class="px-6 py-2">
                                                     <p
-                                                        class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">
+                                                        class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
                                                         Informasi Unit
                                                     </p>
                                                     <dl class="grid grid-cols-2 gap-x-6 gap-y-3">
                                                         <div>
                                                             <dt class="text-xs text-gray-400">Nama Unit</dt>
                                                             <dd class="text-sm font-semibold text-gray-900 mt-0.5">
-                                                                {{ $item->nama_unit }}
+                                                                {{ $unit->nama_unit }}
                                                             </dd>
                                                         </div>
                                                         <div>
                                                             <dt class="text-xs text-gray-400">Kode Unit</dt>
                                                             <dd class="text-sm text-gray-700 mt-0.5">
-                                                                {{ $item->kode_unit }}
+                                                                {{ $unit->kode_unit }}
                                                             </dd>
                                                         </div>
-                                                        @if ($item->user)
+                                                        @if ($unit->user)
                                                             <div>
                                                                 <dt class="text-xs text-gray-400">User Pemilik</dt>
                                                                 <dd class="text-sm text-gray-700 mt-0.5">
-                                                                    {{ $item->user->username ?? $item->user->email }}
+                                                                    {{ $unit->user->username ?? $unit->user->email }}
                                                                 </dd>
                                                             </div>
                                                         @endif
-                                                        @if ($item->admin_nama)
+                                                        @if ($unit->admin_nama)
                                                             <div>
                                                                 <dt class="text-xs text-gray-400">Admin Unit</dt>
                                                                 <dd class="text-sm text-gray-700 mt-0.5">
-                                                                    {{ $item->admin_nama }}
+                                                                    {{ $unit->admin_nama }}
                                                                 </dd>
                                                             </div>
                                                         @endif
                                                     </dl>
                                                 </div>
-
+ 
                                                 {{-- Kolom Kanan: Kontak & Wilayah --}}
-                                                <div class="px-6 py-4">
+                                                <div class="px-6 py-2">
                                                     <p
-                                                        class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">
+                                                        class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
                                                         Kontak & Wilayah
                                                     </p>
                                                     <dl class="grid grid-cols-2 gap-x-6 gap-y-3">
-                                                        @if ($item->telepon)
+                                                        @if ($unit->telepon)
                                                             <div>
                                                                 <dt class="text-xs text-gray-400">Telepon</dt>
                                                                 <dd class="text-sm text-gray-700 mt-0.5">
-                                                                    {{ $item->telepon }}
+                                                                    {{ $unit->telepon }}
                                                                 </dd>
                                                             </div>
                                                         @endif
-                                                        @if ($item->email)
+                                                        @if ($unit->email)
                                                             <div>
                                                                 <dt class="text-xs text-gray-400">Email</dt>
                                                                 <dd class="text-sm text-gray-700 mt-0.5 break-all">
-                                                                    {{ $item->email }}
+                                                                    {{ $unit->email }}
                                                                 </dd>
                                                             </div>
                                                         @endif
-                                                        @if ($item->provinsi_nama || $item->kota_nama || $item->kecamatan_nama || $item->kelurahan_nama || $item->kode_pos)
+                                                        @if ($unit->provinsi_nama || $unit->kota_nama || $unit->kecamatan_nama || $unit->kelurahan_nama || $unit->kode_pos)
                                                             <div class="col-span-2">
                                                                 <dt class="text-xs text-gray-400 mb-0.5">Alamat Wilayah
                                                                 </dt>
                                                                 <dd class="text-sm text-gray-700 leading-relaxed">
                                                                     {{ collect([
-                                                                        $item->alamat,
-                                                                        $item->kelurahan_nama ? 'Kel. ' . $item->kelurahan_nama : null,
-                                                                        $item->kecamatan_nama ? 'Kec. ' . $item->kecamatan_nama : null,
-                                                                        $item->kota_nama,
-                                                                        $item->provinsi_nama,
-                                                                        $item->kode_pos,
+                                                                        $unit->alamat,
+                                                                        $unit->kelurahan_nama ? 'Kel. ' . $unit->kelurahan_nama : null,
+                                                                        $unit->kecamatan_nama ? 'Kec. ' . $unit->kecamatan_nama : null,
+                                                                        $unit->kota_nama,
+                                                                        $unit->provinsi_nama,
+                                                                        $unit->kode_pos,
                                                                     ])->filter()->implode(', ') }}
                                                                 </dd>
                                                             </div>
@@ -417,38 +415,37 @@
                                                     </dl>
                                                 </div>
                                             </div>
-
-                                            {{-- Baris 2: Deskripsi --}}
-                                            @if ($item->deskripsi)
-                                                <div class="border-t border-gray-200 px-6 py-4">
+ 
+                                            @if ($unit->deskripsi)
+                                                <div class="border-t border-gray-200 px-6 py-2">
                                                     <p
-                                                        class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">
+                                                        class="text-[10px] font-bold text-gray-400 uppercase tracking-widest m-0">
                                                         Deskripsi
                                                     </p>
-                                                    <p class="text-sm text-gray-700 whitespace-pre-line">
-                                                        {{ $item->deskripsi }}
+                                                    <p class="text-sm text-gray-700 whitespace-pre-line mt-0.5 m-0">
+                                                        {{ $unit->deskripsi }}
                                                     </p>
                                                 </div>
                                             @endif
-
+ 
                                             <div
                                                 class="border-t border-gray-200 px-6 py-3 bg-gray-50/50 flex items-center justify-between">
                                                 <div class="flex gap-6">
                                                     <div>
                                                         <dt class="text-xs text-gray-400">Dibuat</dt>
                                                         <dd class="text-xs text-gray-600 mt-0.5">
-                                                            {{ $item->created_at->format('d M Y, H:i') }}
+                                                            {{ $unit->created_at->format('d M Y, H:i') }}
                                                         </dd>
                                                     </div>
                                                     <div>
                                                         <dt class="text-xs text-gray-400">Diperbarui</dt>
                                                         <dd class="text-xs text-gray-600 mt-0.5">
-                                                            {{ $item->updated_at->format('d M Y, H:i') }}
+                                                            {{ $unit->updated_at->format('d M Y, H:i') }}
                                                         </dd>
                                                     </div>
                                                 </div>
                                             </div>
-
+ 
                                         </div>
                                     </td>
                                 </tr>
@@ -456,23 +453,21 @@
                         </tbody>
                     </table>
                 </div>
-
-                {{-- ── MOBILE CARDS ── --}}
                 <div class="md:hidden divide-y divide-gray-200">
-                    @foreach ($units as $item)
+                    @foreach ($units as $unit)
                         <div>
                             <div class="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
-                                onclick="toggleDetail('{{ $item->uuid }}-mobile')">
+                                onclick="toggleDetail('{{ $unit->uuid }}-mobile')">
                                 <div class="flex items-start justify-between gap-2">
                                     <div class="flex items-start gap-3 flex-1 min-w-0">
-                                        <svg id="icon-{{ $item->uuid }}-mobile"
+                                        <svg id="icon-{{ $unit->uuid }}-mobile"
                                             class="w-3.5 h-3.5 flex-shrink-0 mt-1 text-gray-400 transition-transform duration-200"
                                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M9 5l7 7-7 7" />
                                         </svg>
-                                        @if ($item->logo)
-                                            <img src="{{ Storage::url($item->logo) }}" alt="{{ $item->nama_unit }}"
+                                        @if ($unit->logo)
+                                            <img src="{{ Storage::url($unit->logo) }}" alt="{{ $unit->nama_unit }}"
                                                 class="flex-shrink-0 h-12 w-12 rounded-lg object-cover border border-gray-200">
                                         @else
                                             <div
@@ -487,9 +482,9 @@
                                         <div class="flex-1 min-w-0">
                                             <div class="flex items-center gap-2 flex-wrap">
                                                 <h3 class="text-sm font-semibold text-gray-900 truncate">
-                                                    {{ $item->nama_unit }}
+                                                    {{ $unit->nama_unit }}
                                                 </h3>
-                                                @if ($item->is_active)
+                                                @if ($unit->is_active)
                                                     <span
                                                         class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium"><span
                                                             class="w-1.5 h-1.5 rounded-full bg-green-500"></span>Aktif</span>
@@ -499,33 +494,33 @@
                                                             class="w-1.5 h-1.5 rounded-full bg-red-500"></span>Non-aktif</span>
                                                 @endif
                                             </div>
-                                            <p class="text-xs text-gray-500 mt-0.5">{{ $item->kode_unit }}</p>
-                                            @if ($item->user)
+                                            <p class="text-xs text-gray-500 mt-0.5">{{ $unit->kode_unit }}</p>
+                                            @if ($unit->user)
                                                 <p class="text-xs text-gray-400 mt-0.5">
-                                                    {{ $item->user->username ?? $item->user->email }}
+                                                    {{ $unit->user->username ?? $unit->user->email }}
                                                 </p>
                                             @endif
-                                            @if ($item->kota_nama || $item->provinsi_nama)
+                                            @if ($unit->kota_nama || $unit->provinsi_nama)
                                                 <p class="text-xs text-gray-400 mt-0.5">
-                                                    {{ collect([$item->kota_nama, $item->provinsi_nama])->filter()->implode(', ') }}
+                                                    {{ collect([$unit->kota_nama, $unit->provinsi_nama])->filter()->implode(', ') }}
                                                 </p>
                                             @endif
                                         </div>
                                     </div>
-
+ 
                                     {{-- Mobile dropdown --}}
                                     <div class="dropdown-wrapper flex-shrink-0" onclick="event.stopPropagation()">
                                         <button type="button"
-                                            onclick="toggleDropdown('menu-mob-{{ $item->uuid }}', this)"
+                                            onclick="toggleDropdown('menu-mob-{{ $unit->uuid }}', this)"
                                             class="inline-flex items-center p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                                 <path
                                                     d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
                                             </svg>
                                         </button>
-                                        <div id="menu-mob-{{ $item->uuid }}" class="dropdown-menu">
+                                        <div id="menu-mob-{{ $unit->uuid }}" class="dropdown-menu">
                                             <div class="py-1">
-                                                <a href="{{ route('unit.edit', $item->uuid) }}"
+                                                <a href="{{ route('unit.edit', $unit->uuid) }}"
                                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                                                     <svg class="w-4 h-4 mr-3 text-gray-400" fill="none"
                                                         stroke="currentColor" viewBox="0 0 24 24">
@@ -537,7 +532,7 @@
                                                 </a>
                                                 <div class="border-t border-gray-100 mt-1 pt-1">
                                                     <button type="button"
-                                                        onclick="confirmToggleStatus('{{ $item->uuid }}','{{ addslashes($item->nama_unit) }}')"
+                                                        onclick="confirmToggleStatus('{{ $unit->uuid }}','{{ addslashes($unit->nama_unit) }}')"
                                                         class="flex items-center w-full px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 transition-colors">
                                                         <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor"
                                                             viewBox="0 0 24 24">
@@ -545,12 +540,12 @@
                                                                 stroke-width="2"
                                                                 d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                                                         </svg>
-                                                        {{ $item->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                                                        {{ $unit->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                                                     </button>
                                                 </div>
                                                 <div class="border-t border-gray-100 mt-1 pt-1">
                                                     <button type="button"
-                                                        onclick="confirmDelete('{{ $item->uuid }}','{{ addslashes($item->nama_unit) }}')"
+                                                        onclick="confirmDelete('{{ $unit->uuid }}','{{ addslashes($unit->nama_unit) }}')"
                                                         class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
                                                         <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor"
                                                             viewBox="0 0 24 24">
@@ -566,57 +561,57 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <div id="detail-{{ $item->uuid }}-mobile" class="hidden bg-gray-50 px-4 pb-4">
+ 
+                            <div id="detail-{{ $unit->uuid }}-mobile" class="hidden bg-gray-50 px-4 pb-4">
                                 <div class="ml-6 pt-3 border-t border-gray-200 space-y-2">
-                                    @if ($item->user)
+                                    @if ($unit->user)
                                         <div><span class="text-xs text-gray-500">User Pemilik</span>
                                             <p class="text-sm text-gray-700">
-                                                {{ $item->user->username ?? $item->user->email }}
+                                                {{ $unit->user->username ?? $unit->user->email }}
                                             </p>
                                         </div>
                                     @endif
-                                    @if ($item->admin_nama)
+                                    @if ($unit->admin_nama)
                                         <div><span class="text-xs text-gray-500">Admin Unit</span>
-                                            <p class="text-sm text-gray-700">{{ $item->admin_nama }}</p>
+                                            <p class="text-sm text-gray-700">{{ $unit->admin_nama }}</p>
                                         </div>
                                     @endif
-                                    @if ($item->telepon)
+                                    @if ($unit->telepon)
                                         <div><span class="text-xs text-gray-500">Telepon</span>
-                                            <p class="text-sm text-gray-700">{{ $item->telepon }}</p>
+                                            <p class="text-sm text-gray-700">{{ $unit->telepon }}</p>
                                         </div>
                                     @endif
-                                    @if ($item->email)
+                                    @if ($unit->email)
                                         <div><span class="text-xs text-gray-500">Email</span>
-                                            <p class="text-sm text-gray-700">{{ $item->email }}</p>
+                                            <p class="text-sm text-gray-700">{{ $unit->email }}</p>
                                         </div>
                                     @endif
-                                    @if ($item->alamat)
+                                    @if ($unit->alamat)
                                         <div><span class="text-xs text-gray-500">Alamat</span>
-                                            <p class="text-sm text-gray-700">{{ $item->alamat }}</p>
+                                            <p class="text-sm text-gray-700">{{ $unit->alamat }}</p>
                                         </div>
                                     @endif
-                                    @if ($item->deskripsi)
+                                    @if ($unit->deskripsi)
                                         <div><span class="text-xs text-gray-500">Deskripsi</span>
-                                            <p class="text-sm text-gray-700">{{ $item->deskripsi }}</p>
+                                            <p class="text-sm text-gray-700">{{ $unit->deskripsi }}</p>
                                         </div>
                                     @endif
                                 </div>
                             </div>
                         </div>
+                    @endforeachv>
                     @endforeach
                 </div>
 
                 {{-- Pagination --}}
                 @if ($units->hasPages())
-                    <div class="px-4 sm:px-6 py-3 border-t border-gray-200">
+                    <div class="px-4 sm:px-6 py-3">
                         {{ $units->links() }}
                     </div>
                 @endif
             @else
                 <div class="p-8 sm:p-12 text-center">
-                    <div
-                        class="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gray-100 mb-4">
+                    <div class="inline-flex items-center justify-center mb-4">
                         <svg class="w-7 h-7 sm:w-8 sm:h-8 text-gray-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

@@ -424,9 +424,9 @@
                                                 <td style="color:#1e293b;font-weight:600;padding:3px 0 3px 8px;">${umkm.alamat}</td>
                                             </tr>` : ''}
                             </table>
-                            <a href="{{ route('umkm.show', '') }}/${umkm.uuid}"
+                            <a href="{{ route('umkm.index') }}?q=${encodeURIComponent(umkm.nama_usaha)}"
                                style="display:block;margin-top:10px;background:#1e293b;color:white;text-align:center;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;">
-                                Lihat Detail &rarr;
+                                Lihat di Daftar &rarr;
                             </a>
                         </div>
                     </div>`;

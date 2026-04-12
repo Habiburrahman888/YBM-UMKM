@@ -11,7 +11,7 @@
                 <p class="text-xs sm:text-sm text-gray-500 mt-1">Isi field yang diperlukan untuk menambahkan produk</p>
             </div>
 
-            <form action="{{ route('umkm.produk.store') }}" method="POST" enctype="multipart/form-data" class="p-4 sm:p-6">
+            <form id="main-form-produk" action="{{ route('umkm.produk.store') }}" method="POST" enctype="multipart/form-data" class="p-4 sm:p-6">
                 @csrf
                 <div class="space-y-4 sm:space-y-6">
 
@@ -69,6 +69,8 @@
                                 <option value="ml" {{ old('kategori_satuan') == 'ml' ? 'selected' : '' }}>Mililiter
                                     (ml)</option>
                                 <option value="box" {{ old('kategori_satuan') == 'box' ? 'selected' : '' }}>Box (Kotak)
+                                </option>
+                                <option value="porsi" {{ old('kategori_satuan') == 'porsi' ? 'selected' : '' }}>Porsi
                                 </option>
                                 <option value="pack" {{ old('kategori_satuan') == 'pack' ? 'selected' : '' }}>Pack
                                     (Paket)</option>
@@ -219,10 +221,12 @@
             }
 
             // Strip dots before submit
-            const form = document.querySelector('form');
-            form.addEventListener('submit', function() {
-                hargaInput.value = hargaInput.value.replace(/\./g, '');
-            });
+            const mainFormProduk = document.getElementById('main-form-produk');
+            if (mainFormProduk) {
+                mainFormProduk.addEventListener('submit', function() {
+                    hargaInput.value = hargaInput.value.replace(/\./g, '');
+                });
+            }
 
             // ── Character count deskripsi ─────────────────────────────────────
             deskripsiInput.addEventListener('input', function() {

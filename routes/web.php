@@ -131,8 +131,20 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/umkm/{umkm}/create-account', [UmkmController::class, 'createAccount'])->name('umkm.createAccount');
     });
 
-    Route::middleware(['auth', 'role:admin,unit,umkm'])->prefix('umkm')->name('umkm.')->group(function () {
+    // routes specifically for unit to manage UMKM
+    Route::middleware(['auth', 'role:unit'])->prefix('umkm')->name('umkm.')->group(function () {
+        Route::get('/create', [UmkmController::class, 'create'])->name('create');
+        Route::post('/', [UmkmController::class, 'store'])->name('store');
+        Route::get('/{umkm}/edit', [UmkmController::class, 'edit'])->name('edit');
+        Route::put('/{umkm}', [UmkmController::class, 'update'])->name('update');
+        Route::delete('/{umkm}', [UmkmController::class, 'destroy'])->name('destroy');
 
+        Route::post('/{umkm}/modal', [UmkmController::class, 'storeModal'])->name('modal.store');
+        Route::put('/{umkm}/modal/{modal}', [UmkmController::class, 'updateModal'])->name('modal.update');
+        Route::delete('/{umkm}/modal/{modal}', [UmkmController::class, 'destroyModal'])->name('modal.destroy');
+    });
+
+    Route::middleware(['auth', 'role:admin,unit,umkm'])->prefix('umkm')->name('umkm.')->group(function () {
         Route::get('/ajax/cities', [UmkmController::class, 'getCities'])->name('ajax.cities');
         Route::get('/ajax/districts', [UmkmController::class, 'getDistricts'])->name('ajax.districts');
         Route::get('/ajax/villages', [UmkmController::class, 'getVillages'])->name('ajax.villages');
@@ -142,27 +154,19 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/get-villages', [UmkmController::class, 'getVillages'])->name('getVillages');
 
         Route::get('/', [UmkmController::class, 'index'])->name('index');
-        Route::get('/create', [UmkmController::class, 'create'])->name('create');
-        Route::post('/', [UmkmController::class, 'store'])->name('store');
 
-        // ── Laporan PDF ── dipindah dari LaporanUmkmAllController
+        // ── Laporan PDF (Pindahkan ke atas wildcard agar tidak terbentur) ──
         Route::get('/report', [ReportUnitDanUmkmController::class, 'downloadAll'])->name('report.all');
         Route::get('/report-preview', [ReportUnitDanUmkmController::class, 'preview'])->name('report.preview');
         Route::get('/report/unit/{unitId}/{slug?}', [ReportUnitDanUmkmController::class, 'downloadByUnit'])->name('report.unit');
+        
+        
         Route::get('/{umkm}/report', [UmkmController::class, 'downloadSingle'])->name('report.single');
 
-        Route::get('/{umkm}', [UmkmController::class, 'show'])->name('show');
-        Route::get('/{umkm}/edit', [UmkmController::class, 'edit'])->name('edit');
-        Route::put('/{umkm}', [UmkmController::class, 'update'])->name('update');
-        Route::delete('/{umkm}', [UmkmController::class, 'destroy'])->name('destroy');
-
+        // Verify & Create Account accessible to Admin & Unit
         Route::post('/{umkm}/verify', [UmkmController::class, 'verify'])->name('verify');
         Route::post('/{umkm}/reject', [UmkmController::class, 'reject'])->name('reject');
         Route::post('/{umkm}/create-account', [UmkmController::class, 'createAccount'])->name('create-account');
-
-        Route::post('/{umkm}/modal', [UmkmController::class, 'storeModal'])->name('modal.store');
-        Route::put('/{umkm}/modal/{modal}', [UmkmController::class, 'updateModal'])->name('modal.update');
-        Route::delete('/{umkm}/modal/{modal}', [UmkmController::class, 'destroyModal'])->name('modal.destroy');
     });
 
     Route::middleware(['role:admin,unit'])->group(function () {

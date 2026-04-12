@@ -324,7 +324,14 @@
                     @forelse($aktivitasTerbaru as $aktivitas)
                         <div class="flex gap-3">
                             <div class="mt-1.5 flex-shrink-0">
-                                <span class="block w-2 h-2 rounded-full bg-gray-300"></span>
+                                <span class="block w-2.5 h-2.5 rounded-full" 
+                                      style="background-color: {{ 
+                                        $aktivitas['color'] === 'blue' ? '#3b82f6' : (
+                                        $aktivitas['color'] === 'green' ? '#22c55e' : (
+                                        $aktivitas['color'] === 'purple' ? '#a855f7' : (
+                                        $aktivitas['color'] === 'indigo' ? '#6366f1' : '#d1d5db'))) 
+                                      }}">
+                                </span>
                             </div>
                             <div class="flex-1 min-w-0 pb-3 border-b border-gray-50 last:border-0 last:pb-0">
                                 <p class="text-sm font-medium text-gray-800">{{ $aktivitas['title'] ?? 'Aktivitas' }}</p>
@@ -419,12 +426,12 @@
                             datasets: [{
                                     label: 'UMKM',
                                     data: @json($grafikRegistrasi['umkm']),
-                                    borderColor: '#2563eb',
-                                    backgroundColor: 'rgba(37,99,235,0.06)',
+                                    borderColor: '#ca8a04',
+                                    backgroundColor: 'rgba(202,138,4,0.06)',
                                     borderWidth: 2.5,
                                     tension: 0.4,
                                     fill: true,
-                                    pointBackgroundColor: '#2563eb',
+                                    pointBackgroundColor: '#ca8a04',
                                     pointBorderColor: '#fff',
                                     pointBorderWidth: 2,
                                     pointRadius: 4,
@@ -433,12 +440,12 @@
                                 {
                                     label: 'Pengguna',
                                     data: @json($grafikRegistrasi['users']),
-                                    borderColor: '#6b7280',
-                                    backgroundColor: 'rgba(107,114,128,0.06)',
+                                    borderColor: '#7c3aed',
+                                    backgroundColor: 'rgba(124,58,237,0.06)',
                                     borderWidth: 2,
                                     tension: 0.4,
                                     fill: true,
-                                    pointBackgroundColor: '#6b7280',
+                                    pointBackgroundColor: '#7c3aed',
                                     pointBorderColor: '#fff',
                                     pointBorderWidth: 2,
                                     pointRadius: 4,
@@ -447,12 +454,12 @@
                                 {
                                     label: 'Unit',
                                     data: @json($grafikRegistrasi['units']),
-                                    borderColor: '#9ca3af',
-                                    backgroundColor: 'rgba(156,163,175,0.06)',
+                                    borderColor: '#16a34a',
+                                    backgroundColor: 'rgba(22,163,74,0.06)',
                                     borderWidth: 2,
                                     tension: 0.4,
                                     fill: true,
-                                    pointBackgroundColor: '#9ca3af',
+                                    pointBackgroundColor: '#16a34a',
                                     pointBorderColor: '#fff',
                                     pointBorderWidth: 2,
                                     pointRadius: 4,

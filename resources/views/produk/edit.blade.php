@@ -11,7 +11,7 @@
                 <p class="text-xs sm:text-sm text-gray-500 mt-1">Perbarui informasi dan foto produk Anda</p>
             </div>
 
-            <form action="{{ route('umkm.produk.update', $produk->uuid) }}" method="POST" enctype="multipart/form-data"
+            <form id="main-form-produk" action="{{ route('umkm.produk.update', $produk->uuid) }}" method="POST" enctype="multipart/form-data"
                 class="p-4 sm:p-6">
                 @csrf
                 @method('PUT')
@@ -80,6 +80,9 @@
                                 <option value="box"
                                     {{ old('kategori_satuan', $produk->kategori_satuan) == 'box' ? 'selected' : '' }}>Box
                                     (Kotak)</option>
+                                <option value="porsi"
+                                    {{ old('kategori_satuan', $produk->kategori_satuan) == 'porsi' ? 'selected' : '' }}>Porsi
+                                </option>
                                 <option value="pack"
                                     {{ old('kategori_satuan', $produk->kategori_satuan) == 'pack' ? 'selected' : '' }}>Pack
                                     (Paket)</option>
@@ -257,10 +260,12 @@
             }
 
             // Strip dots before submit
-            const form = document.querySelector('form');
-            form.addEventListener('submit', function() {
-                hargaInput.value = hargaInput.value.replace(/\./g, '');
-            });
+            const mainFormProduk = document.getElementById('main-form-produk');
+            if (mainFormProduk) {
+                mainFormProduk.addEventListener('submit', function() {
+                    hargaInput.value = hargaInput.value.replace(/\./g, '');
+                });
+            }
 
             // ── Character count ────────────────────────────────────────────
             deskripsiInput.addEventListener('input', function() {

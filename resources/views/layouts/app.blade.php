@@ -13,7 +13,7 @@
     @endif
 
     <title>
-        {{ $setting?->nama_sekolah ? $setting->nama_sekolah . ' - ' : '' }}@yield('title')
+        {{ $setting?->nama_expo ? $setting->nama_expo . ' - ' : '' }}@yield('title')
     </title>
     @vite(['resources/css/app.css'])
     @stack('styles')
@@ -29,9 +29,9 @@
         <div class="flex-1 flex flex-col overflow-hidden">
             @include('partials.navbar')
 
-            <main class="flex-1 overflow-y-auto bg-neutral-100 relative">
-                @include('partials.breadcrumb')
+            @include('partials.breadcrumb')
 
+            <main class="flex-1 overflow-y-auto bg-neutral-100 relative">
                 <div class="p-6">
                     @yield('content')
                 </div>

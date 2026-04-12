@@ -117,27 +117,27 @@
                 </div>
                 <div class="flex items-center gap-2 flex-wrap">
                     @php
-                        $col = $pesanans->getCollection();
+                        $pesananCollection = $pesanans->getCollection();
                     @endphp
                     <span class="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-xs font-medium border border-amber-100">
                         <span class="w-1.5 h-1.5 bg-amber-400 rounded-full"></span>
-                        {{ $col->where('status','pending')->count() }} Pending
+                        {{ $pesananCollection->where('status','pending')->count() }} Pending
                     </span>
                     <span class="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-medium border border-blue-100">
                         <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
-                        {{ $col->where('status','diproses')->count() }} Diproses
+                        {{ $pesananCollection->where('status','diproses')->count() }} Diproses
                     </span>
                     <span class="flex items-center gap-1.5 px-3 py-1 bg-violet-50 text-violet-600 rounded-full text-xs font-medium border border-violet-100">
                         <span class="w-1.5 h-1.5 bg-violet-500 rounded-full"></span>
-                        {{ $col->where('status','dikirim')->count() }} Diantar
+                        {{ $pesananCollection->where('status','dikirim')->count() }} Diantar
                     </span>
                     <span class="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-medium border border-green-100">
                         <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                        {{ $col->where('status','selesai')->count() }} Selesai
+                        {{ $pesananCollection->where('status','selesai')->count() }} Selesai
                     </span>
                     <span class="flex items-center gap-1.5 px-3 py-1 bg-red-50 text-red-500 rounded-full text-xs font-medium border border-red-100">
                         <span class="w-1.5 h-1.5 bg-red-400 rounded-full"></span>
-                        {{ $col->where('status','dibatalkan')->count() }} Dibatalkan
+                        {{ $pesananCollection->where('status','dibatalkan')->count() }} Dibatalkan
                     </span>
                 </div>
             </div>
@@ -156,17 +156,17 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-100">
-                            @foreach ($pesanans as $p)
+                            @foreach ($pesanans as $pesanan)
                                 @php
-                                    $statusLabel = $p->status == 'dikirim' ? 'Sedang Diantar' : ucfirst($p->status);
-                                    $badgeClass = match ($p->status) {
+                                    $statusLabel = $pesanan->status == 'dikirim' ? 'Sedang Diantar' : ucfirst($pesanan->status);
+                                    $badgeClass = match ($pesanan->status) {
                                         'pending'    => 'bg-amber-50 text-amber-600 border border-amber-100',
                                         'diproses'   => 'bg-blue-50 text-blue-600 border border-blue-100',
                                         'dikirim'    => 'bg-violet-50 text-violet-600 border border-violet-100',
                                         'selesai'    => 'bg-green-50 text-green-600 border border-green-100',
                                         default      => 'bg-red-50 text-red-500 border border-red-100',
                                     };
-                                    $dotClass = match ($p->status) {
+                                    $dotClass = match ($pesanan->status) {
                                         'pending'    => 'bg-amber-400',
                                         'diproses'   => 'bg-blue-500 animate-pulse',
                                         'dikirim'    => 'bg-violet-500',
@@ -175,32 +175,32 @@
                                     };
                                 @endphp
                                 <tr class="hover:bg-gray-50 transition-colors">
-
+ 
                                     {{-- Pelanggan --}}
                                     <td class="px-6 py-4">
-                                        <p class="text-sm font-semibold text-gray-900">{{ $p->nama_pembeli }}</p>
-                                        <p class="text-xs text-gray-400 mt-0.5">{{ $p->telepon_pembeli }}</p>
-                                        <p class="text-[11px] text-gray-300 mt-0.5">{{ $p->created_at->format('d M Y, H:i') }}</p>
+                                        <p class="text-sm font-semibold text-gray-900">{{ $pesanan->nama_pembeli }}</p>
+                                        <p class="text-xs text-gray-400 mt-0.5">{{ $pesanan->telepon_pembeli }}</p>
+                                        <p class="text-[11px] text-gray-300 mt-0.5">{{ $pesanan->created_at->format('d M Y, H:i') }}</p>
                                     </td>
-
+ 
                                     {{-- Produk --}}
                                     <td class="px-4 py-4">
-                                        @if ($p->items->count() > 0)
-                                            <p class="text-sm font-semibold text-gray-800">{{ $p->items->count() }} Produk</p>
-                                            <p class="text-xs text-gray-400 mt-0.5">Total Qty: {{ $p->items->sum('jumlah') }}</p>
+                                        @if ($pesanan->items->count() > 0)
+                                            <p class="text-sm font-semibold text-gray-800">{{ $pesanan->items->count() }} Produk</p>
+                                            <p class="text-xs text-gray-400 mt-0.5">Total Qty: {{ $pesanan->items->sum('jumlah') }}</p>
                                         @else
-                                            <p class="text-sm font-semibold text-gray-800">{{ $p->produk->nama_produk }}</p>
-                                            <p class="text-xs text-gray-400 mt-0.5">Qty: {{ $p->jumlah }}</p>
+                                            <p class="text-sm font-semibold text-gray-800">{{ $pesanan->produk->nama_produk }}</p>
+                                            <p class="text-xs text-gray-400 mt-0.5">Qty: {{ $pesanan->jumlah }}</p>
                                         @endif
                                     </td>
-
+ 
                                     {{-- Total --}}
                                     <td class="px-4 py-4">
                                         <span class="text-sm font-semibold text-emerald-600">
-                                            Rp {{ number_format($p->total_harga, 0, ',', '.') }}
+                                            Rp {{ number_format($pesanan->total_harga, 0, ',', '.') }}
                                         </span>
                                     </td>
-
+ 
                                     {{-- Status --}}
                                     <td class="px-4 py-4">
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium {{ $badgeClass }}">
@@ -208,10 +208,10 @@
                                             {{ $statusLabel }}
                                         </span>
                                     </td>
-
+ 
                                     {{-- Aksi --}}
                                     <td class="px-6 py-4 text-center">
-                                        <a href="{{ route('umkm.pesanan.show', $p->uuid) }}"
+                                        <a href="{{ route('umkm.pesanan.show', $pesanan->uuid) }}"
                                             class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 text-gray-600 rounded-lg text-xs font-medium transition-all shadow-sm">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

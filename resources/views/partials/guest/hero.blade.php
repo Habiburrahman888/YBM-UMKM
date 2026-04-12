@@ -310,18 +310,21 @@
     }
 
     .hero-btn-ghost {
-        background: rgba(255, 255, 255, .18);
-        border: 2px solid rgba(255, 255, 255, .70);
-        backdrop-filter: blur(8px);
+        background: rgba(255, 255, 255, .12);
+        border: 1.5px solid rgba(255, 255, 255, .45);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
         color: #fff;
         font-weight: 700;
-        text-shadow: 0 1px 4px rgba(0, 0, 0, .4);
+        text-shadow: 0 1px 4px rgba(0, 0, 0, .3);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, .1);
     }
 
     .hero-btn-ghost:hover {
-        background: rgba(255, 255, 255, .30);
-        border-color: rgba(255, 255, 255, .90);
+        background: rgba(255, 255, 255, .25);
+        border-color: rgba(255, 255, 255, 1);
         transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, .2);
     }
 
     /* ─── Nav arrows ──────────────────────── */

@@ -312,8 +312,8 @@ class DashboardController extends Controller
             $activities->push([
                 'type' => 'unit_created',
                 'color' => 'purple',
-                'title' => 'Unit Baru Dibuat',
-                'description' => $unit->nama_unit . ' telah ditambahkan',
+                'title' => 'Unit Baru Terdaftar',
+                'description' => $unit->nama_unit . ' telah mendaftar',
                 'user' => $unit->admin_nama ?? 'Admin',
                 'time' => $unit->created_at->diffForHumans(),
                 'timestamp' => $unit->created_at,

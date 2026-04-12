@@ -94,7 +94,6 @@ class UnitController extends Controller
             'admin_email'       => 'nullable|email|max:255',
             'admin_foto'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'nama_unit'         => 'required|string|max:255|unique:units,nama_unit',
-            'kode_unit'         => 'required|string|max:50|unique:units,kode_unit',
             'logo'              => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
             'provinsi_kode'     => 'nullable|exists:indonesia_provinces,code',
             'kota_kode'         => 'nullable|exists:indonesia_cities,code',
@@ -112,13 +111,15 @@ class UnitController extends Controller
             'user_id.unique'   => 'User sudah memiliki unit',
         ]);
 
+        $kodeUnit = $this->generateKodeUnit();
+
         $data = [
             'user_id'           => $request->user_id,
             'admin_nama'        => $request->admin_nama,
             'admin_telepon'     => $request->admin_telepon,
             'admin_email'       => $request->admin_email,
             'nama_unit'         => $request->nama_unit,
-            'kode_unit'         => strtoupper($request->kode_unit),
+            'kode_unit'         => $kodeUnit,
             'provinsi_kode'     => $request->provinsi_kode,
             'kota_kode'         => $request->kota_kode,
             'kecamatan_kode'    => $request->kecamatan_kode,
@@ -239,7 +240,6 @@ class UnitController extends Controller
             'admin_email'       => 'nullable|email|max:255',
             'admin_foto'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'nama_unit'         => ['required', 'string', 'max:255', Rule::unique('units', 'nama_unit')->ignore($unit->id)],
-            'kode_unit'         => ['required', 'string', 'max:50', Rule::unique('units', 'kode_unit')->ignore($unit->id)],
             'logo'              => 'nullable|image|mimes:jpg,jpeg,png,webp,svg|max:2048',
             'provinsi_kode'     => 'nullable|exists:indonesia_provinces,code',
             'kota_kode'         => 'nullable|exists:indonesia_cities,code',
@@ -263,7 +263,6 @@ class UnitController extends Controller
             'admin_telepon'     => $request->admin_telepon,
             'admin_email'       => $request->admin_email,
             'nama_unit'         => $request->nama_unit,
-            'kode_unit'         => strtoupper($request->kode_unit),
             'provinsi_kode'     => $request->provinsi_kode,
             'kota_kode'         => $request->kota_kode,
             'kecamatan_kode'    => $request->kecamatan_kode,
@@ -533,5 +532,24 @@ class UnitController extends Controller
             ->get(['code', 'name']);
 
         return response()->json($villages);
+    }
+    private function generateKodeUnit()
+    {
+        $year = date('Y');
+        $prefix = 'UNIT' . $year;
+
+        $latestUnit = Unit::where('kode_unit', 'LIKE', $prefix . '%')
+            ->orderBy('kode_unit', 'desc')
+            ->first();
+
+        if (!$latestUnit) {
+            return $prefix . '0001';
+        }
+
+        $lastCode = $latestUnit->kode_unit;
+        $lastNumber = (int) substr($lastCode, -4);
+        $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+
+        return $prefix . $newNumber;
     }
 }

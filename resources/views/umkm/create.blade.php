@@ -12,8 +12,48 @@
                 <p class="text-xs sm:text-sm text-gray-500 mt-1">Lengkapi form berikut untuk menambahkan data UMKM baru</p>
             </div>
 
-            <form action="{{ route('umkm.store') }}" method="POST" enctype="multipart/form-data" class="p-4 sm:p-6">
+            <form id="main-form" action="{{ route('umkm.store') }}" method="POST" enctype="multipart/form-data" class="p-4 sm:p-6">
                 @csrf
+                
+                @if (session('error'))
+                    <div class="px-6 pb-2">
+                        <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded-lg">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-red-800">Gagal menyimpan data:</h3>
+                                    <p class="mt-1 text-xs text-red-700">{{ session('error') }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                @if ($errors->any())
+                    <div class="px-6 pb-2">
+                        <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded-lg">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-red-800">Terdapat kesalahan pada input Anda:</h3>
+                                    <ul class="mt-2 list-disc list-inside text-xs text-red-700 space-y-1">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
 
                 <div class="space-y-6">
 
@@ -96,10 +136,10 @@
                                 <select name="kategori_id" id="kategori_id"
                                     class="block w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('kategori_id') border-red-500 ring-1 ring-red-500 @enderror">
                                     <option value="">— Pilih Kategori —</option>
-                                    @foreach ($kategoriList as $kat)
-                                        <option value="{{ $kat->id }}"
-                                            {{ old('kategori_id') == $kat->id ? 'selected' : '' }}>
-                                            {{ $kat->nama }}
+                                    @foreach ($kategoriList as $kategori)
+                                        <option value="{{ $kategori->id }}"
+                                            {{ old('kategori_id') == $kategori->id ? 'selected' : '' }}>
+                                            {{ $kategori->nama }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -238,10 +278,10 @@
                                 <select name="province_code" id="province_code"
                                     class="block w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('province_code') border-red-500 ring-1 ring-red-500 @enderror">
                                     <option value="">— Pilih Provinsi —</option>
-                                    @foreach ($provinceList as $prov)
-                                        <option value="{{ $prov->code }}"
-                                            {{ old('province_code') === $prov->code ? 'selected' : '' }}>
-                                            {{ $prov->name }}
+                                    @foreach ($provinceList as $province)
+                                        <option value="{{ $province->code }}"
+                                            {{ old('province_code') === $province->code ? 'selected' : '' }}>
+                                            {{ $province->name }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -494,9 +534,9 @@
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <span class="text-gray-500 text-sm">Rp</span>
                                     </div>
-                                    <input type="number" name="harga_produk" id="harga_produk"
+                                    <input type="text" name="harga_produk" id="harga_produk"
                                         value="{{ old('harga_produk') }}" placeholder="0"
-                                        class="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('harga_produk') border-red-500 ring-1 ring-red-500 @enderror">
+                                        class="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all rupiah-input @error('harga_produk') border-red-500 ring-1 ring-red-500 @enderror">
                                 </div>
                                 @error('harga_produk')
                                     <p class="mt-1.5 text-xs text-red-500 flex items-center">
@@ -527,6 +567,8 @@
                                     </option>
                                     <option value="box" {{ old('kategori_satuan') == 'box' ? 'selected' : '' }}>Box
                                     </option>
+                                    <option value="porsi" {{ old('kategori_satuan') == 'porsi' ? 'selected' : '' }}>Porsi
+                                    </option>
                                     <option value="pack" {{ old('kategori_satuan') == 'pack' ? 'selected' : '' }}>Pack
                                     </option>
                                 </select>
@@ -551,51 +593,164 @@
                                 @enderror
                             </div>
 
-                            {{-- Foto Produk --}}
                             <div class="sm:col-span-2">
-                                <label for="foto_produk" class="block text-sm font-medium text-gray-700 mb-1.5">
-                                    Foto Produk
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Foto Produk Utama <span class="text-xs text-gray-400 font-normal">(Opsional, maks. 5 foto)</span>
                                 </label>
-                                <div class="flex items-start gap-4">
-                                    <div id="produk-preview-wrapper"
-                                        class="hidden w-16 h-16 rounded-lg border border-gray-200 overflow-hidden flex-shrink-0">
-                                        <img id="produk-preview" src="#" alt="Preview"
-                                            class="w-full h-full object-cover">
-                                    </div>
-                                    <div class="flex-1">
-                                        <label for="foto_produk"
-                                            class="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary hover:bg-primary/5 transition-all">
-                                            <div class="text-center">
-                                                <svg class="mx-auto w-6 h-6 text-gray-400 mb-1" fill="none"
-                                                    stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                </svg>
-                                                <span id="produk-label" class="text-xs text-gray-500">Klik untuk upload
-                                                    foto produk</span>
-                                            </div>
-                                        </label>
-                                        <input type="file" name="foto_produk" id="foto_produk"
-                                            accept="image/jpg,image/jpeg,image/png" class="hidden">
-                                        <p class="mt-1 text-xs text-gray-400">Format: JPG, JPEG, PNG. Maks. 2MB.</p>
-                                        @error('foto_produk')
-                                            <p class="mt-1.5 text-xs text-red-500 flex items-center">
-                                                {{ $message }}
-                                            </p>
-                                        @enderror
+
+                                <!-- Preview Container -->
+                                <div id="produk-preview-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-4">
+                                    {{-- Previews will be dynamically added here --}}
+                                </div>
+
+                                <!-- Upload Area -->
+                                <div id="produk-drop-zone"
+                                    class="relative border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary transition-colors cursor-pointer @error('foto_produk') border-red-500 @enderror @error('foto_produk.*') border-red-500 @enderror">
+                                    <input type="file" name="foto_produk[]" id="foto_produk"
+                                        accept="image/jpeg,image/jpg,image/png,image/webp" multiple
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+
+                                    <div class="space-y-2">
+                                        <div class="flex justify-center">
+                                            <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <div class="text-sm text-gray-600">
+                                            <span class="text-primary font-medium">Klik untuk upload</span> atau drag & drop
+                                        </div>
+                                        <p class="text-xs text-gray-400">PNG, JPG, JPEG, WEBP (Maks. 2MB per foto)</p>
                                     </div>
                                 </div>
+
+                                @error('foto_produk')
+                                    <p class="mt-1.5 text-xs text-red-500 flex items-center">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+                                @error('foto_produk.*')
+                                    <p class="mt-1.5 text-xs text-red-500 flex items-center">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
                             </div>
 
                         </div>
                     </div>
 
-                    {{-- ══ SEKSI 6: OPSI AKUN ══ --}}
+                    {{-- ══ SEKSI 6: MODAL USAHA (REPEATER) ══ --}}
+                    <div>
+                        <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
+                            <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                <span
+                                    class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-xs font-bold">6</span>
+                                Modal Usaha (Aset)
+                                <span class="text-xs font-normal text-gray-400">(opsional)</span>
+                            </h3>
+                            <button type="button" id="add-modal-btn"
+                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-all border border-primary/20">
+                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                Tambah Aset
+                            </button>
+                        </div>
+
+                        <div id="modal-wrapper" class="space-y-4">
+                            {{-- Baris pertama (default) --}}
+                            <div class="modal-item p-4 border border-gray-100 rounded-xl bg-gray-50/50 relative group animate-fade-in"
+                                data-index="0">
+                                <button type="button"
+                                    class="remove-modal-btn absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition-all opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {{-- Nama Item Modal --}}
+                                    <div class="sm:col-span-2">
+                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Nama Aset / Item
+                                            Modal</label>
+                                        <input type="text" name="modals[0][nama_item]"
+                                            placeholder="Contoh: Gerobak, Mesin Jahit, Modal Tunai"
+                                            class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all">
+                                    </div>
+
+                                    {{-- Kategori Modal --}}
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Kategori</label>
+                                        <select name="modals[0][kategori]"
+                                            class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all">
+                                            <option value="">— Pilih —</option>
+                                            <option value="peralatan">Peralatan</option>
+                                            <option value="kendaraan">Kendaraan</option>
+                                            <option value="perlengkapan">Perlengkapan</option>
+                                            <option value="bangunan">Bangunan / Tempat</option>
+                                            <option value="lainnya">Lainnya</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Nilai (Rp)</label>
+                                        <input type="text" name="modals[0][nilai]" placeholder="0"
+                                            class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all rupiah-input">
+                                    </div>
+
+                                    {{-- Kondisi --}}
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Kondisi</label>
+                                        <select name="modals[0][kondisi]"
+                                            class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all">
+                                            <option value="baru">Baru</option>
+                                            <option value="baik" selected>Baik</option>
+                                            <option value="cukup">Cukup</option>
+                                            <option value="rusak">Rusak</option>
+                                        </select>
+                                    </div>
+
+                                    {{-- Tanggal --}}
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Tanggal
+                                            Perolehan</label>
+                                        <input type="date" name="modals[0][tanggal]"
+                                            class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all">
+                                    </div>
+
+                                    {{-- Keterangan --}}
+                                    <div class="sm:col-span-2">
+                                        <label class="block text-xs font-medium text-gray-600 mb-1.5">Keterangan</label>
+                                        <textarea name="modals[0][keterangan]" rows="1" placeholder="Catatan kecil aset..."
+                                            class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"></textarea>
+                                    </div>
+
+                                    {{-- Foto --}}
+                                    <div class="sm:col-span-2">
+                                        <div class="flex items-center gap-3">
+                                            <div class="modal-img-preview-wrapper hidden w-10 h-10 rounded border border-gray-200 overflow-hidden flex-shrink-0">
+                                                <img class="modal-img-preview w-full h-full object-cover" src="#" alt="Preview">
+                                            </div>
+                                            <div class="flex-1">
+                                                <input type="file" name="modals[0][foto]" accept="image/*"
+                                                    class="modal-file-input block w-full text-[11px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[11px] file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 transition-all">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- ══ SEKSI 7: OPSI AKUN ══ --}}
                     <div>
                         <h3
                             class="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-100 flex items-center gap-2">
                             <span
-                                class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-xs font-bold">6</span>
+                                class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-xs font-bold">7</span>
                             Akun Login
                         </h3>
                         <label class="flex items-start gap-3 cursor-pointer group">
@@ -680,13 +835,184 @@
 
             handlePreview(logoInput, logoPreview, logoWrapper, logoLabel);
 
-            // Preview Foto Produk
+            // Preview Foto Produk Utama (Multiple & Drag Drop)
             const produkInput = document.getElementById('foto_produk');
-            const produkPreview = document.getElementById('produk-preview');
-            const produkWrapper = document.getElementById('produk-preview-wrapper');
-            const produkLabel = document.getElementById('produk-label');
+            const produkDropZone = document.getElementById('produk-drop-zone');
+            const produkPreviewContainer = document.getElementById('produk-preview-container');
+            const MAX_PRODUK_FOTO = 5;
+            let productFiles = [];
 
-            handlePreview(produkInput, produkPreview, produkWrapper, produkLabel);
+            function updateProductFiles(newFiles) {
+                const allowed = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+                
+                newFiles.forEach(file => {
+                    if (!allowed.includes(file.type)) return;
+                    if (file.size > 2 * 1024 * 1024) return;
+                    if (productFiles.length >= MAX_PRODUK_FOTO) return;
+                    productFiles.push(file);
+                });
+
+                renderProductPreviews();
+                syncProductInput();
+            }
+
+            function renderProductPreviews() {
+                produkPreviewContainer.innerHTML = '';
+                productFiles.forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const div = document.createElement('div');
+                        div.className = 'relative group animate-fade-in';
+                        div.innerHTML = `
+                            <img src="${e.target.result}" class="w-full h-24 sm:h-28 object-cover rounded-lg border border-gray-200">
+                            <button type="button" onclick="removeProductFile(${index})" 
+                                class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-sm">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                            <div class="absolute bottom-1 right-1 bg-black/50 text-white text-[10px] px-1 rounded">
+                                ${index + 1}
+                            </div>
+                        `;
+                        produkPreviewContainer.appendChild(div);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            function syncProductInput() {
+                const dt = new DataTransfer();
+                productFiles.forEach(file => dt.items.add(file));
+                produkInput.files = dt.files;
+            }
+
+            window.removeProductFile = function(index) {
+                productFiles.splice(index, 1);
+                renderProductPreviews();
+                syncProductInput();
+            };
+
+            produkInput.addEventListener('change', function() {
+                updateProductFiles(Array.from(this.files));
+            });
+
+            produkDropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                produkDropZone.classList.add('border-primary', 'bg-primary/5');
+            });
+
+            produkDropZone.addEventListener('dragleave', () => {
+                produkDropZone.classList.remove('border-primary', 'bg-primary/5');
+            });
+
+            produkDropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                produkDropZone.classList.remove('border-primary', 'bg-primary/5');
+                updateProductFiles(Array.from(e.dataTransfer.files));
+            });
+
+            // ─── Repeater Modal UMKM ──────────────────────────────────────────────────
+            const addModalBtn = document.getElementById('add-modal-btn');
+            const modalWrapper = document.getElementById('modal-wrapper');
+            let modalIndex = 1;
+
+            // Fungsi untuk refresh preview per baris
+            function attachModalPreview(container) {
+                const input = container.querySelector('.modal-file-input');
+                const preview = container.querySelector('.modal-img-preview');
+                const wrapper = container.querySelector('.modal-img-preview-wrapper');
+
+                input.addEventListener('change', function() {
+                    const file = this.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        wrapper.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            // Inisialisasi baris pertama
+            attachModalPreview(modalWrapper.querySelector('.modal-item'));
+
+            addModalBtn.addEventListener('click', function() {
+                const firstItem = modalWrapper.querySelector('.modal-item');
+                const newItem = firstItem.cloneNode(true);
+
+                // Reset nilai
+                newItem.setAttribute('data-index', modalIndex);
+                newItem.querySelectorAll('input, select, textarea').forEach(el => {
+                    // Update name index: modals[0][name] -> modals[1][name]
+                    el.name = el.name.replace(/\[\d+\]/, `[${modalIndex}]`);
+                    if (el.type !== 'checkbox' && el.type !== 'radio') el.value = '';
+                });
+
+                // Reset preview
+                const previewWrapper = newItem.querySelector('.modal-img-preview-wrapper');
+                const previewImg = newItem.querySelector('.modal-img-preview');
+                previewWrapper.classList.add('hidden');
+                previewImg.src = '#';
+
+                modalWrapper.appendChild(newItem);
+                attachModalPreview(newItem);
+                modalIndex++;
+            });
+
+            // Delete row
+            modalWrapper.addEventListener('click', function(e) {
+                if (e.target.closest('.remove-modal-btn')) {
+                    const items = modalWrapper.querySelectorAll('.modal-item');
+                    if (items.length > 1) {
+                        e.target.closest('.modal-item').remove();
+                    } else {
+                        alert('Minimal harus ada satu baris modal.');
+                    }
+                }
+            });
+
+
+            // ─── Format Rupiah ──────────────────────────────────────────────────────
+            function formatRupiah(angka, prefix) {
+                let number_string = angka.replace(/[^,\d]/g, '').toString(),
+                    split = number_string.split(','),
+                    sisa = split[0].length % 3,
+                    rupiah = split[0].substr(0, sisa),
+                    ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+                if (ribuan) {
+                    let separator = sisa ? '.' : '';
+                    rupiah += separator + ribuan.join('.');
+                }
+
+                rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+                return prefix == undefined ? rupiah : (rupiah ? rupiah : '');
+            }
+
+            // Delegated listener for dynamically added inputs
+            document.addEventListener('input', function(e) {
+                if (e.target.classList.contains('rupiah-input')) {
+                    e.target.value = formatRupiah(e.target.value);
+                }
+            });
+
+            // Initial format for existing values
+            document.querySelectorAll('.rupiah-input').forEach(input => {
+                if (input.value) input.value = formatRupiah(input.value);
+            });
+
+            // Cleanup before submit
+            const mainForm = document.getElementById('main-form');
+            if (mainForm) {
+                mainForm.addEventListener('submit', function() {
+                    document.querySelectorAll('.rupiah-input').forEach(input => {
+                        input.value = input.value.replace(/\./g, '');
+                    });
+                });
+            }
 
             // ─── AJAX Wilayah Bertingkat ──────────────────────────────────────────────
             const provinceSelect = document.getElementById('province_code');

@@ -1,6 +1,6 @@
-<nav class="bg-white border-b border-gray-200 px-4 py-3 lg:px-6 shadow-sm">
+<nav class="bg-gradient-to-r from-blue-700 to-blue-600 px-4 py-3 lg:px-6 shadow-sm">
     <div class="flex items-center justify-between">
-        <button onclick="toggleSidebar()" class="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none">
+        <button onclick="toggleSidebar()" class="lg:hidden text-white hover:text-gray-200 focus:outline-none">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
                 </path>
@@ -8,7 +8,7 @@
         </button>
 
         <div class="hidden lg:block">
-            <h1 class="text-xl font-semibold text-gray-800">@yield('page-title', 'Dashboard')</h1>
+            <h1 class="text-xl font-bold text-white">@yield('page-title', 'Dashboard')</h1>
         </div>
 
         <div class="flex items-center space-x-4">
@@ -20,11 +20,11 @@
             @else
                 <div class="relative" id="user-dropdown-container">
                     <button type="button" id="user-dropdown-btn"
-                        class="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                        class="flex items-center space-x-3 p-2 hover:bg-white/10 rounded-lg transition-all duration-200">
                         <div class="flex items-center space-x-3">
                             {{-- PERBAIKAN: Sesuaikan dengan kolom foto_profil --}}
                             <div
-                                class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary-600 flex items-center justify-center border-2 border-gray-300 overflow-hidden">
+                                class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary-600 flex items-center justify-center overflow-hidden">
                                 @if (auth()->user()->foto_profil && file_exists(storage_path('app/public/' . auth()->user()->foto_profil)))
                                     <img src="{{ asset('storage/' . auth()->user()->foto_profil) }}" alt="Foto Profil"
                                         class="w-full h-full object-cover">
@@ -36,16 +36,15 @@
                                 @endif
                             </div>
                             <div class="hidden md:block text-left">
-                                {{-- PERBAIKAN: Hapus dataPribadi, langsung gunakan username --}}
-                                <p class="text-sm font-semibold text-gray-900">
+                                <p class="text-sm font-bold text-white leading-tight">
                                     {{ auth()->user()->username ?? 'Pengguna' }}
                                 </p>
-                                <p class="text-xs text-gray-600 capitalize">
+                                <p class="text-[10px] text-blue-100 capitalize">
                                     {{ ucfirst(auth()->user()->role) }}
                                 </p>
                             </div>
                         </div>
-                        <svg id="dropdown-chevron" class="w-4 h-4 text-gray-600 transition-transform duration-200"
+                        <svg id="dropdown-chevron" class="w-4 h-4 text-blue-100 transition-transform duration-200"
                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>

@@ -2,6 +2,7 @@
 
 @section('title', 'Kelola Data UMKM')
 @section('page-title', 'Data UMKM')
+@section('page-subtitle', 'Manajemen mitra UMKM binaan dan status pemberdayaan')
 
 @push('styles')
     <style>
@@ -29,10 +30,10 @@
 
 @section('content')
     <div class="space-y-4 sm:space-y-6">
-        <div class="bg-white rounded-xl sm:rounded-2xl shadow-card border border-gray-100 overflow-hidden animate-slide-up">
+        <div class="bg-white rounded-xl sm:rounded-2xl shadow-card overflow-hidden animate-slide-up">
 
             {{-- ── HEADER ── --}}
-            <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+            <div class="px-4 sm:px-6 py-3 sm:py-4">
                 <div class="flex items-center justify-between">
                     <div>
                         <h2 class="text-base sm:text-lg font-semibold text-gray-900">Daftar UMKM</h2>
@@ -73,7 +74,7 @@
                                             'city_code',
                                             'unit_id',
                                         ])
-                                            ->filter(fn($k) => request($k))
+                                            ->filter(fn($key) => request($key))
                                             ->count();
                                     @endphp
                                     <span
@@ -134,7 +135,7 @@
 
             {{-- ── PANEL FILTER ── --}}
             <div id="filter-section"
-                class="{{ $hasFilter ? '' : 'hidden' }} border-b border-gray-200 transition-all duration-300">
+                class="{{ $hasFilter ? '' : 'hidden' }} transition-all duration-300">
                 <div class="px-4 sm:px-6 py-4 bg-gray-50">
                     <form method="GET" action="{{ route('umkm.index') }}">
                         @if (request('q'))
@@ -161,10 +162,10 @@
                                 <select name="kategori_id"
                                     class="block w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
                                     <option value="">Semua Kategori</option>
-                                    @foreach ($kategoriList as $kat)
-                                        <option value="{{ $kat->id }}"
-                                            {{ request('kategori_id') == $kat->id ? 'selected' : '' }}>
-                                            {{ $kat->nama }}
+                                    @foreach ($kategoriList as $kategori)
+                                        <option value="{{ $kategori->id }}"
+                                            {{ request('kategori_id') == $kategori->id ? 'selected' : '' }}>
+                                            {{ $kategori->nama }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -193,10 +194,10 @@
                                 <select name="province_code" id="filter-province"
                                     class="block w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
                                     <option value="">Semua Provinsi</option>
-                                    @foreach ($provinceList as $prov)
-                                        <option value="{{ $prov->code }}"
-                                            {{ request('province_code') === $prov->code ? 'selected' : '' }}>
-                                            {{ $prov->name }}
+                                    @foreach ($provinceList as $province)
+                                        <option value="{{ $province->code }}"
+                                            {{ request('province_code') === $province->code ? 'selected' : '' }}>
+                                            {{ $province->name }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -242,6 +243,11 @@
                 <div class="hidden md:block overflow-x-auto overflow-y-visible">
                     <table class="w-full">
                         <thead class="bg-gray-50 border-b border-gray-200">
+                            @php
+                                $isGrouped = auth()->user()->role === 'admin' && !request('unit_id') && !request('q');
+                                $displayList = $isGrouped ? $umkmList->getCollection()->groupBy('unit_id') : $umkmList;
+                            @endphp
+
                             <tr>
                                 <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Informasi UMKM</th>
@@ -251,23 +257,15 @@
                                     Modal Bantuan</th>
                                 <th
                                     class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-                                    @if (auth()->user()->role === 'admin')
-                                        Total UMKM
-                                    @else
-                                        Jumlah UMKM
-                                    @endif
+                                    {{ $isGrouped ? 'Total UMKM' : 'Status' }}
                                 </th>
-                                @if (auth()->user()->role !== 'admin')
+                                @if (in_array(auth()->user()->role, ['admin', 'unit']))
                                     <th class="px-6 py-4 w-20"></th>
                                 @endif
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200 overflow-visible">
 
-                            @php
-                                $isGrouped = auth()->user()->role === 'admin' && !request('unit_id') && !request('q');
-                                $displayList = $isGrouped ? $umkmList->getCollection()->groupBy('unit_id') : $umkmList;
-                            @endphp
 
                             @if ($isGrouped)
 
@@ -320,7 +318,7 @@
                                             <p class="text-xs text-gray-500 mb-0.5">Total Modal Unit</p>
                                             <p class="text-sm font-semibold text-primary">
                                                 Rp
-                                                {{ number_format($group->sum(fn($u) => $u->modalUmkm->sum('nilai_modal')), 0, ',', '.') }}
+                                                {{ number_format($group->sum(fn($umkm) => $umkm->modalUmkm->sum('nilai_modal')), 0, ',', '.') }}
                                             </p>
                                         </td>
 
@@ -332,7 +330,7 @@
                                             </div>
                                         </td>
 
-                                        @if (auth()->user()->role !== 'admin')
+                                        @if (in_array(auth()->user()->role, ['admin', 'unit']))
                                             <td class="px-6 py-4"></td>
                                         @endif
                                     </tr>
@@ -434,7 +432,7 @@
                                             </td>
 
                                             {{-- Aksi --}}
-                                            @if (auth()->user()->role !== 'admin')
+                                            @if (in_array(auth()->user()->role, ['admin', 'unit']))
                                                 <td class="px-4 sm:px-6 py-4 text-right"
                                                     onclick="event.stopPropagation()">
                                                     @include('umkm.partials.actions_dropdown', [
@@ -448,7 +446,7 @@
                                         {{-- Accordion Detail --}}
                                         <tr id="detail-{{ $item->uuid }}"
                                             class="{{ $rowClass }} hidden bg-gray-50">
-                                            <td colspan="{{ auth()->user()->role === 'admin' ? 4 : 5 }}"
+                                            <td colspan="{{ in_array(auth()->user()->role, ['admin', 'unit']) ? 5 : 4 }}"
                                                 class="px-4 sm:px-6 py-3">
                                                 @include('umkm.partials.detail_accordion', [
                                                     'item' => $item,
@@ -550,7 +548,7 @@
                                         </td>
 
                                         {{-- Aksi --}}
-                                        @if (auth()->user()->role !== 'admin')
+                                        @if (in_array(auth()->user()->role, ['admin', 'unit']))
                                             <td class="px-4 sm:px-6 py-4 text-right" onclick="event.stopPropagation()">
                                                 @include('umkm.partials.actions_dropdown', [
                                                     'item' => $item,
@@ -562,7 +560,7 @@
 
                                     {{-- Accordion Detail --}}
                                     <tr id="detail-{{ $item->uuid }}" class="hidden bg-gray-50">
-                                        <td colspan="{{ auth()->user()->role === 'admin' ? 4 : 5 }}"
+                                        <td colspan="{{ in_array(auth()->user()->role, ['admin', 'unit']) ? 5 : 4 }}"
                                             class="px-4 sm:px-6 py-3">
                                             @include('umkm.partials.detail_accordion', ['item' => $item])
                                         </td>
@@ -632,7 +630,7 @@
                                         </div>
                                     </div>
                                     <div class="dropdown-wrapper flex-shrink-0" onclick="event.stopPropagation()">
-                                        @if (auth()->user()->role !== 'admin')
+                                        @if (in_array(auth()->user()->role, ['admin', 'unit']))
                                             @include('umkm.partials.actions_dropdown', [
                                                 'item' => $item,
                                                 'permissions' => $permissions,
@@ -688,7 +686,7 @@
                 </div>
 
                 {{-- ── Pagination ── --}}
-                <div class="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200">
+                <div class="px-4 sm:px-6 py-3 sm:py-4">
                     @include('partials.pagination', ['paginator' => $umkmList])
                 </div>
             @else
@@ -696,8 +694,10 @@
                         <div class="px-4 sm:px-6 py-8 sm:py-12 text-center">
                             <svg class="mx-auto h-12 sm:h-16 w-12 sm:w-16 text-gray-400 mb-4" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993
+                                    0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378
+                                    3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" />
                             </svg>
                             <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">
                                 {{ request()->hasAny(['q', 'status', 'kategori_id', 'province_code', 'city_code']) ? 'Data UMKM Tidak Ditemukan' : 'Belum Ada Data UMKM' }}

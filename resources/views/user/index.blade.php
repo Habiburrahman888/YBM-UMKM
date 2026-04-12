@@ -29,10 +29,10 @@
 
 @section('content')
     <div class="space-y-4 sm:space-y-6">
-        <div class="bg-white rounded-xl sm:rounded-2xl shadow-card border border-gray-100 overflow-hidden animate-slide-up">
+        <div class="bg-white rounded-xl sm:rounded-2xl shadow-card overflow-hidden animate-slide-up">
 
             {{-- ── HEADER ── --}}
-            <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+            <div class="px-4 sm:px-6 py-3 sm:py-4">
                 <div class="flex items-center justify-between">
                     <div>
                         <h2 class="text-base sm:text-lg font-semibold text-gray-900">Daftar Pengguna</h2>
@@ -87,9 +87,9 @@
                             </button>
                             <form method="GET" action="{{ route('user.index') }}" id="search-form"
                                 class="{{ request('q') ? '' : 'hidden' }}">
-                                @foreach (['role', 'status', 'verified'] as $fk)
-                                    @if (request($fk))
-                                        <input type="hidden" name="{{ $fk }}" value="{{ request($fk) }}">
+                                @foreach (['role', 'status', 'verified'] as $filterKey)
+                                    @if (request($filterKey))
+                                        <input type="hidden" name="{{ $filterKey }}" value="{{ request($filterKey) }}">
                                     @endif
                                 @endforeach
                                 <div class="flex items-center">
@@ -124,7 +124,7 @@
 
             {{-- ── PANEL FILTER ── --}}
             <div id="filter-section"
-                class="{{ $hasFilter ? '' : 'hidden' }} border-b border-gray-200 transition-all duration-300">
+                class="{{ $hasFilter ? '' : 'hidden' }} transition-all duration-300">
                 <div class="px-4 sm:px-6 py-4 bg-gray-50">
                     <form method="GET" action="{{ route('user.index') }}">
                         @if (request('q'))
@@ -212,27 +212,27 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach ($users as $item)
+                            @foreach ($users as $user)
                                 <tr class="hover:bg-gray-50 transition-colors">
 
                                     {{-- User --}}
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-3">
-                                            @if ($item->foto_profil)
-                                                <img src="{{ Storage::url($item->foto_profil) }}"
-                                                    alt="{{ $item->username }}"
+                                            @if ($user->foto_profil)
+                                                <img src="{{ Storage::url($user->foto_profil) }}"
+                                                    alt="{{ $user->username }}"
                                                     class="w-9 h-9 rounded-lg object-cover border border-gray-100 flex-shrink-0">
                                             @else
                                                 <div
                                                     class="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                                                     <span
-                                                        class="text-xs font-semibold text-primary">{{ strtoupper(substr($item->username, 0, 2)) }}</span>
+                                                        class="text-xs font-semibold text-primary">{{ strtoupper(substr($user->username, 0, 2)) }}</span>
                                                 </div>
                                             @endif
                                             <div>
-                                                <p class="text-sm font-semibold text-gray-900">{{ '@' . $item->username }}
+                                                <p class="text-sm font-semibold text-gray-900">{{ '@' . $user->username }}
                                                 </p>
-                                                @if ($item->google_id)
+                                                @if ($user->google_id)
                                                     <div class="flex items-center gap-1 mt-0.5">
                                                         <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
                                                             <path
@@ -257,8 +257,8 @@
 
                                     {{-- Email --}}
                                     <td class="px-4 py-4">
-                                        <p class="text-sm text-gray-700">{{ $item->email }}</p>
-                                        @if ($item->email_verified_at)
+                                        <p class="text-sm text-gray-700">{{ $user->email }}</p>
+                                        @if ($user->email_verified_at)
                                             <span class="inline-flex items-center gap-1 text-xs text-green-600 mt-0.5">
                                                 <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd"
@@ -283,16 +283,16 @@
                                     <td class="px-4 py-4">
                                         <span
                                             class="px-2.5 py-1 inline-flex text-xs font-semibold rounded-full
-                                            {{ $item->role === 'admin' ? 'bg-purple-100 text-purple-800' : '' }}
-                                            {{ $item->role === 'unit' ? 'bg-blue-100 text-blue-800' : '' }}
-                                            {{ $item->role === 'umkm' ? 'bg-green-100 text-green-800' : '' }}">
-                                            {{ ucfirst($item->role) }}
+                                            {{ $user->role === 'admin' ? 'bg-purple-100 text-purple-800' : '' }}
+                                            {{ $user->role === 'unit' ? 'bg-blue-100 text-blue-800' : '' }}
+                                            {{ $user->role === 'umkm' ? 'bg-green-100 text-green-800' : '' }}">
+                                            {{ ucfirst($user->role) }}
                                         </span>
                                     </td>
 
                                     {{-- Status --}}
                                     <td class="px-4 py-4">
-                                        @if ($item->is_active)
+                                        @if ($user->is_active)
                                             <span
                                                 class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-xs font-medium">
                                                 <span
@@ -311,19 +311,19 @@
                                     <td class="px-6 py-4 text-right">
                                         <div class="dropdown-wrapper">
                                             <button type="button"
-                                                onclick="toggleDropdown('dd-{{ $item->uuid }}', this)"
-                                                data-active="{{ $item->is_active ? 'true' : 'false' }}"
-                                                data-verified="{{ $item->email_verified_at ? 'true' : 'false' }}"
-                                                data-username="{{ $item->username }}" data-uuid="{{ $item->uuid }}"
+                                                onclick="toggleDropdown('dd-{{ $user->uuid }}', this)"
+                                                data-active="{{ $user->is_active ? 'true' : 'false' }}"
+                                                data-verified="{{ $user->email_verified_at ? 'true' : 'false' }}"
+                                                data-username="{{ $user->username }}" data-uuid="{{ $user->uuid }}"
                                                 class="inline-flex items-center p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                                     <path
                                                         d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
                                                 </svg>
                                             </button>
-                                            <div id="dd-{{ $item->uuid }}" class="dropdown-menu">
+                                            <div id="dd-{{ $user->uuid }}" class="dropdown-menu">
                                                 <div class="py-1">
-                                                    <a href="{{ route('user.edit', $item->uuid) }}"
+                                                    <a href="{{ route('user.edit', $user->uuid) }}"
                                                         class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                                         <svg class="w-4 h-4 text-gray-400" fill="none"
                                                             stroke="currentColor" viewBox="0 0 24 24">
@@ -333,9 +333,9 @@
                                                         </svg>
                                                         Edit
                                                     </a>
-                                                    @if (!$item->email_verified_at)
+                                                    @if (!$user->email_verified_at)
                                                         <button type="button"
-                                                            onclick="confirmVerify('{{ $item->uuid }}','{{ $item->username }}')"
+                                                            onclick="confirmVerify('{{ $user->uuid }}','{{ $user->username }}')"
                                                             class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-blue-600 hover:bg-blue-50 transition-colors">
                                                             <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                                 viewBox="0 0 24 24">
@@ -347,19 +347,19 @@
                                                         </button>
                                                     @endif
                                                     <button type="button"
-                                                        onclick="confirmStatus('{{ $item->uuid }}','{{ $item->username }}',{{ $item->is_active ? 'true' : 'false' }})"
-                                                        class="flex items-center gap-3 w-full px-4 py-2.5 text-sm transition-colors {{ $item->is_active ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50' }}">
+                                                        onclick="confirmStatus('{{ $user->uuid }}','{{ $user->username }}',{{ $user->is_active ? 'true' : 'false' }})"
+                                                        class="flex items-center gap-3 w-full px-4 py-2.5 text-sm transition-colors {{ $user->is_active ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50' }}">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                             viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                                 stroke-width="2"
                                                                 d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
                                                         </svg>
-                                                        {{ $item->is_active ? 'Nonaktifkan' : 'Aktifkan' }} User
+                                                        {{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }} User
                                                     </button>
                                                     <div class="border-t border-gray-100 my-1"></div>
                                                     <button type="button"
-                                                        onclick="confirmDelete('{{ $item->uuid }}','{{ $item->username }}')"
+                                                        onclick="confirmDelete('{{ $user->uuid }}','{{ $user->username }}')"
                                                         class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                             viewBox="0 0 24 24">
@@ -379,26 +379,26 @@
                     </table>
                 </div>
 
-                {{-- ── MOBILE CARDS ── --}}
+                                {{-- ── MOBILE CARDS ── --}}
                 <div class="md:hidden divide-y divide-gray-100">
-                    @foreach ($users as $item)
+                    @foreach ($users as $user)
                         <div class="px-4 py-4 hover:bg-gray-50/60 transition-colors">
                             <div class="flex items-start justify-between gap-2">
                                 <div class="flex items-start gap-3 flex-1 min-w-0">
-                                    @if ($item->foto_profil)
-                                        <img src="{{ Storage::url($item->foto_profil) }}" alt="{{ $item->username }}"
+                                    @if ($user->foto_profil)
+                                        <img src="{{ Storage::url($user->foto_profil) }}" alt="{{ $user->username }}"
                                             class="w-10 h-10 rounded-lg object-cover border border-gray-100 flex-shrink-0">
                                     @else
                                         <div
                                             class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                                             <span
-                                                class="text-sm font-semibold text-primary">{{ strtoupper(substr($item->username, 0, 2)) }}</span>
+                                                class="text-sm font-semibold text-primary">{{ strtoupper(substr($user->username, 0, 2)) }}</span>
                                         </div>
                                     @endif
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center gap-2 flex-wrap">
-                                            <h3 class="text-sm font-semibold text-gray-900">{{ '@' . $item->username }}</h3>
-                                            @if ($item->is_active)
+                                            <h3 class="text-sm font-semibold text-gray-900">{{ '@' . $user->username }}</h3>
+                                            @if ($user->is_active)
                                                 <span
                                                     class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-green-50 text-green-600 text-xs font-medium">
                                                     <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>Aktif
@@ -410,16 +410,16 @@
                                                 </span>
                                             @endif
                                         </div>
-                                        <p class="text-xs text-gray-400 mt-0.5">{{ $item->email }}</p>
+                                        <p class="text-xs text-gray-400 mt-0.5">{{ $user->email }}</p>
                                         <div class="flex items-center gap-2 mt-1.5 flex-wrap">
                                             <span
                                                 class="px-2 py-0.5 text-xs font-semibold rounded-full
-                                                {{ $item->role === 'admin' ? 'bg-purple-100 text-purple-800' : '' }}
-                                                {{ $item->role === 'unit' ? 'bg-blue-100 text-blue-800' : '' }}
-                                                {{ $item->role === 'umkm' ? 'bg-green-100 text-green-800' : '' }}">
-                                                {{ ucfirst($item->role) }}
+                                                {{ $user->role === 'admin' ? 'bg-purple-100 text-purple-800' : '' }}
+                                                {{ $user->role === 'unit' ? 'bg-blue-100 text-blue-800' : '' }}
+                                                {{ $user->role === 'umkm' ? 'bg-green-100 text-green-800' : '' }}">
+                                                {{ ucfirst($user->role) }}
                                             </span>
-                                            @if ($item->email_verified_at)
+                                            @if ($user->email_verified_at)
                                                 <span class="inline-flex items-center gap-1 text-xs text-green-600">
                                                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fill-rule="evenodd"
@@ -433,7 +433,7 @@
                                     </div>
                                 </div>
                                 <div class="dropdown-wrapper flex-shrink-0">
-                                    <button type="button" onclick="toggleDropdown('dd-{{ $item->uuid }}', this)"
+                                    <button type="button" onclick="toggleDropdown('dd-{{ $user->uuid }}', this)"
                                         class="inline-flex items-center p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                             <path
@@ -447,7 +447,7 @@
                 </div>
 
                 {{-- ── Pagination ── --}}
-                <div class="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200">
+                <div class="px-4 sm:px-6 py-3 sm:py-4">
                     @include('partials.pagination', ['paginator' => $users])
                 </div>
             @else
@@ -456,7 +456,7 @@
                     <svg class="mx-auto h-12 sm:h-16 w-12 sm:w-16 text-gray-400 mb-4" fill="none"
                         stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zm14 10v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
                     </svg>
                     <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">
                         {{ request()->hasAny(['q', 'role', 'status', 'verified']) ? 'Data Pengguna Tidak Ditemukan' : 'Belum Ada Data Pengguna' }}

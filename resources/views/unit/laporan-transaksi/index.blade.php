@@ -87,10 +87,10 @@
                             <select name="umkm_id" id="umkm_select"
                                 class="block w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
                                 <option value="">Semua UMKM</option>
-                                @foreach ($umkmList as $u)
-                                    <option value="{{ $u->id }}"
-                                        {{ request('umkm_id') == $u->id ? 'selected' : '' }}>
-                                        {{ $u->nama_usaha }}
+                                @foreach ($umkmList as $umkm)
+                                    <option value="{{ $umkm->id }}"
+                                        {{ request('umkm_id') == $umkm->id ? 'selected' : '' }}>
+                                        {{ $umkm->nama_usaha }}
                                     </option>
                                 @endforeach
                             </select>
@@ -139,18 +139,18 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($pesanans as $i => $p)
+                    @forelse($pesanans as $i => $pesanan)
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ $pesanans->firstItem() + $i }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $p->nama_usaha }}</div>
-                                <div class="text-xs text-gray-500">{{ $p->nama_pemilik }}</div>
+                                <div class="text-sm font-medium text-gray-900">{{ $pesanan->nama_usaha }}</div>
+                                <div class="text-xs text-gray-500">{{ $pesanan->nama_pemilik }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-medium text-gray-900">
-                                    Rp {{ number_format($p->total_penjualan ?? 0, 0, ',', '.') }}
+                                    Rp {{ number_format($pesanan->total_penjualan ?? 0, 0, ',', '.') }}
                                 </div>
                             </td>
                         </tr>

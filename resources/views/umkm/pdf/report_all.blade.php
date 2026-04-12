@@ -220,8 +220,8 @@
         </div>
 
         @if (auth()->user()->role === 'admin')
-            @foreach ($umkmList as $unitId => $items)
-                @php $unit = $items->first()->unit; @endphp
+            @foreach ($umkmList as $unitId => $umkms)
+                @php $unit = $umkms->first()->unit; @endphp
                 <div
                     style="background: #f1f5f9; padding: 5px 10px; font-weight: bold; border: 0.5px solid #cbd5e1; margin-top: 15px;">
                     Unit: {{ $unit->nama ?? 'Tanpa Unit' }}
@@ -241,18 +241,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($items as $i => $item)
+                        @foreach ($umkms as $i => $umkm)
                             <tr>
                                 <td class="text-center" style="color: #94a3b8;">{{ $i + 1 }}</td>
-                                <td><span class="code">{{ $item->kode_umkm }}</span></td>
+                                <td><span class="code">{{ $umkm->kode_umkm }}</span></td>
                                 <td>
-                                    <div style="font-weight: 700; color: #0f172a;">{{ $item->nama_usaha }}</div>
-                                    <div style="font-size: 7pt; color: #64748b;">{{ $item->nama_pemilik }}</div>
+                                    <div style="font-weight: 700; color: #0f172a;">{{ $umkm->nama_usaha }}</div>
+                                    <div style="font-size: 7pt; color: #64748b;">{{ $umkm->nama_pemilik }}</div>
                                 </td>
                                 <td>
-                                    @if ($item->modalUmkm->isNotEmpty())
+                                    @if ($umkm->modalUmkm->isNotEmpty())
                                         <ul style="margin: 0; padding-left: 10px; list-style-type: none;">
-                                            @foreach ($item->modalUmkm as $modal)
+                                            @foreach ($umkm->modalUmkm as $modal)
                                                 <li style="font-size: 7pt; color: #475569;">• {{ $modal->nama_item }}
                                                 </li>
                                             @endforeach
@@ -261,15 +261,15 @@
                                         <span style="color: #cbd5e1;">-</span>
                                     @endif
                                 </td>
-                                <td>{{ $item->kategori->nama ?? '-' }}</td>
-                                <td class="text-center">{{ $item->tahun_berdiri ?? '-' }}</td>
-                                <td>{{ $item->city->name ?? '-' }}</td>
+                                <td>{{ $umkm->kategori->nama ?? '-' }}</td>
+                                <td class="text-center">{{ $umkm->tahun_berdiri ?? '-' }}</td>
+                                <td>{{ $umkm->city->name ?? '-' }}</td>
                                 <td class="text-right" style="font-weight: 700;">
-                                    {{ number_format($item->modalUmkm->sum('nilai_modal'), 0, ',', '.') }}
+                                    {{ number_format($umkm->modalUmkm->sum('nilai_modal'), 0, ',', '.') }}
                                 </td>
                                 <td class="text-center">
-                                    <span class="status-pill pill-{{ $item->status }}">
-                                        {{ $item->status }}
+                                    <span class="status-pill pill-{{ $umkm->status }}">
+                                        {{ $umkm->status }}
                                     </span>
                                 </td>
                             </tr>
@@ -293,18 +293,18 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($umkmList as $i => $item)
+                    @foreach ($umkmList as $i => $umkm)
                         <tr>
                             <td class="text-center" style="color: #94a3b8;">{{ $i + 1 }}</td>
-                            <td><span class="code">{{ $item->kode_umkm }}</span></td>
+                            <td><span class="code">{{ $umkm->kode_umkm }}</span></td>
                             <td>
-                                <div style="font-weight: 700; color: #0f172a;">{{ $item->nama_usaha }}</div>
-                                <div style="font-size: 7pt; color: #64748b;">{{ $item->nama_pemilik }}</div>
+                                <div style="font-weight: 700; color: #0f172a;">{{ $umkm->nama_usaha }}</div>
+                                <div style="font-size: 7pt; color: #64748b;">{{ $umkm->nama_pemilik }}</div>
                             </td>
                             <td>
-                                @if ($item->modalUmkm->isNotEmpty())
+                                @if ($umkm->modalUmkm->isNotEmpty())
                                     <ul style="margin: 0; padding-left: 10px; list-style-type: none;">
-                                        @foreach ($item->modalUmkm as $modal)
+                                        @foreach ($umkm->modalUmkm as $modal)
                                             <li style="font-size: 7pt; color: #475569;">• {{ $modal->nama_item }}</li>
                                         @endforeach
                                     </ul>
@@ -312,15 +312,15 @@
                                     <span style="color: #cbd5e1;">-</span>
                                 @endif
                             </td>
-                            <td>{{ $item->kategori->nama ?? '-' }}</td>
-                            <td class="text-center">{{ $item->tahun_berdiri ?? '-' }}</td>
-                            <td>{{ $item->city->name ?? '-' }}</td>
+                            <td>{{ $umkm->kategori->nama ?? '-' }}</td>
+                            <td class="text-center">{{ $umkm->tahun_berdiri ?? '-' }}</td>
+                            <td>{{ $umkm->city->name ?? '-' }}</td>
                             <td class="text-right" style="font-weight: 700;">
-                                {{ number_format($item->modalUmkm->sum('nilai_modal'), 0, ',', '.') }}
+                                {{ number_format($umkm->modalUmkm->sum('nilai_modal'), 0, ',', '.') }}
                             </td>
                             <td class="text-center">
-                                <span class="status-pill pill-{{ $item->status }}">
-                                    {{ $item->status }}
+                                <span class="status-pill pill-{{ $umkm->status }}">
+                                    {{ $umkm->status }}
                                 </span>
                             </td>
                         </tr>

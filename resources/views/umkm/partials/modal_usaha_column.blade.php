@@ -36,14 +36,14 @@
     @else
         <div class="space-y-1.5">
             <div class="flex flex-wrap gap-1">
-                @foreach ($modals->take(2) as $m)
+                @foreach ($modals->take(2) as $modal_item)
                     <div class="relative inline-block" onmouseenter="showModalTooltip(this)"
-                        onmouseleave="hideModalTooltip()" data-nama="{{ $m->nama_item }}"
-                        data-kategori="{{ ucfirst($m->kategori_modal) }}" data-nilai="{{ $m->nilai_rupiah }}"
-                        data-kondisi="{{ $m->kondisi }}" data-kondisi-label="{{ ucfirst($m->kondisi) }}">
+                        onmouseleave="hideModalTooltip()" data-nama="{{ $modal_item->nama_item }}"
+                        data-kategori="{{ ucfirst($modal_item->kategori_modal) }}" data-nilai="{{ $modal_item->nilai_rupiah }}"
+                        data-kondisi="{{ $modal_item->kondisi }}" data-kondisi-label="{{ ucfirst($modal_item->kondisi) }}">
                         <span
                             class="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[11px] font-medium cursor-help hover:bg-gray-200 transition-colors">
-                            {{ $m->nama_item }}
+                            {{ $modal_item->nama_item }}
                         </span>
                     </div>
                 @endforeach

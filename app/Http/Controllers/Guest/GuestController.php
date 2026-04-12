@@ -117,7 +117,7 @@ class GuestController extends Controller
     {
         $setting  = SettingAdmin::first();
         $sosmed   = Sosmed::first();
-        $kategori = Kategori::withCount('umkm')->get();
+        $kategori = Kategori::withCount('umkm')->orderBy('nama')->get();
 
         $produkQuery = ProdukUmkm::with(['umkm.kategori', 'umkm.city'])
             ->whereHas('umkm', fn($q) => $q->where('status', 'aktif'));

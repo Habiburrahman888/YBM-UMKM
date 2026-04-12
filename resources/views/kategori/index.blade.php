@@ -5,8 +5,8 @@
 
 @section('content')
     <div class="space-y-4 sm:space-y-6">
-        <div class="bg-white rounded-xl sm:rounded-2xl shadow-card border border-gray-100 overflow-hidden animate-slide-up">
-            <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+        <div class="bg-white rounded-xl sm:rounded-2xl shadow-card overflow-hidden animate-slide-up">
+            <div class="px-4 sm:px-6 py-3 sm:py-4">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                     <div>
                         <h2 class="text-base sm:text-lg font-semibold text-gray-900">Daftar Kategori</h2>
@@ -87,17 +87,17 @@
                         </thead>
 
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach ($kategoris as $item)
+                             @foreach ($kategoris as $kategori)
                                 <tr class="hover:bg-gray-50 transition-colors">
                                     <td class="pl-16 pr-6 py-4 whitespace-nowrap w-3/4">
                                         <div class="text-sm font-medium text-gray-900">
-                                            {{ $item->nama }}
+                                            {{ $kategori->nama }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                         <div class="relative inline-block text-left">
-                                            <button type="button" data-dropdown-toggle="{{ $item->uuid }}"
-                                                data-kategori="{{ $item->nama }}"
+                                            <button type="button" data-dropdown-toggle="{{ $kategori->uuid }}"
+                                                data-kategori="{{ $kategori->nama }}"
                                                 class="dropdown-toggle inline-flex items-center p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                                     <path
@@ -116,14 +116,14 @@
 
                 <!-- Mobile View - Cards -->
                 <div class="md:hidden divide-y divide-gray-200">
-                    @foreach ($kategoris as $index => $item)
+                     @foreach ($kategoris as $index => $kategori)
                         <div class="p-4 hover:bg-gray-50 transition-colors">
                             <div class="flex items-center justify-between">
                                 <div class="flex-1 min-w-0">
-                                    <h3 class="text-sm font-semibold text-gray-900">{{ $item->nama }}</h3>
+                                    <h3 class="text-sm font-semibold text-gray-900">{{ $kategori->nama }}</h3>
                                 </div>
-                                <button type="button" data-dropdown-toggle="{{ $item->uuid }}"
-                                    data-kategori="{{ $item->nama }}"
+                                <button type="button" data-dropdown-toggle="{{ $kategori->uuid }}"
+                                    data-kategori="{{ $kategori->nama }}"
                                     class="dropdown-toggle flex-shrink-0 ml-2 inline-flex items-center p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                         <path
@@ -138,18 +138,18 @@
 
                 <!-- Pagination -->
                 @if ($kategoris->hasPages())
-                    <div class="px-4 sm:px-6 py-3 border-t border-gray-200">
+                    <div class="px-4 sm:px-6 py-3">
                         {{ $kategoris->links() }}
                     </div>
                 @endif
             @else
                 <div class="p-8 sm:p-12 text-center">
-                    <div
-                        class="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gray-100 mb-4">
+                    <div class="inline-flex items-center justify-center mb-4">
                         <svg class="w-7 h-7 sm:w-8 sm:h-8 text-gray-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0
+                                    01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                         </svg>
                     </div>
                     <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-2">

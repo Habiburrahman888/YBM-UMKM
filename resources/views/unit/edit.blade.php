@@ -141,23 +141,11 @@
                             {{-- Kode Unit --}}
                             <div>
                                 <label for="kode_unit" class="block text-sm font-medium text-gray-700 mb-1.5">
-                                    Kode Unit <span class="text-red-500">*</span>
+                                    Kode Unit
                                 </label>
-                                <input type="text" name="kode_unit" id="kode_unit"
-                                    value="{{ old('kode_unit', $unit->kode_unit) }}" placeholder="Contoh: UNIT20250001"
-                                    class="block w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('kode_unit') border-red-500 ring-1 ring-red-500 @enderror">
-                                @error('kode_unit')
-                                    <p class="mt-1.5 text-xs text-red-500 flex items-center">
-                                        <svg class="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd"
-                                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                                                clip-rule="evenodd" />
-                                        </svg>
-                                        {{ $message }}
-                                    </p>
-                                @else
-                                    <p class="mt-1 text-xs text-gray-500">Kode unik untuk unit (huruf kapital dan angka)</p>
-                                @enderror
+                                <input type="text" value="{{ $unit->kode_unit }}" readonly
+                                    class="block w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed focus:outline-none transition-all">
+                                <p class="mt-1 text-xs text-gray-400">Kode unit diatur otomatis oleh sistem</p>
                             </div>
 
                             {{-- Status --}}
@@ -784,9 +772,7 @@
                 this.value = this.value.replace(/\D/g, '').slice(0, 5);
             });
 
-            document.getElementById('kode_unit').addEventListener('input', function() {
-                this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-            });
+
 
             ['telepon', 'admin_telepon'].forEach(id => {
                 const el = document.getElementById(id);

@@ -74,9 +74,9 @@ class UmkmController extends Controller
         $userRole = auth()->user()->role;
 
         $permissions = [
-            'canCreate'       => in_array($userRole, ['admin', 'unit']),
-            'canEdit'         => in_array($userRole, ['admin', 'unit']),
-            'canDelete'       => in_array($userRole, ['admin', 'unit']),
+            'canCreate'       => $userRole === 'unit',
+            'canEdit'         => $userRole === 'unit',
+            'canDelete'       => $userRole === 'unit',
             'canVerify'       => in_array($userRole, ['admin', 'unit']),
             'canCreateAccount'=> in_array($userRole, ['admin', 'unit']),
             'canChangeStatus' => $userRole === 'admin',
@@ -92,7 +92,7 @@ class UmkmController extends Controller
 
     public function create()
     {
-        if (!in_array(auth()->user()->role, ['admin', 'unit'])) {
+        if (auth()->user()->role !== 'unit') {
             abort(403, 'Anda tidak memiliki akses untuk menambah UMKM.');
         }
 
@@ -139,9 +139,18 @@ class UmkmController extends Controller
             'unit_id'         => 'nullable|exists:units,id',
             'nama_produk'     => 'nullable|string|max:255',
             'harga_produk'    => 'nullable|numeric|min:0',
-            'kategori_satuan' => 'nullable|in:pcs,bungkus,gram,kg,liter,ml,box,pack',
-            'deskripsi_produk'=> 'nullable|string',
-            'foto_produk'     => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'deskripsi_produk' => 'nullable|string',
+            'kategori_satuan' => 'nullable|in:pcs,bungkus,gram,kg,liter,ml,box,pack,porsi',
+            'foto_produk'     => 'nullable|array|max:5',
+            'foto_produk.*'   => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+            'modals'            => 'nullable|array',
+            'modals.*.nama_item' => 'nullable|string|max:255',
+            'modals.*.kategori'  => 'nullable|in:peralatan,kendaraan,perlengkapan,bangunan,lainnya',
+            'modals.*.nilai'     => 'nullable|integer|min:0',
+            'modals.*.kondisi'   => 'nullable|in:baru,baik,cukup,rusak',
+            'modals.*.tanggal'   => 'nullable|date',
+            'modals.*.keterangan' => 'nullable|string',
+            'modals.*.foto'      => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         DB::beginTransaction();
@@ -215,21 +224,52 @@ class UmkmController extends Controller
             if ($request->filled('nama_produk')) {
                 $fotoProdukPaths = [];
                 if ($request->hasFile('foto_produk')) {
-                    $filename = time() . '_produk_' . uniqid() . '.' . $request->file('foto_produk')->getClientOriginalExtension();
-                    $path = $request->file('foto_produk')->storeAs('produk/' . $umkm->kode_umkm, $filename, 'public');
-                    $fotoProdukPaths[] = $path;
+                    foreach ($request->file('foto_produk') as $file) {
+                        $filename = time() . '_produk_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                        $path = $file->storeAs('produk/' . $umkm->kode_umkm, $filename, 'public');
+                        $fotoProdukPaths[] = $path;
+                    }
                 }
 
                 \App\Models\ProdukUmkm::create([
                     'uuid'             => (string) Str::uuid(),
                     'umkm_id'          => $umkm->id,
                     'nama_produk'      => $validated['nama_produk'],
-                    'deskripsi_produk' => $validated['deskripsi_produk'],
+                    'deskripsi_produk' => $validated['deskripsi_produk'] ?? $validated['nama_produk'],
                     'harga'            => $validated['harga_produk'] ?? 0,
                     'kategori_satuan'  => $validated['kategori_satuan'],
                     'foto_produk'      => !empty($fotoProdukPaths) ? $fotoProdukPaths : null,
                     'created_by'       => auth()->id(),
                 ]);
+            }
+
+            if ($request->filled('modals')) {
+                foreach ($request->input('modals') as $index => $modalData) {
+                    // Skip if name is empty
+                    if (empty($modalData['nama_item'])) continue;
+
+                    $fotoModalPaths = [];
+                    if ($request->hasFile("modals.{$index}.foto")) {
+                        $file = $request->file("modals.{$index}.foto");
+                        $filename = time() . '_modal_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                        $path = $file->storeAs('modal_umkm/' . $umkm->kode_umkm, $filename, 'public');
+                        $fotoModalPaths[] = $path;
+                    }
+
+                    \App\Models\ModalUmkm::create([
+                        'uuid'              => (string) \Illuminate\Support\Str::uuid(),
+                        'umkm_id'           => $umkm->id,
+                        'nama_item'         => $modalData['nama_item'],
+                        'kategori_modal'    => $modalData['kategori'] ?? 'lainnya',
+                        'nilai_modal'       => $modalData['nilai'] ?? 0,
+                        'kondisi'           => $modalData['kondisi'] ?? 'baik',
+                        'tanggal_perolehan' => $modalData['tanggal'] ?? null,
+                        'keterangan'        => $modalData['keterangan'] ?? null,
+                        'foto'              => !empty($fotoModalPaths) ? $fotoModalPaths : null,
+                        'status'            => 'aktif',
+                        'created_by'        => auth()->id(),
+                    ]);
+                }
             }
 
             if ($request->boolean('create_account')) {
@@ -260,39 +300,10 @@ class UmkmController extends Controller
         }
     }
 
-    public function show(Umkm $umkm)
-    {
-        $userUnit   = Unit::where('user_id', auth()->id())->first();
-        $userUnitId = $userUnit ? $userUnit->id : null;
-
-        if (auth()->user()->role !== 'admin' && $umkm->unit_id !== $userUnitId) {
-            abort(403, 'Anda tidak memiliki akses ke data ini.');
-        }
-
-        $umkm->load(['unit', 'user', 'creator', 'verifiedBy', 'kategori', 'province', 'city', 'district', 'village', 'modalUmkm']);
-
-        $userRole = auth()->user()->role;
-
-        $permissions = [
-            'canEdit'         => in_array($userRole, ['admin', 'unit']),
-            'canDelete'       => in_array($userRole, ['admin', 'unit']),
-            'canVerify'       => in_array($userRole, ['admin', 'unit']),
-            'canCreateAccount'=> in_array($userRole, ['admin', 'unit']) && !$umkm->user_id,
-            'canChangeStatus' => $userRole === 'admin',
-            'userRole'        => $userRole,
-        ];
-
-        $breadcrumbs = [
-            ['name' => 'Kelola UMKM', 'url' => route('umkm.index')],
-            ['name' => $umkm->nama_usaha, 'url' => route('umkm.show', $umkm)],
-        ];
-
-        return view('umkm.show', compact('umkm', 'permissions', 'breadcrumbs'));
-    }
 
     public function edit(Umkm $umkm)
     {
-        if (!in_array(auth()->user()->role, ['admin', 'unit'])) {
+        if (auth()->user()->role !== 'unit') {
             abort(403, 'Anda tidak memiliki akses untuk mengedit UMKM.');
         }
 
@@ -309,7 +320,8 @@ class UmkmController extends Controller
             }
         }
 
-        $umkm->load(['kategori', 'province', 'city', 'district', 'village', 'modalUmkm']);
+        $umkm->load(['kategori', 'province', 'city', 'district', 'village', 'modalUmkm', 'produkUmkm']);
+        $produkUtama = $umkm->produkUmkm->first();
 
         $kategoriList  = Kategori::orderBy('nama')->get();
         $provinceList  = Province::orderBy('name')->get();
@@ -321,13 +333,12 @@ class UmkmController extends Controller
 
         $breadcrumbs = [
             ['name' => 'Kelola UMKM', 'url' => route('umkm.index')],
-            ['name' => $umkm->nama_usaha, 'url' => route('umkm.show', $umkm)],
             ['name' => 'Ubah UMKM', 'url' => route('umkm.edit', $umkm)],
         ];
 
         return view('umkm.edit', compact(
             'umkm', 'kategoriList', 'provinceList', 'cityList',
-            'districtList', 'villageList', 'kategoriModal', 'kondisiModal', 'breadcrumbs'
+            'districtList', 'villageList', 'kategoriModal', 'kondisiModal', 'breadcrumbs', 'produkUtama'
         ));
     }
 
@@ -366,6 +377,14 @@ class UmkmController extends Controller
             'tiktok'            => 'nullable|string|max:255',
             'logo_umkm'         => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'remove_logo_umkm'  => 'nullable|boolean',
+            'nama_produk'       => 'nullable|string|max:255',
+            'harga_produk'      => 'nullable|numeric|min:0',
+            'deskripsi_produk'  => 'nullable|string',
+            'kategori_satuan'   => 'nullable|in:pcs,bungkus,gram,kg,liter,ml,box,pack,porsi',
+            'foto_produk'       => 'nullable|array|max:5',
+            'foto_produk.*'     => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+            'foto_produk_existing' => 'nullable|array',
+            'foto_produk_existing.*' => 'string',
         ]);
 
         if ($request->boolean('remove_logo_umkm')) {
@@ -385,6 +404,50 @@ class UmkmController extends Controller
 
         $validated['updated_by'] = auth()->id();
         $umkm->update($validated);
+
+        if ($request->filled('nama_produk')) {
+            $produkUtama = $umkm->produkUmkm()->first();
+
+            // Handle Photos
+            $finalFotos = $request->input('foto_produk_existing', []);
+
+            // Delete removed photos from storage
+            if ($produkUtama) {
+                $oldFotos = $produkUtama->foto_produk ?? [];
+                foreach ($oldFotos as $old) {
+                    if (!in_array($old, $finalFotos)) {
+                        Storage::disk('public')->delete($old);
+                    }
+                }
+            }
+
+            // Upload new photos
+            if ($request->hasFile('foto_produk')) {
+                foreach ($request->file('foto_produk') as $file) {
+                    $filename = time() . '_produk_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('produk/' . $umkm->kode_umkm, $filename, 'public');
+                    $finalFotos[] = $path;
+                }
+            }
+
+            $productData = [
+                'nama_produk'      => $request->nama_produk,
+                'deskripsi_produk' => $request->deskripsi_produk ?? $request->nama_produk,
+                'harga'            => $request->harga_produk ?? 0,
+                'kategori_satuan'  => $request->kategori_satuan,
+                'foto_produk'      => !empty($finalFotos) ? array_values($finalFotos) : null,
+                'updated_by'       => auth()->id(),
+            ];
+
+            if ($produkUtama) {
+                $produkUtama->update($productData);
+            } else {
+                $productData['uuid'] = (string) Str::uuid();
+                $productData['umkm_id'] = $umkm->id;
+                $productData['created_by'] = auth()->id();
+                \App\Models\ProdukUmkm::create($productData);
+            }
+        }
 
         return redirect()->route('umkm.index')->with('success', 'Data UMKM berhasil diperbarui.');
     }
@@ -430,8 +493,8 @@ class UmkmController extends Controller
 
     public function storeModal(Request $request, Umkm $umkm)
     {
-        if (!in_array(auth()->user()->role, ['admin', 'unit'])) {
-            abort(403);
+        if (auth()->user()->role !== 'unit') {
+            abort(403, 'Anda tidak memiliki akses untuk mengelola modal UMKM.');
         }
 
         $validated = $request->validate([
@@ -469,8 +532,8 @@ class UmkmController extends Controller
 
     public function updateModal(Request $request, Umkm $umkm, ModalUmkm $modal)
     {
-        if (!in_array(auth()->user()->role, ['admin', 'unit'])) {
-            abort(403);
+        if (auth()->user()->role !== 'unit') {
+            abort(403, 'Anda tidak memiliki akses untuk mengelola modal UMKM.');
         }
 
         $validated = $request->validate([
@@ -518,8 +581,8 @@ class UmkmController extends Controller
 
     public function destroyModal(Umkm $umkm, ModalUmkm $modal)
     {
-        if (!in_array(auth()->user()->role, ['admin', 'unit'])) {
-            abort(403);
+        if (auth()->user()->role !== 'unit') {
+            abort(403, 'Anda tidak memiliki akses untuk mengelola modal UMKM.');
         }
 
         if (!empty($modal->foto)) {

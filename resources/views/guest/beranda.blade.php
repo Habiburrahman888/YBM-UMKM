@@ -72,16 +72,7 @@
         <div id="marquee-outer" style="overflow:hidden;width:100%;position:relative;">
             <div id="marquee-track" style="display:flex;align-items:center;will-change:transform;white-space:nowrap;">
                 @php
-                    $items = [
-                        'Fashion',
-                        'Kuliner',
-                        'Kerajinan',
-                        'Pertanian',
-                        'Kecantikan',
-                        'Furniture',
-                        'Elektronik',
-                        'Minuman',
-                    ];
+                    $items = $kategori->pluck('nama')->toArray();
                 @endphp
                 {{-- Satu set, JS akan clone otomatis --}}
                 @foreach ($items as $item)

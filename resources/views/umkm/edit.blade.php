@@ -21,6 +21,28 @@
                 @csrf
                 @method('PUT')
 
+                @if ($errors->any())
+                    <div class="px-6 pb-2">
+                        <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded-lg">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-red-800">Terdapat kesalahan pada input Anda:</h3>
+                                    <ul class="mt-2 list-disc list-inside text-xs text-red-700 space-y-1">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <div class="space-y-6">
 
                     {{-- ══ SEKSI 1: DATA USAHA ══ --}}
@@ -103,10 +125,10 @@
                                 <select name="kategori_id" id="kategori_id"
                                     class="block w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('kategori_id') border-red-500 ring-1 ring-red-500 @enderror">
                                     <option value="">— Pilih Kategori —</option>
-                                    @foreach ($kategoriList as $kat)
-                                        <option value="{{ $kat->id }}"
-                                            {{ old('kategori_id', $umkm->kategori_id) == $kat->id ? 'selected' : '' }}>
-                                            {{ $kat->nama }}
+                                    @foreach ($kategoriList as $kategori)
+                                        <option value="{{ $kategori->id }}"
+                                            {{ old('kategori_id', $umkm->kategori_id) == $kategori->id ? 'selected' : '' }}>
+                                            {{ $kategori->nama }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -223,10 +245,10 @@
                                 <select name="province_code" id="province_code"
                                     class="block w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('province_code') border-red-500 ring-1 ring-red-500 @enderror">
                                     <option value="">— Pilih Provinsi —</option>
-                                    @foreach ($provinceList as $prov)
-                                        <option value="{{ $prov->code }}"
-                                            {{ old('province_code', $umkm->province_code) === $prov->code ? 'selected' : '' }}>
-                                            {{ $prov->name }}
+                                    @foreach ($provinceList as $province)
+                                        <option value="{{ $province->code }}"
+                                            {{ old('province_code', $umkm->province_code) === $province->code ? 'selected' : '' }}>
+                                            {{ $province->name }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -482,12 +504,156 @@
                         </div>
                     </div>
 
-                    {{-- ══ SEKSI 5: MODAL USAHA (hanya tampilan daftar, TANPA form di sini) ══ --}}
+                    {{-- ══ SEKSI 5: DATA PRODUK ══ --}}
                     <div>
                         <h3
                             class="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-100 flex items-center gap-2">
                             <span
                                 class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-xs font-bold">5</span>
+                            Produk Utama
+                            <span class="text-xs font-normal text-gray-400">(opsional)</span>
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+
+                            {{-- Nama Produk --}}
+                            <div class="sm:col-span-2">
+                                <label for="nama_produk" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Nama Produk
+                                </label>
+                                <input type="text" name="nama_produk" id="nama_produk"
+                                    value="{{ old('nama_produk', $produkUtama?->nama_produk) }}"
+                                    placeholder="Masukkan nama produk utama"
+                                    class="block w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('nama_produk') border-red-500 ring-1 ring-red-500 @enderror">
+                                @error('nama_produk')
+                                    <p class="mt-1.5 text-xs text-red-500 flex items-center">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
+
+                            {{-- Harga Produk --}}
+                            <div>
+                                <label for="harga_produk" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Harga
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 text-sm">Rp</span>
+                                    </div>
+                                    <input type="text" name="harga_produk" id="harga_produk"
+                                        value="{{ old('harga_produk', $produkUtama?->harga ? (int)$produkUtama->harga : null) }}" placeholder="0"
+                                        class="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all rupiah-input @error('harga_produk') border-red-500 ring-1 ring-red-500 @enderror">
+                                </div>
+                                @error('harga_produk')
+                                    <p class="mt-1.5 text-xs text-red-500 flex items-center">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
+
+                            {{-- Satuan Produk --}}
+                            <div>
+                                <label for="kategori_satuan" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Satuan <span class="text-xs font-normal text-gray-400">(opsional)</span>
+                                </label>
+                                <select name="kategori_satuan" id="kategori_satuan"
+                                    class="block w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('kategori_satuan') border-red-500 ring-1 ring-red-500 @enderror">
+                                    <option value="">— Pilih Satuan —</option>
+                                    @foreach (['pcs', 'bungkus', 'gram', 'kg', 'liter', 'ml', 'box', 'porsi', 'pack'] as $satuan)
+                                        <option value="{{ $satuan }}"
+                                            {{ old('kategori_satuan', $produkUtama?->kategori_satuan) == $satuan ? 'selected' : '' }}>
+                                            {{ ucfirst($satuan) }}</option>
+                                    @endforeach
+                                </select>
+                                @error('kategori_satuan')
+                                    <p class="mt-1.5 text-xs text-red-500 flex items-center">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
+
+                            {{-- Deskripsi Produk --}}
+                            <div class="sm:col-span-2">
+                                <label for="deskripsi_produk" class="block text-sm font-medium text-gray-700 mb-1.5">
+                                    Deskripsi Produk
+                                </label>
+                                <textarea name="deskripsi_produk" id="deskripsi_produk" rows="3" placeholder="Jelaskan detail produk Anda..."
+                                    class="block w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all resize-none @error('deskripsi_produk') border-red-500 ring-1 ring-red-500 @enderror">{{ old('deskripsi_produk', $produkUtama?->deskripsi_produk) }}</textarea>
+                                @error('deskripsi_produk')
+                                    <p class="mt-1.5 text-xs text-red-500 flex items-center">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
+
+                            <div class="sm:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Foto Produk Utama <span class="text-xs text-gray-400 font-normal">(Maks. 5 foto)</span>
+                                </label>
+
+                                <!-- Preview Container -->
+                                <div id="produk-preview-container"
+                                    class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-4">
+                                    @if ($produkUtama && $produkUtama->foto_produk)
+                                        @foreach ($produkUtama->foto_produk as $index => $foto)
+                                            <div class="relative group aspect-square rounded-xl overflow-hidden border border-gray-200 shadow-sm animate-fade-in"
+                                                id="produk-foto-{{ $index }}">
+                                                <img src="{{ Storage::url($foto) }}" class="w-full h-full object-cover">
+                                                <input type="hidden" name="foto_produk_existing[]"
+                                                    value="{{ $foto }}">
+                                                <button type="button"
+                                                    onclick="removeProdukFotoExisting('produk-foto-{{ $index }}')"
+                                                    class="absolute top-1 right-1 w-6 h-6 bg-red-500/90 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        @endforeach
+                                    @endif
+                                </div>
+
+                                <!-- Upload Area -->
+                                <div id="produk-drop-zone"
+                                    class="relative border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary transition-colors cursor-pointer @error('foto_produk') border-red-500 @enderror @error('foto_produk.*') border-red-500 @enderror">
+                                    <input type="file" name="foto_produk[]" id="foto_produk"
+                                        accept="image/jpeg,image/jpg,image/png,image/webp" multiple
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+
+                                    <div class="space-y-2">
+                                        <div class="flex justify-center">
+                                            <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <div class="text-sm text-gray-600">
+                                            <span class="text-primary font-medium">Klik untuk upload</span> atau drag &
+                                            drop
+                                        </div>
+                                        <p class="text-xs text-gray-400">PNG, JPG, JPEG, WEBP (Maks. 2MB per foto)</p>
+                                    </div>
+                                </div>
+
+                                @error('foto_produk')
+                                    <p class="mt-1.5 text-xs text-red-500 flex items-center">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
+
+                        </div>
+                    </div>
+
+                    {{-- ══ SEKSI 6: MODAL USAHA (hanya tampilan daftar, TANPA form di sini) ══ --}}
+                    <div>
+                        <h3
+                            class="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-100 flex items-center gap-2">
+                            <span
+                                class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-xs font-bold">6</span>
                             Modal Usaha
                             @if ($umkm->modalUmkm->isNotEmpty())
                                 <span class="text-xs font-normal text-gray-500">
@@ -602,10 +768,10 @@
                                                     <select data-modal-field="{{ $modal->id }}"
                                                         data-field="kategori_modal"
                                                         class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
-                                                        @foreach ($kategoriModal as $kat)
-                                                            <option value="{{ $kat }}"
-                                                                {{ $modal->kategori_modal === $kat ? 'selected' : '' }}>
-                                                                {{ ucfirst($kat) }}
+                                                        @foreach ($kategoriModal as $kategori)
+                                                            <option value="{{ $kategori }}"
+                                                                {{ $modal->kategori_modal === $kategori ? 'selected' : '' }}>
+                                                                {{ ucfirst($kategori) }}
                                                             </option>
                                                         @endforeach
                                                     </select>
@@ -615,10 +781,9 @@
                                                     <label class="block text-xs font-medium text-gray-600 mb-1">Nilai Modal
                                                         (Rp)
                                                         <span class="text-red-500">*</span></label>
-                                                    <input type="number" data-modal-field="{{ $modal->id }}"
-                                                        data-field="nilai_modal" value="{{ $modal->nilai_modal }}"
-                                                        min="0"
-                                                        class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                                                    <input type="text" data-modal-field="{{ $modal->id }}"
+                                                        data-field="nilai_modal" value="{{ (int)$modal->nilai_modal }}"
+                                                        class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary rupiah-input">
                                                 </div>
 
                                                 <div>
@@ -626,10 +791,10 @@
                                                         <span class="text-red-500">*</span></label>
                                                     <select data-modal-field="{{ $modal->id }}" data-field="kondisi"
                                                         class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
-                                                        @foreach ($kondisiModal as $kond)
-                                                            <option value="{{ $kond }}"
-                                                                {{ $modal->kondisi === $kond ? 'selected' : '' }}>
-                                                                {{ ucfirst($kond) }}
+                                                        @foreach ($kondisiModal as $kondisi)
+                                                            <option value="{{ $kondisi }}"
+                                                                {{ $modal->kondisi === $kondisi ? 'selected' : '' }}>
+                                                                {{ ucfirst($kondisi) }}
                                                             </option>
                                                         @endforeach
                                                     </select>
@@ -661,16 +826,16 @@
                                                         </label>
                                                         <div class="flex gap-2 flex-wrap"
                                                             id="foto-existing-wrapper-{{ $modal->id }}">
-                                                            @foreach ($modal->foto as $idx => $fotoPath)
+                                                            @foreach ($modal->foto as $index => $fotoPath)
                                                                 <div class="relative group"
-                                                                    id="foto-item-{{ $modal->id }}-{{ $idx }}">
+                                                                    id="foto-item-{{ $modal->id }}-{{ $index }}">
                                                                     <img src="{{ asset('storage/' . $fotoPath) }}"
                                                                         class="w-16 h-16 rounded-lg object-cover border border-gray-200">
                                                                     <input type="hidden"
                                                                         class="foto-keep-{{ $modal->id }}"
                                                                         value="{{ $fotoPath }}">
                                                                     <button type="button"
-                                                                        onclick="removeFotoExisting('foto-item-{{ $modal->id }}-{{ $idx }}')"
+                                                                        onclick="removeFotoExisting('foto-item-{{ $modal->id }}-{{ $index }}')"
                                                                         class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                                                         ✕
                                                                     </button>
@@ -740,8 +905,8 @@
                                                 class="text-red-500">*</span></label>
                                         <select id="new-kategori_modal"
                                             class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
-                                            @foreach ($kategoriModal as $kat)
-                                                <option value="{{ $kat }}">{{ ucfirst($kat) }}</option>
+                                            @foreach ($kategoriModal as $kategori)
+                                                <option value="{{ $kategori }}">{{ ucfirst($kategori) }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -749,9 +914,9 @@
                                     <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1">Nilai Modal (Rp) <span
                                                 class="text-red-500">*</span></label>
-                                        <input type="number" id="new-nilai_modal" min="0"
-                                            placeholder="Contoh: 5000000"
-                                            class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                                        <input type="text" id="new-nilai_modal"
+                                            placeholder="Contoh: 5.000.000"
+                                            class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary rupiah-input">
                                     </div>
 
                                     <div>
@@ -759,8 +924,8 @@
                                                 class="text-red-500">*</span></label>
                                         <select id="new-kondisi"
                                             class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
-                                            @foreach ($kondisiModal as $kond)
-                                                <option value="{{ $kond }}">{{ ucfirst($kond) }}</option>
+                                            @foreach ($kondisiModal as $kondisi)
+                                                <option value="{{ $kondisi }}">{{ ucfirst($kondisi) }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -803,12 +968,12 @@
                         </div>
                     </div>
 
-                    {{-- ══ SEKSI 6: INFO STATUS (readonly) ══ --}}
+                    {{-- ══ SEKSI 7: INFO STATUS (readonly) ══ --}}
                     <div>
                         <h3
                             class="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-100 flex items-center gap-2">
                             <span
-                                class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-xs font-bold">6</span>
+                                class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-xs font-bold">7</span>
                             Informasi Status
                         </h3>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1019,6 +1184,130 @@
             document.getElementById('telepon').addEventListener('input', function() {
                 this.value = this.value.replace(/[^\d+\-\s]/g, '');
             });
+
+            // ─── Format Rupiah ──────────────────────────────────────────────────────
+            function formatRupiah(angka, prefix) {
+                let number_string = angka.replace(/[^,\d]/g, '').toString(),
+                    split = number_string.split(','),
+                    sisa = split[0].length % 3,
+                    rupiah = split[0].substr(0, sisa),
+                    ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+                if (ribuan) {
+                    let separator = sisa ? '.' : '';
+                    rupiah += separator + ribuan.join('.');
+                }
+
+                rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+                return prefix == undefined ? rupiah : (rupiah ? rupiah : '');
+            }
+
+            document.addEventListener('input', function(e) {
+                if (e.target.classList.contains('rupiah-input')) {
+                    e.target.value = formatRupiah(e.target.value);
+                }
+            });
+
+            document.querySelectorAll('.rupiah-input').forEach(input => {
+                if (input.value) input.value = formatRupiah(input.value);
+            });
+
+            // Cleanup for main form
+            const mainForm = document.getElementById('form-umkm-utama');
+            if (mainForm) {
+                mainForm.addEventListener('submit', function() {
+                    document.querySelectorAll('.rupiah-input').forEach(input => {
+                        input.value = input.value.replace(/\./g, '');
+                    });
+                });
+            }
+
+            // ─── Foto Produk Utama (Multiple & Drag Drop) ──────────────────────────────
+            const produkInput = document.getElementById('foto_produk');
+            const produkDropZone = document.getElementById('produk-drop-zone');
+            const produkPreviewContainer = document.getElementById('produk-preview-container');
+            const MAX_PRODUK_FOTO = 5;
+            let productFiles = [];
+
+            // Hitung foto existing
+            function getExistingCount() {
+                return produkPreviewContainer.querySelectorAll('[id^="produk-foto-"]').length;
+            }
+
+            function updateProductFiles(newFiles) {
+                const allowed = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+                const currentTotal = getExistingCount() + productFiles.length;
+
+                newFiles.forEach(file => {
+                    if (!allowed.includes(file.type)) return;
+                    if (file.size > 2 * 1024 * 1024) return;
+                    if (currentTotal >= MAX_PRODUK_FOTO) return;
+                    productFiles.push(file);
+                });
+
+                renderProductPreviews();
+                syncProductInput();
+            }
+
+            function renderProductPreviews() {
+                // Clear only the ones added manually
+                produkPreviewContainer.querySelectorAll('.new-produk-preview').forEach(el => el.remove());
+
+                productFiles.forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const div = document.createElement('div');
+                        div.className = 'relative group aspect-square rounded-xl overflow-hidden border border-gray-200 shadow-sm animate-fade-in new-produk-preview';
+                        div.innerHTML = `
+                            <img src="${e.target.result}" class="w-full h-full object-cover">
+                            <button type="button" onclick="removeProductFile(${index})" 
+                                class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-all shadow-sm">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        `;
+                        produkPreviewContainer.appendChild(div);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            function syncProductInput() {
+                const dt = new DataTransfer();
+                productFiles.forEach(file => dt.items.add(file));
+                produkInput.files = dt.files;
+            }
+
+            window.removeProductFile = function(index) {
+                productFiles.splice(index, 1);
+                renderProductPreviews();
+                syncProductInput();
+            };
+
+            window.removeProdukFotoExisting = function(id) {
+                document.getElementById(id)?.remove();
+                // After removing existing, we can potentially add more
+            };
+
+            produkInput.addEventListener('change', function() {
+                updateProductFiles(Array.from(this.files));
+            });
+
+            produkDropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                produkDropZone.classList.add('border-primary', 'bg-primary/5');
+            });
+
+            produkDropZone.addEventListener('dragleave', () => {
+                produkDropZone.classList.remove('border-primary', 'bg-primary/5');
+            });
+
+            produkDropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                produkDropZone.classList.remove('border-primary', 'bg-primary/5');
+                updateProductFiles(Array.from(e.dataTransfer.files));
+            });
         });
 
         // ── Toggle panel edit & tambah modal ─────────────────────────────────────
@@ -1046,7 +1335,7 @@
             fd.append('_token', '{{ csrf_token() }}');
             fd.append('nama_item', namaItem);
             fd.append('kategori_modal', document.getElementById('new-kategori_modal').value);
-            fd.append('nilai_modal', document.getElementById('new-nilai_modal').value);
+            fd.append('nilai_modal', document.getElementById('new-nilai_modal').value.replace(/\./g, ''));
             fd.append('kondisi', document.getElementById('new-kondisi').value);
             fd.append('tanggal_perolehan', document.getElementById('new-tanggal_perolehan').value);
             fd.append('keterangan', document.getElementById('new-keterangan').value);
@@ -1073,7 +1362,9 @@
                         fd.append('foto[]', el.files[i]);
                     }
                 } else {
-                    fd.append(fieldName, el.value);
+                    let val = el.value;
+                    if (el.classList.contains('rupiah-input')) val = val.replace(/\./g, '');
+                    fd.append(fieldName, val);
                 }
             });
 

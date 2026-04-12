@@ -5,10 +5,10 @@
 
 @section('content')
     <div class="space-y-4 sm:space-y-6">
-        <div class="bg-white rounded-xl sm:rounded-2xl shadow-card border border-gray-100 overflow-hidden animate-slide-up">
+        <div class="bg-white rounded-xl sm:rounded-2xl shadow-card overflow-hidden animate-slide-up">
 
             {{-- Header --}}
-            <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+            <div class="px-4 sm:px-6 py-3 sm:py-4">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                     <div>
                         <h2 class="text-base sm:text-lg font-semibold text-gray-900">Produk Saya</h2>
@@ -248,15 +248,14 @@
 
                 {{-- Pagination --}}
                 @if ($produks->hasPages())
-                    <div class="px-4 sm:px-6 py-3 border-t border-gray-200">
+                    <div class="px-4 sm:px-6 py-3">
                         {{ $produks->links() }}
                     </div>
                 @endif
             @else
                 {{-- Empty State --}}
                 <div class="p-8 sm:p-12 text-center">
-                    <div
-                        class="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gray-100 mb-4">
+                    <div class="inline-flex items-center justify-center mb-4">
                         <svg class="w-7 h-7 sm:w-8 sm:h-8 text-gray-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
