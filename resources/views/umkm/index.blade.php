@@ -879,7 +879,21 @@
             const row = document.getElementById('detail-' + id);
             const icon = document.getElementById('icon-' + id);
             if (!row) return;
+
             const isHidden = row.classList.contains('hidden');
+
+            // Jika sedang ingin membuka, tutup semua detail yang lain dulu
+            if (isHidden) {
+                document.querySelectorAll('[id^="detail-"]').forEach(el => {
+                    if (el.id !== 'detail-' + id) {
+                        el.classList.add('hidden');
+                        const otherId = el.id.replace('detail-', '');
+                        const otherIcon = document.getElementById('icon-' + otherId);
+                        if (otherIcon) otherIcon.style.transform = 'rotate(0deg)';
+                    }
+                });
+            }
+
             row.classList.toggle('hidden', !isHidden);
             if (icon) icon.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
         }
@@ -1027,13 +1041,36 @@
             const chevron = headerRow.querySelector('.unit-chevron');
             const isHidden = rows.length > 0 && rows[0].classList.contains('hidden');
 
+            // Jika sedang ingin membuka unit group, tutup unit group lain dan semua detail UMKM
+            if (isHidden) {
+                // Tutup semua detail UMKM
+                document.querySelectorAll('[id^="detail-"]').forEach(el => {
+                    el.classList.add('hidden');
+                    const umkmId = el.id.replace('detail-', '');
+                    const umkmIcon = document.getElementById('icon-' + umkmId);
+                    if (umkmIcon) umkmIcon.style.transform = 'rotate(0deg)';
+                });
+
+                // Tutup unit group lain (baris UMKM-nya)
+                document.querySelectorAll('tr[class*="unit-group-"]').forEach(row => {
+                    if (!row.classList.contains(className)) {
+                        row.classList.add('hidden');
+                    }
+                });
+
+                // Reset semua chevron unit group lain
+                document.querySelectorAll('.unit-chevron').forEach(c => {
+                    if (c !== chevron) c.style.transform = 'rotate(0deg)';
+                });
+            }
+
             for (let i = 0; i < rows.length; i++) {
                 if (rows[i].id && rows[i].id.startsWith('detail-')) {
                     rows[i].classList.add('hidden');
                     const umkmIcon = document.getElementById('icon-' + rows[i].id.replace('detail-', ''));
                     if (umkmIcon) umkmIcon.style.transform = 'rotate(0deg)';
                 } else {
-                    rows[i].classList.toggle('hidden');
+                    rows[i].classList.toggle('hidden', !isHidden);
                 }
             }
 

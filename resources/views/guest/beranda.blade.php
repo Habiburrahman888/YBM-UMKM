@@ -5,8 +5,6 @@
 @push('styles')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-
-    {{-- Font: DM Serif Display + Plus Jakarta Sans --}}
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
         rel="stylesheet">
@@ -20,7 +18,6 @@
             font-family: 'DM Serif Display', Georgia, serif;
         }
 
-        /* ── Reveal ── */
         .reveal {
             opacity: 0;
             transform: translateY(20px);
@@ -32,19 +29,6 @@
             transform: translateY(0);
         }
 
-        /* ── Steps connector ── */
-        .steps-connector {
-            position: absolute;
-            top: 2.5rem;
-            left: 14%;
-            right: 14%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #3b82f6, transparent);
-            opacity: .2;
-            z-index: 0;
-        }
-
-        /* ── Section label style ── */
         .section-eyebrow {
             display: inline-block;
             font-size: .78rem;
@@ -54,27 +38,81 @@
             color: #3b82f6;
             margin-bottom: .75rem;
         }
+
+        /* ══ CAROUSEL ══ */
+        #carousel-outer {
+            overflow: hidden;
+        }
+
+        #carousel-track {
+            display: flex;
+            gap: 16px;
+            transition: transform .42s cubic-bezier(.4, 0, .2, 1);
+            will-change: transform;
+            align-items: stretch;
+        }
+
+        /* Setiap slot kartu: lebar fixed, tinggi stretch */
+        .carousel-card {
+            flex: 0 0 200px;
+            width: 200px;
+            min-width: 0;
+            display: flex;
+            /* agar produk-card bisa h-full */
+        }
+
+        /* produk-card mengisi penuh slot */
+        .carousel-card>.produk-card {
+            width: 100%;
+        }
+
+        .carousel-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .09);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background .2s, opacity .2s;
+        }
+
+        .carousel-nav-btn:hover {
+            background: #f3f4f6;
+        }
+
+        .carousel-nav-btn.disabled {
+            opacity: .25;
+            pointer-events: none;
+        }
+
+        #carousel-prev {
+            left: -18px;
+        }
+
+        #carousel-next {
+            right: -18px;
+        }
     </style>
 @endpush
 
 @section('content')
 
-    {{-- ══════════════════════════════════
-     HERO
-══════════════════════════════════ --}}
     @include('partials.guest.hero')
 
-    {{-- ══════════════════════════════════
-     MARQUEE — kategori scroll (JS-driven, zero flicker)
-══════════════════════════════════ --}}
+    {{-- MARQUEE --}}
     <div class="bg-white border-b border-neutral-100 py-5 select-none overflow-hidden"
         style="position:relative;z-index:20;isolation:isolate;transform:translate3d(0,0,0);will-change:transform;">
         <div id="marquee-outer" style="overflow:hidden;width:100%;position:relative;">
             <div id="marquee-track" style="display:flex;align-items:center;will-change:transform;white-space:nowrap;">
-                @php
-                    $items = $kategori->pluck('nama')->toArray();
-                @endphp
-                {{-- Satu set, JS akan clone otomatis --}}
+                @php $items = $kategori->pluck('nama')->toArray(); @endphp
                 @foreach ($items as $item)
                     <div style="display:inline-flex;align-items:center;flex-shrink:0;">
                         <span class="marquee-label">{{ $item }}</span>
@@ -84,7 +122,6 @@
             </div>
         </div>
     </div>
-
     <style>
         .marquee-label {
             padding: 0 2.8rem;
@@ -110,40 +147,28 @@
             flex-shrink: 0;
         }
     </style>
-
     <script>
         (function() {
             const track = document.getElementById('marquee-track');
             if (!track) return;
-
-            // Clone isi track 2x agar seamless
             const original = track.innerHTML;
             track.innerHTML = original + original + original;
-
-            const speed = 0.6; // px per frame — naik = lebih cepat
+            const speed = 0.6;
             let x = 0;
             const oneThird = track.scrollWidth / 3;
-            let paused = false;
 
             function tick() {
-                if (!paused) {
-                    x -= speed;
-                    // Reset seamless: begitu geser 1 set penuh, kembali ke 0
-                    if (Math.abs(x) >= oneThird) x = 0;
-                    track.style.transform = `translate3d(${x}px, 0, 0)`;
-                }
+                x -= speed;
+                if (Math.abs(x) >= oneThird) x = 0;
+                track.style.transform = `translate3d(${x}px,0,0)`;
                 requestAnimationFrame(tick);
             }
             requestAnimationFrame(tick);
         })();
     </script>
 
-    {{-- ══════════════════════════════════
-     STATS STRIP
-══════════════════════════════════ --}}
+    {{-- STATS --}}
     <div class="stats-wave-wrap" id="stats-section">
-
-        {{-- Snow particles canvas --}}
         <canvas id="stats-snow"
             style="position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;"></canvas>
         <div class="wave-container">
@@ -153,12 +178,8 @@
                     fill="white" />
             </svg>
         </div>
-
-        {{-- Content --}}
         <div class="stats-inner">
-            <h3 class="stats-heading">
-                {{ $setting->nama_expo ?? 'YBM PLN UMKM' }} <em>dalam Angka</em>
-            </h3>
+            <h3 class="stats-heading">{{ $setting->nama_expo ?? 'YBM PLN UMKM' }} <em>dalam Angka</em></h3>
             <div class="stats-grid">
                 @foreach ([['num' => $totalUmkm, 'sup' => '+', 'label' => 'UMKM Terdaftar', 'desc' => 'UMKM binaan aktif bersama YBM PLN'], ['num' => $totalProduk, 'sup' => '+', 'label' => 'Produk Dijual', 'desc' => 'Produk unggulan dari seluruh Indonesia'], ['num' => $totalKategori, 'sup' => '+', 'label' => 'Kategori Produk', 'desc' => 'Kategori produk pilihan berkualitas'], ['num' => 34, 'sup' => '', 'label' => 'Provinsi Indonesia', 'desc' => 'Jangkauan UMKM di seluruh nusantara']] as $i => $stat)
                     <div class="stats-col">
@@ -176,8 +197,6 @@
                 @endforeach
             </div>
         </div>
-
-        {{-- Animated wave bottom --}}
         <div class="wave-container wave-bottom-wrap">
             <svg class="wave wave3" viewBox="0 0 1440 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -186,16 +205,13 @@
             </svg>
         </div>
     </div>
-
     <style>
-        /* ── Background: medium blue ── */
         .stats-wave-wrap {
             position: relative;
             background: linear-gradient(160deg, #1e3a8a 0%, #1e40af 50%, #1d4ed8 100%);
             overflow: hidden;
         }
 
-        /* Dot particle overlay seperti hero */
         .stats-wave-wrap::before {
             content: '';
             position: absolute;
@@ -206,7 +222,6 @@
             z-index: 1;
         }
 
-        /* ── Wave animations ── */
         .wave-container {
             position: relative;
             line-height: 0;
@@ -240,30 +255,21 @@
             z-index: 3;
         }
 
-        .wave2 {
-            display: none;
-        }
-
         .wave3 {
             animation: waveSweep 14s linear infinite reverse;
             z-index: 3;
         }
 
-        .wave4 {
-            display: none;
-        }
-
         @keyframes waveSweep {
             0% {
-                transform: translateX(0);
+                transform: translateX(0)
             }
 
             100% {
-                transform: translateX(-50%);
+                transform: translateX(-50%)
             }
         }
 
-        /* ── Content ── */
         .stats-inner {
             position: relative;
             z-index: 10;
@@ -273,7 +279,7 @@
             text-align: center;
         }
 
-        @media (min-width: 640px) {
+        @media(min-width:640px) {
             .stats-inner {
                 padding: 1.5rem 1.5rem 2.5rem;
             }
@@ -298,7 +304,7 @@
             position: relative;
         }
 
-        @media (max-width: 768px) {
+        @media(max-width:768px) {
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 2rem 0;
@@ -374,7 +380,6 @@
             transition: opacity .7s ease .35s;
         }
     </style>
-
     <script>
         (function() {
             const section = document.getElementById('stats-section');
@@ -383,12 +388,10 @@
             function easeOutQuart(t) {
                 return 1 - Math.pow(1 - t, 4);
             }
-
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (!entry.isIntersecting) return;
                     observer.unobserve(entry.target);
-
                     entry.target.querySelectorAll('.stats-num').forEach((el, i) => {
                         const target = parseInt(el.dataset.target) || 0;
                         setTimeout(() => {
@@ -398,7 +401,6 @@
                                 .style.opacity = '1';
                             el.closest('.stats-col-inner').querySelector('.stats-desc')
                                 .style.opacity = '1';
-
                             const countEl = el.querySelector('.count-val');
                             const start = performance.now();
                             (function tick(now) {
@@ -415,11 +417,8 @@
             }, {
                 threshold: 0.3
             });
-
             observer.observe(section);
         })();
-
-        /* Snow particles */
         (function() {
             const canvas = document.getElementById('stats-snow');
             if (!canvas) return;
@@ -431,7 +430,6 @@
             }
             resize();
             window.addEventListener('resize', resize);
-
             const flakes = Array.from({
                 length: 80
             }, () => ({
@@ -440,7 +438,7 @@
                 r: Math.random() * 2.5 + .5,
                 speed: Math.random() * .5 + .15,
                 drift: (Math.random() - .5) * .25,
-                alpha: Math.random() * .45 + .1,
+                alpha: Math.random() * .45 + .1
             }));
 
             function draw() {
@@ -465,96 +463,98 @@
         })();
     </script>
 
-
-    {{-- ══════════════════════════════════ PRODUK TERBARU ══════════════════════════════════ --}}
+    {{-- ══ PRODUK ══ --}}
     @php
         $currentKategori = $kategori->firstWhere('id', request('kategori'));
         $activeCatName = $currentKategori ? $currentKategori->nama : 'all';
     @endphp
-    <section id="produk" class="bg-white pb-28 scroll-mt-24" x-data="{
-        activeCat: '{{ addslashes($activeCatName) }}',
-        categoryCounts: {
-            'all': {{ count($produk) }},
-            @foreach ($kategori as $kat)
-                '{{ addslashes($kat->nama) }}': {{ collect($produk)->filter(fn($p) => ($p->umkm->kategori->nama ?? '') === $kat->nama)->count() }}, @endforeach
-        }
-    }">
+
+    <section id="produk" class="bg-white pb-28 scroll-mt-24">
         <div class="max-w-7xl mx-auto px-4 sm:px-6">
 
             {{-- Section Head --}}
             <div class="flex items-center justify-between flex-wrap gap-5 pt-20 mb-6 reveal relative z-[60]">
                 <div>
                     <h2 class="font-display font-light text-neutral-900 leading-tight"
-                        style="font-size: clamp(1.75rem, 2.8vw, 2.25rem);">
+                        style="font-size:clamp(1.75rem,2.8vw,2.25rem);">
                         Produk <em class="italic" style="color:#1e40af;">Pilihan UMKM</em>
                     </h2>
-                    <p class="text-neutral-400 text-base mt-1 font-normal">
-                        Belanja produk autentik berkualitas dari pengusaha lokal terpilih
-                    </p>
+                    <p class="text-neutral-400 text-base mt-1 font-normal">Belanja produk autentik berkualitas dari
+                        pengusaha lokal terpilih</p>
                 </div>
-
-                <div class="flex items-center gap-2 flex-wrap">
-                    <div class="flex items-center gap-3">
-                        @include('guest.partials.location-selector', ['route' => 'guest.beranda'])
-
-                        <a href="{{ route('guest.katalog') }}"
-                            class="h-10 px-5 inline-flex items-center bg-neutral-900 border border-neutral-900 text-white text-sm font-bold rounded-full hover:bg-neutral-800 transition-all whitespace-nowrap shadow-sm hover:shadow-md">
-                            Semua Produk
-                        </a>
-                    </div>
+                <div class="flex items-center gap-3">
+                    @include('guest.partials.location-selector', ['route' => 'guest.beranda'])
+                    <a href="{{ route('guest.katalog') }}"
+                        class="h-10 px-5 inline-flex items-center bg-neutral-900 text-white text-sm font-bold rounded-full hover:bg-neutral-800 transition-all whitespace-nowrap shadow-sm">
+                        Semua Produk
+                    </a>
                 </div>
             </div>
 
-            {{-- Filter Pills — kategori --}}
+            {{-- Filter Pills --}}
             <div class="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-3 mb-6">
                 <a href="{{ route('guest.beranda', array_merge(request()->query(), ['kategori' => '', 'section' => 'produk'])) }}#produk"
-                    class="shrink-0 h-9 px-4 inline-flex items-center rounded-full border text-sm font-semibold whitespace-nowrap transition-all {{ $activeCatName === 'all' ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400 hover:text-neutral-700' }}">
+                    class="shrink-0 h-9 px-4 inline-flex items-center rounded-full border text-sm font-semibold whitespace-nowrap transition-all
+                           {{ $activeCatName === 'all' ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400' }}">
                     Semua
                 </a>
                 @foreach ($kategori as $kat)
                     <a href="{{ route('guest.beranda', array_merge(request()->query(), ['kategori' => $kat->id, 'section' => 'produk'])) }}#produk"
-                        class="shrink-0 h-9 px-4 inline-flex items-center rounded-full border text-sm font-semibold whitespace-nowrap transition-all {{ $activeCatName === $kat->nama ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400 hover:text-neutral-700' }}">
+                        class="shrink-0 h-9 px-4 inline-flex items-center rounded-full border text-sm font-semibold whitespace-nowrap transition-all
+                               {{ $activeCatName === $kat->nama ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400' }}">
                         {{ $kat->nama }}
                     </a>
                 @endforeach
             </div>
 
-            {{-- Produk Grid --}}
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 reveal">
-                @forelse($produk as $p)
-                    @include('guest.partials.product-card', [
-                        'produk' => $p,
-                        'xShowExtra' =>
-                            "activeCat === 'all' || activeCat === '" .
-                            addslashes($p->umkm->kategori->nama ?? '') .
-                            "'",
-                    ])
-                @empty
-                    <div class="col-span-full flex flex-col items-center justify-center py-24 text-center">
-                        <p class="font-display font-light text-2xl text-neutral-300 mb-2">Belum ada produk</p>
-                        <p class="text-base text-neutral-400">Kami sedang mengkurasi produk terbaik untuk Anda.</p>
-                    </div>
-                @endforelse
+            {{-- Carousel --}}
+            <div class="relative reveal" style="padding:0 22px;">
 
-                @if (count($produk) > 0)
-                    <div class="col-span-full flex flex-col items-center justify-center py-16 text-center"
-                        x-show="categoryCounts[activeCat] === 0" style="display: none;">
-                        <p class="font-display font-light text-2xl text-neutral-600 mb-1">Produk Kosong</p>
-                        <p class="text-sm text-neutral-400">Belum ada komoditas untuk kategori ini.</p>
+                <button id="carousel-prev" class="carousel-nav-btn" aria-label="Sebelumnya">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                </button>
+
+                <div id="carousel-outer">
+                    <div id="carousel-track">
+                        @forelse($produk as $p)
+                            <div class="carousel-card" data-cat="{{ $p->umkm->kategori->nama ?? '' }}">
+                                @include('guest.partials.product-card', ['produk' => $p])
+                            </div>
+                        @empty
+                            <div class="w-full py-24 text-center">
+                                <p class="font-display font-light text-2xl text-neutral-300 mb-2">Belum ada produk</p>
+                                <p class="text-base text-neutral-400">Kami sedang mengkurasi produk terbaik untuk Anda.</p>
+                            </div>
+                        @endforelse
                     </div>
-                @endif
+                </div>
+
+                <button id="carousel-next" class="carousel-nav-btn" aria-label="Berikutnya">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 18l6-6-6-6" />
+                    </svg>
+                </button>
+
+            </div>
+
+            <div id="carousel-empty" style="display:none;" class="py-16 text-center">
+                <p class="font-display font-light text-2xl text-neutral-600 mb-1">Produk Kosong</p>
+                <p class="text-sm text-neutral-400">Belum ada komoditas untuk kategori ini.</p>
             </div>
 
         </div>
     </section>
 
-    {{-- ══════════════════════════════════ MAP SECTION ══════════════════════════════════ --}}
+    {{-- MAP --}}
     <section class="py-28 bg-neutral-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6">
             <div class="text-center mb-14 reveal">
                 <span class="section-eyebrow">Peta Sebaran</span>
-                <h2 class="font-display font-light text-neutral-900 mb-3"
-                    style="font-size: clamp(1.75rem, 2.8vw, 2.25rem);">
+                <h2 class="font-display font-light text-neutral-900 mb-3" style="font-size:clamp(1.75rem,2.8vw,2.25rem);">
                     Lokasi <em class="italic" style="color:#1e40af;">UMKM Nusantara</em>
                 </h2>
                 <p class="text-base text-neutral-400 max-w-md mx-auto">
@@ -565,31 +565,20 @@
             <div class="reveal">
                 <div id="map" data-map-data='{!! json_encode($umkmMap) !!}' data-selected-city='{!! json_encode($selectedCityCoords) !!}'
                     class="w-full rounded-2xl"
-                    style="height: 480px; background:#e8f0fe; box-shadow: 0 4px 32px rgba(0,0,0,.07);">
+                    style="height:480px;background:#e8f0fe;box-shadow:0 4px 32px rgba(0,0,0,.07);">
                 </div>
             </div>
-
         </div>
     </section>
 
-
-
-    {{-- ══════════════════════════════════ HOW IT WORKS — Horizontal Zigzag Timeline ══════════════════════════════════ --}}
+    {{-- HOW IT WORKS --}}
     <section class="hiw-section" id="cara-kerja">
         <div class="hiw-container">
-
-            {{-- Header --}}
             <div class="hiw-header reveal">
                 <span class="section-eyebrow">Cara Kerja</span>
-                <h2 class="hiw-title">
-                    Mudah Belanja, <em>Mudah Berbagi</em>
-                </h2>
-                <p class="hiw-subtitle">
-                    Dukung UMKM lokal dengan berbelanja produk berkualitas dalam 4 langkah mudah
-                </p>
+                <h2 class="hiw-title">Mudah Belanja, <em>Mudah Berbagi</em></h2>
+                <p class="hiw-subtitle">Dukung UMKM lokal dengan berbelanja produk berkualitas dalam 4 langkah mudah</p>
             </div>
-
-            {{-- Zigzag Timeline --}}
             @php
                 $steps = [
                     [
@@ -619,10 +608,7 @@
                     ],
                 ];
             @endphp
-
             <div class="hiw-timeline reveal">
-
-                {{-- ── ROW 1: cards above (step 1 & 3), empty below (step 2 & 4) ── --}}
                 <div class="hiw-row hiw-row--top">
                     @foreach ($steps as $i => $step)
                         <div class="hiw-cell">
@@ -636,11 +622,8 @@
                         </div>
                     @endforeach
                 </div>
-
-                {{-- ── ROW 2: the track + nodes + arrows ── --}}
                 <div class="hiw-row hiw-row--track">
                     @foreach ($steps as $i => $step)
-                        {{-- Stem up for even (card above), stem down for odd (card below) --}}
                         <div class="hiw-cell hiw-cell--node">
                             <div class="hiw-stem hiw-stem--{{ $i % 2 === 0 ? 'up' : 'down' }}"></div>
                             <div class="hiw-node-wrap">
@@ -652,8 +635,6 @@
                             </div>
                             <div class="hiw-stem hiw-stem--{{ $i % 2 === 0 ? 'down' : 'up' }}"></div>
                         </div>
-
-                        {{-- Connector arrow between nodes --}}
                         @if ($i < count($steps) - 1)
                             <div class="hiw-cell hiw-cell--connector">
                                 <div class="hiw-connector">
@@ -670,8 +651,6 @@
                         @endif
                     @endforeach
                 </div>
-
-                {{-- ── ROW 3: empty above (step 1 & 3), cards below (step 2 & 4) ── --}}
                 <div class="hiw-row hiw-row--bottom">
                     @foreach ($steps as $i => $step)
                         <div class="hiw-cell">
@@ -685,9 +664,7 @@
                         </div>
                     @endforeach
                 </div>
-
             </div>
-
         </div>
     </section>
 
@@ -705,7 +682,6 @@
             padding: 0 1.5rem;
         }
 
-        /* ── Header ── */
         .hiw-header {
             text-align: center;
             margin-bottom: 4.5rem;
@@ -733,21 +709,17 @@
             line-height: 1.7;
         }
 
-        /* ── Timeline: 3 rows ── */
         .hiw-timeline {
             display: flex;
             flex-direction: column;
         }
 
-        /* Each row is a flex row with 4 node-cells + 3 connector-cells = 7 children */
         .hiw-row {
             display: flex;
             align-items: stretch;
         }
 
-        /* Node cells: fixed width aligned with nodes */
         .hiw-cell {
-            /* node cells */
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -764,7 +736,6 @@
             min-width: 0;
         }
 
-        /* ── Top row: cards align to bottom ── */
         .hiw-row--top {
             align-items: flex-end;
             min-height: 150px;
@@ -772,10 +743,8 @@
 
         .hiw-row--top .hiw-cell {
             justify-content: flex-end;
-            padding-bottom: 0;
         }
 
-        /* ── Bottom row: cards align to top ── */
         .hiw-row--bottom {
             align-items: flex-start;
             min-height: 150px;
@@ -783,15 +752,12 @@
 
         .hiw-row--bottom .hiw-cell {
             justify-content: flex-start;
-            padding-top: 0;
         }
 
-        /* ── Track row ── */
         .hiw-row--track {
             align-items: center;
         }
 
-        /* ── Stem lines (vertical connectors from node to card) ── */
         .hiw-stem {
             width: 1px;
             background: #e2e8f0;
@@ -799,18 +765,12 @@
             min-height: 20px;
         }
 
-        /* stems in track row are fixed height */
-        .hiw-row--track .hiw-stem--up {
-            height: 32px;
-            flex: none;
-        }
-
+        .hiw-row--track .hiw-stem--up,
         .hiw-row--track .hiw-stem--down {
             height: 32px;
             flex: none;
         }
 
-        /* ── Node ── */
         .hiw-node-wrap {
             flex-shrink: 0;
             z-index: 2;
@@ -852,16 +812,16 @@
         @keyframes nodePulse {
             0% {
                 transform: scale(.85);
-                opacity: 0;
+                opacity: 0
             }
 
             40% {
-                opacity: 1;
+                opacity: 1
             }
 
             100% {
                 transform: scale(1.45);
-                opacity: 0;
+                opacity: 0
             }
         }
 
@@ -874,7 +834,6 @@
             line-height: 1;
         }
 
-        /* ── Connector ── */
         .hiw-cell--connector {
             display: flex;
             align-items: center;
@@ -889,7 +848,6 @@
             overflow: hidden;
         }
 
-        /* background track */
         .hiw-connector::before {
             content: '';
             position: absolute;
@@ -901,7 +859,6 @@
             transform: translateY(-50%);
         }
 
-        /* fill overlay */
         .hiw-connector-fill {
             position: absolute;
             left: 0;
@@ -918,7 +875,6 @@
             width: 100%;
         }
 
-        /* SVG arrow on top */
         .hiw-arrow-svg {
             position: relative;
             width: 100%;
@@ -934,11 +890,11 @@
 
         @keyframes dashRight {
             0% {
-                stroke-dashoffset: 36;
+                stroke-dashoffset: 36
             }
 
             100% {
-                stroke-dashoffset: 0;
+                stroke-dashoffset: 0
             }
         }
 
@@ -952,16 +908,15 @@
             0%,
             100% {
                 transform: translateX(0);
-                opacity: .5;
+                opacity: .5
             }
 
             50% {
                 transform: translateX(5px);
-                opacity: 1;
+                opacity: 1
             }
         }
 
-        /* ── Card ── */
         .hiw-card {
             background: #fff;
             border: 1px solid #e2e8f0;
@@ -1002,8 +957,7 @@
             margin: 0;
         }
 
-        /* ── Mobile: flat 2-col grid ── */
-        @media (max-width: 768px) {
+        @media(max-width:768px) {
             .hiw-timeline {
                 display: none;
             }
@@ -1015,19 +969,14 @@
             .hiw-section {
                 padding-bottom: 5rem;
             }
-
-            .hiw-mobile-grid {
-                padding-bottom: 2rem;
-            }
         }
     </style>
 
-    {{-- Mobile fallback --}}
     <div class="hiw-mobile-grid"
-        style="display:none; max-width:80rem; margin:0 auto; padding:0 1.5rem 3rem; grid-template-columns:1fr 1fr; gap:1rem;">
+        style="display:none;max-width:80rem;margin:0 auto;padding:0 1.5rem 3rem;grid-template-columns:1fr 1fr;gap:1rem;">
         @foreach ($steps as $step)
             <div
-                style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem 1.25rem;display:flex;flex-direction:column;gap:.65rem;">
+                style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem;display:flex;flex-direction:column;gap:.65rem;">
                 <span
                     style="font-family:'DM Serif Display',Georgia,serif;font-size:2rem;color:#e2e8f0;line-height:1;">{{ $step['num'] }}</span>
                 <div>
@@ -1064,14 +1013,10 @@
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const el = document.getElementById('produk');
-                if (el) {
-                    setTimeout(() => {
-                        el.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }, 100);
-                }
+                if (el) setTimeout(() => el.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                }), 100);
             });
         </script>
     @endif
@@ -1090,33 +1035,96 @@
             threshold: 0.08
         });
         revealEls.forEach(el => io.observe(el));
+    </script>
 
-        /* Count-up for stats */
-        const statsIo = new IntersectionObserver((entries) => {
-            entries.forEach(e => {
-                if (e.isIntersecting) {
-                    e.target.querySelectorAll('.stat-num').forEach(num => {
-                        const raw = num.textContent.replace(/[^0-9]/g, '');
-                        const target = parseInt(raw);
-                        if (!target) return;
-                        let current = 0;
-                        const step = target / 55;
-                        const timer = setInterval(() => {
-                            current = Math.min(current + step, target);
-                            if (num.childNodes[0]) num.childNodes[0].textContent = Math
-                                .floor(current).toLocaleString('id-ID');
-                            if (current >= target) clearInterval(timer);
-                        }, 18);
-                    });
-                    statsIo.unobserve(e.target);
-                }
+    {{-- ══ CAROUSEL SCRIPT ══ --}}
+    <script>
+        (function() {
+            const outer = document.getElementById('carousel-outer');
+            const track = document.getElementById('carousel-track');
+            const btnPrev = document.getElementById('carousel-prev');
+            const btnNext = document.getElementById('carousel-next');
+            const emptyMsg = document.getElementById('carousel-empty');
+            if (!outer || !track) return;
+
+            // Harus sama dengan CSS: flex: 0 0 200px + gap 16px
+            const CARD_W = 200 + 16;
+            const activeCat = '{{ addslashes($activeCatName) }}';
+            let idx = 0;
+
+            function allCards() {
+                return Array.from(track.querySelectorAll('.carousel-card'));
+            }
+
+            function visibleCards() {
+                return allCards().filter(c => {
+                    const cat = (c.dataset.cat || '').trim();
+                    return activeCat === 'all' || cat === activeCat;
+                });
+            }
+
+            function perPage() {
+                return Math.max(1, Math.floor(outer.offsetWidth / CARD_W));
+            }
+
+            function applyFilter() {
+                allCards().forEach(c => {
+                    const cat = (c.dataset.cat || '').trim();
+                    const show = activeCat === 'all' || cat === activeCat;
+                    c.style.display = show ? 'flex' : 'none';
+                });
+                idx = 0;
+                render();
+                if (emptyMsg) emptyMsg.style.display = visibleCards().length === 0 ? 'block' : 'none';
+            }
+
+            function render() {
+                const visible = visibleCards();
+                const maxIdx = Math.max(0, visible.length - perPage());
+                idx = Math.min(Math.max(idx, 0), maxIdx);
+
+                // Hitung offset: cari posisi kartu visible[idx] dalam DOM flex
+                // (hidden cards masih ada tapi display:none, jadi tidak mengambil ruang)
+                // Kita geser sejumlah idx * CARD_W dari posisi awal track visible
+                track.style.transform = `translateX(-${idx * CARD_W}px)`;
+
+                btnPrev.classList.toggle('disabled', idx === 0);
+                btnNext.classList.toggle('disabled', idx >= maxIdx);
+            }
+
+            btnPrev.addEventListener('click', () => {
+                idx -= perPage();
+                render();
             });
-        }, {
-            threshold: 0.3
-        });
+            btnNext.addEventListener('click', () => {
+                idx += perPage();
+                render();
+            });
 
-        const statsSection = document.querySelector('section.bg-white.border-b');
-        if (statsSection) statsIo.observe(statsSection);
+            // Swipe
+            let tx = 0;
+            outer.addEventListener('touchstart', e => {
+                tx = e.touches[0].clientX;
+            }, {
+                passive: true
+            });
+            outer.addEventListener('touchend', e => {
+                const diff = tx - e.changedTouches[0].clientX;
+                if (Math.abs(diff) > 40) {
+                    idx += diff > 0 ? 1 : -1;
+                    render();
+                }
+            }, {
+                passive: true
+            });
+
+            window.addEventListener('resize', () => {
+                idx = 0;
+                render();
+            });
+
+            applyFilter();
+        })();
     </script>
 
     {{-- Leaflet Map --}}
@@ -1126,19 +1134,14 @@
         document.addEventListener('DOMContentLoaded', function() {
             const mapContainer = document.getElementById('map');
             if (!mapContainer) return;
-
             setTimeout(() => {
-                // Default view (Indonesia)
-                let center = [-2.5489, 118.0149];
-                let zoom = 5;
-
-                // If a city is selected, use its coordinates
+                let center = [-2.5489, 118.0149],
+                    zoom = 5;
                 const selectedCity = JSON.parse(mapContainer.dataset.selectedCity || 'null');
                 if (selectedCity && selectedCity[0] && selectedCity[1]) {
                     center = [parseFloat(selectedCity[0]), parseFloat(selectedCity[1])];
-                    zoom = 10; // Zoom in to the city
+                    zoom = 10;
                 }
-
                 const map = L.map('map', {
                     maxBounds: [
                         [-15.0, 92.0],
@@ -1149,34 +1152,19 @@
                     maxZoom: 15,
                     zoomSnap: 0.5
                 }).setView(center, zoom);
-
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
                     maxZoom: 18,
                     minZoom: 4,
                     noWrap: true
                 }).addTo(map);
-
-                // Data sudah dikelompokkan per kota
                 const cityData = JSON.parse(mapContainer.dataset.mapData || '[]');
-                const markers = [];
 
-                // Icon marker dengan badge jumlah UMKM
                 function makeCityIcon(count) {
-                    const size = count >= 10 ? 46 : count >= 5 ? 42 : 38;
-                    const fontSize = count >= 10 ? 12 : 11;
-                    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size + 14}" width="${size}" height="${size + 14}">
-                        <filter id="sh"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(30,64,175,.35)"/></filter>
-                        <path d="M${size/2} 0 C${size*0.138} 0 ${size*0.042} ${size*0.179} ${size*0.042} ${size*0.4}
-                            c0 ${size*0.3} ${size*0.458} ${size*1.0} ${size*0.458} ${size*1.0}
-                            S${size*0.958} ${size*0.7} ${size*0.958} ${size*0.4}
-                            C${size*0.958} ${size*0.179} ${size*0.862} 0 ${size/2} 0z"
-                               fill="#1e40af" filter="url(#sh)"/>
-                        <circle cx="${size/2}" cy="${size*0.4}" r="${size*0.28}" fill="white"/>
-                        <text x="${size/2}" y="${size*0.4 + fontSize*0.4}" text-anchor="middle"
-                               font-family="'Plus Jakarta Sans',sans-serif" font-size="${fontSize}"
-                               font-weight="700" fill="#1e40af">${count}</text>
-                    </svg>`;
+                    const size = count >= 10 ? 46 : count >= 5 ? 42 : 38,
+                        fontSize = count >= 10 ? 12 : 11;
+                    const svg =
+                        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size+14}" width="${size}" height="${size+14}"><filter id="sh"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(30,64,175,.35)"/></filter><path d="M${size/2} 0 C${size*.138} 0 ${size*.042} ${size*.179} ${size*.042} ${size*.4} c0 ${size*.3} ${size*.458} ${size*1.0} ${size*.458} ${size*1.0} S${size*.958} ${size*.7} ${size*.958} ${size*.4} C${size*.958} ${size*.179} ${size*.862} 0 ${size/2} 0z" fill="#1e40af" filter="url(#sh)"/><circle cx="${size/2}" cy="${size*.4}" r="${size*.28}" fill="white"/><text x="${size/2}" y="${size*.4+fontSize*.4}" text-anchor="middle" font-family="'Plus Jakarta Sans',sans-serif" font-size="${fontSize}" font-weight="700" fill="#1e40af">${count}</text></svg>`;
                     return L.divIcon({
                         html: svg,
                         className: '',
@@ -1185,59 +1173,28 @@
                         popupAnchor: [0, -(size + 16)]
                     });
                 }
-
                 cityData.forEach(city => {
-                    const lat = parseFloat(city.latitude);
-                    const lng = parseFloat(city.longitude);
+                    const lat = parseFloat(city.latitude),
+                        lng = parseFloat(city.longitude);
                     if (isNaN(lat) || isNaN(lng)) return;
-
-                    const umkmList = city.umkm_list || [];
-                    const count = city.count || umkmList.length;
-
-                    // Build scrollable list of UMKM
-                    let listHtml = umkmList.map(u => {
-                        return `<a href="/mitra/${u.uuid}" style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;gap:10px;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-                            <span style="width:32px;height:32px;border-radius:8px;background:#eff6ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                            </span>
-                            <span style="flex:1;min-width:0;">
-                                <span style="display:block;font-size:12px;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.nama_usaha}</span>
-                                <span style="display:block;font-size:10px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.alamat || '-'}</span>
-                            </span>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-                        </a>`;
-                    }).join('');
-
-                    const popupContent = `
-                        <div style="min-width:260px;max-width:300px;font-family:'Plus Jakarta Sans',sans-serif;">
-                            <div style="background:linear-gradient(135deg,#1e3a8a,#1e40af);padding:14px;border-radius:8px 8px 0 0;margin:-1px -1px 0;">
-                                <div style="font-size:10px;color:#93c5fd;font-weight:600;letter-spacing:.05em;text-transform:uppercase;">Kota / Kabupaten</div>
-                                <div style="font-size:16px;font-weight:700;color:#fff;margin-top:2px;">${city.city_name}</div>
-                                <div style="font-size:11px;color:#bfdbfe;margin-top:2px;">${count} UMKM terdaftar</div>
-                            </div>
-                            <div style="padding:4px 14px;max-height:240px;overflow-y:auto;scrollbar-width: thin;">
-                                ${listHtml}
-                            </div>
-                        </div>`;
-
-                    const marker = L.marker([lat, lng], {
+                    const umkmList = city.umkm_list || [],
+                        count = city.count || umkmList.length;
+                    const listHtml = umkmList.map(u =>
+                        `<a href="/mitra/${u.uuid}" style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;gap:10px;text-decoration:none;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'"><span style="width:32px;height:32px;border-radius:8px;background:#eff6ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span style="flex:1;min-width:0;"><span style="display:block;font-size:12px;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.nama_usaha}</span><span style="display:block;font-size:10px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.alamat||'-'}</span></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></a>`
+                        ).join('');
+                    const popupContent =
+                        `<div style="min-width:260px;max-width:300px;font-family:'Plus Jakarta Sans',sans-serif;"><div style="background:linear-gradient(135deg,#1e3a8a,#1e40af);padding:14px;border-radius:8px 8px 0 0;margin:-1px -1px 0;"><div style="font-size:10px;color:#93c5fd;font-weight:600;letter-spacing:.05em;text-transform:uppercase;">Kota / Kabupaten</div><div style="font-size:16px;font-weight:700;color:#fff;margin-top:2px;">${city.city_name}</div><div style="font-size:11px;color:#bfdbfe;margin-top:2px;">${count} UMKM terdaftar</div></div><div style="padding:4px 14px;max-height:240px;overflow-y:auto;scrollbar-width:thin;">${listHtml}</div></div>`;
+                    L.marker([lat, lng], {
                         icon: makeCityIcon(count)
-                    }).addTo(map);
-
-                    marker.bindPopup(popupContent, {
+                    }).addTo(map).bindPopup(popupContent, {
                         maxWidth: 320,
                         className: 'city-popup'
                     });
-
-                    markers.push(marker);
                 });
-
-                // Ensure map is properly sized
                 map.invalidateSize();
             }, 300);
         });
     </script>
-
     <style>
         .city-popup .leaflet-popup-content-wrapper {
             padding: 0;

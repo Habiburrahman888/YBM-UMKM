@@ -559,7 +559,7 @@
                                 <select name="kategori_satuan" id="kategori_satuan"
                                     class="block w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all @error('kategori_satuan') border-red-500 ring-1 ring-red-500 @enderror">
                                     <option value="">— Pilih Satuan —</option>
-                                    @foreach (['pcs', 'bungkus', 'gram', 'kg', 'liter', 'ml', 'box', 'porsi', 'pack'] as $satuan)
+                                    @foreach (['pcs', 'bungkus', 'gram', 'kg', 'liter', 'ml', 'box', 'porsi', 'pack', 'cup', 'karung', 'paket', 'unit'] as $satuan)
                                         <option value="{{ $satuan }}"
                                             {{ old('kategori_satuan', $produkUtama?->kategori_satuan) == $satuan ? 'selected' : '' }}>
                                             {{ ucfirst($satuan) }}</option>

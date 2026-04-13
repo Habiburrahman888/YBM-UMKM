@@ -6,12 +6,27 @@
 @push('styles')
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <style>
-        .ts-control { border-radius: 0.5rem !important; padding: 0.5rem 0.75rem !important; font-size: 0.875rem !important; }
-        .ts-wrapper.single .ts-control { background-image: none !important; }
+        .ts-control {
+            border-radius: 0.5rem !important;
+            padding: 0.5rem 0.75rem !important;
+            font-size: 0.875rem !important;
+        }
+
+        .ts-wrapper.single .ts-control {
+            background-image: none !important;
+        }
+
         .ts-wrapper.single .ts-control::after {
-            content: ""; display: block; width: 10px; height: 10px;
-            border-right: 2px solid #94a3b8; border-bottom: 2px solid #94a3b8;
-            transform: rotate(45deg); position: absolute; right: 12px; top: 14px;
+            content: "";
+            display: block;
+            width: 10px;
+            height: 10px;
+            border-right: 2px solid #94a3b8;
+            border-bottom: 2px solid #94a3b8;
+            transform: rotate(45deg);
+            position: absolute;
+            right: 12px;
+            top: 14px;
         }
     </style>
 @endpush
@@ -74,10 +89,6 @@
                                         Unit Nonaktif</option>
                                 </select>
                             </div>
-
-
-
-
 
                             {{-- Filter Unit --}}
                             <div class="w-full sm:w-auto flex-1 min-w-[130px]">
@@ -393,7 +404,10 @@
         document.addEventListener('DOMContentLoaded', function() {
             new TomSelect('#unit-select', {
                 create: false,
-                sortField: { field: 'text', direction: 'asc' },
+                sortField: {
+                    field: 'text',
+                    direction: 'asc'
+                },
                 placeholder: 'Cari Unit...',
                 allowEmptyOption: true,
             });

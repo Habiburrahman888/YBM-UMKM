@@ -73,7 +73,15 @@
                                 <option value="porsi" {{ old('kategori_satuan') == 'porsi' ? 'selected' : '' }}>Porsi
                                 </option>
                                 <option value="pack" {{ old('kategori_satuan') == 'pack' ? 'selected' : '' }}>Pack
-                                    (Paket)</option>
+                                    (Paket/Bungkus)</option>
+                                <option value="cup" {{ old('kategori_satuan') == 'cup' ? 'selected' : '' }}>Cup
+                                </option>
+                                <option value="karung" {{ old('kategori_satuan') == 'karung' ? 'selected' : '' }}>Karung
+                                </option>
+                                <option value="paket" {{ old('kategori_satuan') == 'paket' ? 'selected' : '' }}>Paket
+                                </option>
+                                <option value="unit" {{ old('kategori_satuan') == 'unit' ? 'selected' : '' }}>Unit
+                                </option>
                             </select>
                             @error('kategori_satuan')
                                 <p class="mt-1 text-xs sm:text-sm text-red-600">{{ $message }}</p>

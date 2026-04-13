@@ -59,7 +59,7 @@ class UmkmController extends Controller
         }
 
         $umkmList = $query->withSum('modalUmkm as total_modal_sum', 'nilai_modal')
-            ->orderByDesc('total_modal_sum')
+            ->latest()
             ->paginate(15);
 
         $kategoriList = Kategori::orderBy('nama')->get();
@@ -140,7 +140,7 @@ class UmkmController extends Controller
             'nama_produk'     => 'nullable|string|max:255',
             'harga_produk'    => 'nullable|numeric|min:0',
             'deskripsi_produk' => 'nullable|string',
-            'kategori_satuan' => 'nullable|in:pcs,bungkus,gram,kg,liter,ml,box,pack,porsi',
+            'kategori_satuan' => 'nullable|in:pcs,bungkus,gram,kg,liter,ml,box,pack,porsi,cup,karung,paket,unit',
             'foto_produk'     => 'nullable|array|max:5',
             'foto_produk.*'   => 'image|mimes:jpg,jpeg,png,webp|max:2048',
             'modals'            => 'nullable|array',
@@ -380,7 +380,7 @@ class UmkmController extends Controller
             'nama_produk'       => 'nullable|string|max:255',
             'harga_produk'      => 'nullable|numeric|min:0',
             'deskripsi_produk'  => 'nullable|string',
-            'kategori_satuan'   => 'nullable|in:pcs,bungkus,gram,kg,liter,ml,box,pack,porsi',
+            'kategori_satuan'   => 'nullable|in:pcs,bungkus,gram,kg,liter,ml,box,pack,porsi,cup,karung,paket,unit',
             'foto_produk'       => 'nullable|array|max:5',
             'foto_produk.*'     => 'image|mimes:jpg,jpeg,png,webp|max:2048',
             'foto_produk_existing' => 'nullable|array',

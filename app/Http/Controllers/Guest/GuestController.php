@@ -136,8 +136,8 @@ class GuestController extends Controller
 
         $produkQuery->latest();
 
-        $produk = $produkQuery->take(8)->get();
-        $umkm   = Umkm::where('status', 'aktif')->latest()->take(6)->get();
+        $produk = $produkQuery->take(12)->get();
+        $umkm   = Umkm::where('status', 'aktif')->latest()->take(10)->get();
 
         $provinceCoords = [
             '11' => [-4.0, 96.8],
