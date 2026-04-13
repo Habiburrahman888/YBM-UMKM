@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Laporan Transaksi - {{ $unit->nama_unit }}</title>
+    <title>Laporan Transaksi Unit - YBM UMKM</title>
     <style>
         @page {
             margin: 0;
@@ -12,7 +12,7 @@
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
             font-size: 8pt;
-            line-height: 1.4;
+            line-height: 1.45;
             color: #334155;
             background: #fff;
             margin: 0;
@@ -27,7 +27,7 @@
         .header {
             display: table;
             width: 100%;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             padding-bottom: 12px;
             border-bottom: 0.5px solid #e2e8f0;
         }
@@ -42,30 +42,31 @@
             vertical-align: bottom;
             text-align: right;
             color: #94a3b8;
-            font-size: 8pt;
+            font-size: 7.5pt;
         }
 
         .header h1 {
-            font-size: 14pt;
+            font-size: 13pt;
             font-weight: 300;
             color: #0f172a;
             letter-spacing: -0.01em;
             text-transform: uppercase;
-            margin-bottom: 2px;
+            margin: 0 0 2px 0;
         }
 
         .header p {
             font-size: 7.5pt;
             color: #64748b;
+            margin: 0;
         }
 
         /* ── Filter Box ── */
         .filter-box {
             background: #f8fafc;
             border: 0.5px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 7px 12px;
-            margin-bottom: 16px;
+            border-radius: 5px;
+            padding: 6px 12px;
+            margin-bottom: 14px;
             font-size: 7.5pt;
             color: #64748b;
         }
@@ -85,15 +86,15 @@
             width: 100%;
             background: #f8fafc;
             border: 0.5px solid #e2e8f0;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 18px;
         }
 
         .stat-item {
             display: table-cell;
             width: 50%;
             text-align: center;
+            padding: 9px 6px;
             border-right: 0.5px solid #e2e8f0;
         }
 
@@ -102,48 +103,43 @@
         }
 
         .stat-label {
-            font-size: 7pt;
+            font-size: 6.5pt;
             color: #64748b;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 2px;
+            letter-spacing: 0.06em;
+            margin-bottom: 3px;
         }
 
         .stat-value {
-            font-size: 11pt;
+            font-size: 10.5pt;
             font-weight: 700;
             color: #0f172a;
-        }
-
-        .stat-value.pendapatan {
-            color: #0f172a;
-            font-size: 9pt;
         }
 
         /* ── Table ── */
         table.main-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-bottom: 8px;
         }
 
         table.main-table th {
-            background: #f8fafc;
+            background: #f1f5f9;
             text-align: left;
-            font-size: 7.5pt;
+            font-size: 7pt;
             font-weight: 600;
             color: #475569;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            padding: 8px 10px;
-            border-bottom: 1px solid #cbd5e1;
+            padding: 7px 10px;
+            border-bottom: 0.5px solid #cbd5e1;
         }
 
         table.main-table td {
-            padding: 6px 10px;
+            padding: 5.5px 10px;
             border-bottom: 0.5px solid #f1f5f9;
             font-size: 7.5pt;
-            vertical-align: top;
+            vertical-align: middle;
         }
 
         .text-right {
@@ -154,30 +150,25 @@
             text-align: center;
         }
 
-        .total-row {
-            background: #f1f5f9;
-            font-weight: 700;
-            color: #0f172a;
-        }
-
         .currency {
             font-weight: 700;
-            color: #0f172a;
+            color: #1e3a8a;
         }
 
-        .empty-row td {
-            text-align: center;
-            padding: 20px;
-            color: #94a3b8;
-            font-style: italic;
+        .grand-total-row td {
+            background: #1e40af;
+            color: #fff;
+            font-weight: 700;
+            font-size: 9pt;
+            padding: 9px 10px;
+            border: none;
         }
 
-        /* ── Footer ── */
         .footer {
-            margin-top: 30px;
-            padding-top: 15px;
+            margin-top: 28px;
+            padding-top: 12px;
             border-top: 0.5px solid #e2e8f0;
-            font-size: 7.5pt;
+            font-size: 7pt;
             color: #94a3b8;
             text-align: center;
         }
@@ -190,8 +181,8 @@
         {{-- ── Header ── --}}
         <div class="header">
             <div class="header-left">
-                <h1>Laporan Transaksi UMKM Binaan</h1>
-                <p>Unit: {{ $unit->nama_unit }} &nbsp;&middot;&nbsp; Penanggung Jawab: {{ $unit->nama_pj ?? '-' }}</p>
+                <h1>Laporan Transaksi Unit</h1>
+                <p>Unit: {{ $unit->nama_unit }} &nbsp;&middot;&nbsp; Rekap Transaksi Selesai Mitra UMKM</p>
             </div>
             <div class="header-right">
                 Dicetak pada {{ now()->translatedFormat('d F Y, H:i') }}
@@ -201,72 +192,71 @@
         {{-- ── Filter Info ── --}}
         <div class="filter-box">
             <span>UMKM:
-                <strong>{{ isset($filters['umkm_id']) && $filters['umkm_id'] ? $umkmList[$filters['umkm_id']]->nama_usaha ?? '-' : 'SEMUA' }}</strong></span>
-            <span>Status: <strong>SELESAI</strong></span>
+                <strong>{{ isset($filters['umkm_id']) && $filters['umkm_id'] ? ($umkmList[$filters['umkm_id']]->nama_usaha ?? 'SEMUA') : 'SEMUA UMKM' }}</strong>
+            </span>
             <span>Dari:
-                <strong>{{ isset($filters['dari']) && $filters['dari'] ? \Carbon\Carbon::parse($filters['dari'])->translatedFormat('d F Y') : 'Awal' }}</strong></span>
+                <strong>{{ isset($filters['dari']) && $filters['dari'] ? \Carbon\Carbon::parse($filters['dari'])->translatedFormat('d F Y') : 'Awal' }}</strong>
+            </span>
             <span>Sampai:
-                <strong>{{ isset($filters['sampai']) && $filters['sampai'] ? \Carbon\Carbon::parse($filters['sampai'])->translatedFormat('d F Y') : 'Sekarang' }}</strong></span>
-            <span>Total UMKM: <strong>{{ $pesanans->count() }}</strong></span>
+                <strong>{{ isset($filters['sampai']) && $filters['sampai'] ? \Carbon\Carbon::parse($filters['sampai'])->translatedFormat('d F Y') : 'Sekarang' }}</strong>
+            </span>
         </div>
 
         {{-- ── Summary Stats ── --}}
         <div class="summary-stat">
             <div class="stat-item">
-                <div class="stat-label">Total UMKM</div>
-                <div class="stat-value">{{ $pesanans->count() }}</div>
+                <div class="stat-label">Total Transaksi</div>
+                <div class="stat-value">{{ number_format($totalTransaksi, 0, ',', '.') }}</div>
             </div>
             <div class="stat-item">
-                <div class="stat-label">Total Pendapatan (Selesai)</div>
-                <div class="stat-value pendapatan">Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</div>
+                <div class="stat-label">Total Pendapatan</div>
+                <div class="stat-value">Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</div>
             </div>
         </div>
 
-        {{-- ── Tabel Data ── --}}
+        {{-- ── Table ── --}}
         <table class="main-table">
             <thead>
                 <tr>
-                    <th style="width: 25px;" class="text-center">No</th>
+                    <th style="width: 22px;" class="text-center">No</th>
                     <th>Nama UMKM</th>
-                    <th>Nama Pemilik</th>
-                    <th style="width: 160px;" class="text-right">Total Penjualan (Rp)</th>
+                    <th>Pemilik</th>
+                    <th>Kategori</th>
+                    <th class="text-right" style="width: 70px;">Transaksi</th>
+                    <th class="text-right" style="width: 140px;">Total Penjualan (Rp)</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($pesanans as $i => $p)
+                @forelse($pesanans as $idx => $umkm)
                     <tr>
-                        <td class="text-center" style="color: #94a3b8;">{{ $i + 1 }}</td>
-                        <td style="font-weight: 700; color: #0f172a;">{{ $p->nama_usaha }}</td>
-                        <td>{{ $p->nama_pemilik ?? '-' }}</td>
-                        <td class="text-right currency">{{ number_format($p->total_penjualan ?? 0, 0, ',', '.') }}</td>
+                        <td class="text-center" style="color: #94a3b8;">{{ $idx + 1 }}</td>
+                        <td style="font-weight: 600; color: #000;">{{ $umkm->nama_usaha }}</td>
+                        <td style="color: #64748b;">{{ $umkm->nama_pemilik ?? '-' }}</td>
+                        <td style="color: #64748b;">{{ $umkm->kategori->nama ?? '-' }}</td>
+                        <td class="text-right">{{ number_format($umkm->jumlah_transaksi ?? 0, 0, ',', '.') }}</td>
+                        <td class="text-right currency">{{ number_format($umkm->total_penjualan ?? 0, 0, ',', '.') }}</td>
                     </tr>
                 @empty
-                    <tr class="empty-row">
-                        <td colspan="4">Tidak ada data transaksi.</td>
+                    <tr>
+                        <td colspan="6" class="text-center" style="padding: 20px; color: #94a3b8;">Tidak ada data transaksi.</td>
                     </tr>
                 @endforelse
             </tbody>
+            @if($pesanans->isNotEmpty())
+                <tfoot>
+                    <tr class="grand-total-row">
+                        <td colspan="4" class="text-right">TOTAL</td>
+                        <td class="text-right">{{ number_format($totalTransaksi, 0, ',', '.') }}</td>
+                        <td class="text-right">Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</td>
+                    </tr>
+                </tfoot>
+            @endif
         </table>
-
-        {{-- ── Total ── --}}
-        @if ($pesanans->count() > 0)
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                <tr class="total-row">
-                    <td
-                        style="padding: 10px; text-align: right; border: 0.5px solid #cbd5e1; background: #f1f5f9; font-weight: bold;">
-                        TOTAL PENDAPATAN (SELESAI)
-                    </td>
-                    <td
-                        style="padding: 10px; width: 160px; text-align: right; border: 0.5px solid #cbd5e1; background: #f1f5f9; font-weight: bold;">
-                        Rp {{ number_format($totalPendapatan, 0, ',', '.') }}
-                    </td>
-                </tr>
-            </table>
-        @endif
 
         {{-- ── Footer ── --}}
         <div class="footer">
-            Dokumen ini dihasilkan secara otomatis oleh Sistem Informasi YBM PLN UMKM.
+            Dokumen ini dihasilkan secara otomatis oleh Sistem Informasi YBM PLN UMKM &middot;
+            Hanya menampilkan transaksi dengan status <strong>Selesai</strong>.
         </div>
 
     </div>

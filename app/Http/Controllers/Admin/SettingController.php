@@ -24,10 +24,10 @@ class SettingController extends Controller
         $sosmed = Sosmed::first();
 
         $breadcrumbs = [
-            ['name' => 'Settings', 'url' => route('settings.show')]
+            ['name' => 'Settings', 'url' => route('admin.settings.show')]
         ];
 
-        return view('settings.show', compact(
+        return view('admin.settings.show', compact(
             'setting',
             'recaptchaConfig',
             'googleConfig',
@@ -46,11 +46,11 @@ class SettingController extends Controller
         $sosmed = Sosmed::first();
 
         $breadcrumbs = [
-            ['name' => 'Settings', 'url' => route('settings.show')],
-            ['name' => 'Edit Settings', 'url' => route('settings.edit')]
+            ['name' => 'Settings', 'url' => route('admin.settings.show')],
+            ['name' => 'Edit Settings', 'url' => route('admin.settings.edit')]
         ];
 
-        return view('settings.edit', compact(
+        return view('admin.settings.edit', compact(
             'setting',
             'recaptchaConfig',
             'googleConfig',
@@ -196,7 +196,7 @@ class SettingController extends Controller
 
             DB::commit();
 
-            return redirect()->route('settings.show')
+            return redirect()->route('admin.settings.show')
                 ->with('success', 'Setting berhasil diperbarui!');
 
         } catch (\Exception $e) {

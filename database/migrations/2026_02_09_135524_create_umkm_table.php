@@ -71,8 +71,6 @@ return new class extends Migration
             // ===== BRANDING (UMKM yang isi setelah login) =====
             $table->string('logo_umkm')->nullable();
             $table->string('qris_foto')->nullable();
-            $table->decimal('latitude', 10, 8)->nullable();
-            $table->decimal('longitude', 11, 8)->nullable();
             $table->text('tentang')->nullable();
             $table->string('facebook')->nullable();
             $table->string('instagram')->nullable(); 

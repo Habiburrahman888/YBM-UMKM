@@ -13,24 +13,11 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class ReportUnitDanUmkmController extends Controller
 {
     /**
-     * Preview Laporan Unit & UMKM (Bulk)
+     * Preview Laporan Unit & UMKM (Bulk) - Admin Only
      */
     public function preview(Request $request)
     {
-        if (!in_array(auth()->user()->role, ['admin', 'unit'])) {
-            abort(403);
-        }
-
         $query = Umkm::with(['unit', 'kategori', 'city', 'province', 'district', 'village', 'modalUmkm', 'produkUmkm']);
-
-        if (auth()->user()->role !== 'admin') {
-            $userUnit = Unit::where('user_id', auth()->id())->first();
-            if ($userUnit) {
-                $query->where('unit_id', $userUnit->id);
-            } else {
-                $query->whereRaw('1 = 0');
-            }
-        }
 
         // Filter
         if ($request->filled('tahun')) {
@@ -40,8 +27,7 @@ class ReportUnitDanUmkmController extends Controller
             $query->where('tahun_berdiri', $request->tahun_berdiri);
         }
 
-
-        if (auth()->user()->role === 'admin' && $request->filled('unit_id')) {
+        if ($request->filled('unit_id')) {
             $query->where('unit_id', $request->unit_id);
         }
 
@@ -50,13 +36,11 @@ class ReportUnitDanUmkmController extends Controller
             ->get();
 
         $kategoriList = Kategori::orderBy('nama')->get();
-        $unitList     = auth()->user()->role === 'admin'
-            ? Unit::orderBy('nama_unit')
-                ->when($request->filled('unit_id'), fn($q) => $q->where('id', $request->unit_id))
-                ->when($request->unit_status === 'aktif', fn($q) => $q->where('is_active', true))
-                ->when($request->unit_status === 'nonaktif', fn($q) => $q->where('is_active', false))
-                ->get()
-            : collect();
+        $unitList     = Unit::orderBy('nama_unit')
+            ->when($request->filled('unit_id'), fn($q) => $q->where('id', $request->unit_id))
+            ->when($request->unit_status === 'aktif', fn($q) => $q->where('is_active', true))
+            ->when($request->unit_status === 'nonaktif', fn($q) => $q->where('is_active', false))
+            ->get();
 
         // Data for filters
         $tahunBergabungList = Umkm::selectRaw('YEAR(tanggal_bergabung) as tahun')
@@ -72,34 +56,23 @@ class ReportUnitDanUmkmController extends Controller
             ->pluck('tahun_berdiri');
 
         $breadcrumbs = [
-            ['name' => auth()->user()->role === 'admin' ? 'Laporan Unit' : 'Laporan UMKM', 'url' => route('umkm.report.preview')],
+            ['name' => 'Laporan Unit', 'url' => route('admin.report.preview')],
         ];
 
-        // Group by unit if admin
-        if (auth()->user()->role === 'admin') {
-            if ($request->filled('unit_status')) {
-                $filteredUnitIds = $unitList->pluck('id');
-                $umkmList = $umkmList->filter(fn($u) => $filteredUnitIds->contains($u->unit_id));
-            }
-            $umkmList = $umkmList->groupBy('unit_id');
+        // Group by unit
+        if ($request->filled('unit_status')) {
+            $filteredUnitIds = $unitList->pluck('id');
+            $umkmList = $umkmList->filter(fn($u) => $filteredUnitIds->contains($u->unit_id));
+        }
+        $umkmList = $umkmList->groupBy('unit_id');
 
-            // Jika filter UMKM diisi, sembunyikan unit yang tidak punya data matching
-            if ($request->filled(['tahun', 'tahun_berdiri'])) {
-                $unitIdsWithData = $umkmList->keys();
-                $unitList = $unitList->whereIn('id', $unitIdsWithData);
-            }
-
-            return view('admin.report-unit.index', compact(
-                'umkmList',
-                'kategoriList',
-                'unitList',
-                'tahunBergabungList',
-                'tahunBerdiriList',
-                'breadcrumbs'
-            ));
+        // Jika filter UMKM diisi, sembunyikan unit yang tidak punya data matching
+        if ($request->filled(['tahun', 'tahun_berdiri'])) {
+            $unitIdsWithData = $umkmList->keys();
+            $unitList = $unitList->whereIn('id', $unitIdsWithData);
         }
 
-        return view('umkm.report.index', compact(
+        return view('admin.report-unit.index', compact(
             'umkmList',
             'kategoriList',
             'unitList',
@@ -110,24 +83,11 @@ class ReportUnitDanUmkmController extends Controller
     }
 
     /**
-     * Download Laporan Unit & UMKM (Bulk PDF)
+     * Download Laporan Unit & UMKM (Bulk PDF) - Admin Only
      */
     public function downloadAll(Request $request)
     {
-        if (!in_array(auth()->user()->role, ['admin', 'unit'])) {
-            abort(403);
-        }
-
         $query = Umkm::with(['unit', 'kategori', 'city', 'province', 'district', 'village', 'modalUmkm', 'produkUmkm']);
-
-        if (auth()->user()->role !== 'admin') {
-            $userUnit = Unit::where('user_id', auth()->id())->first();
-            if ($userUnit) {
-                $query->where('unit_id', $userUnit->id);
-            } else {
-                $query->whereRaw('1 = 0');
-            }
-        }
 
         if ($request->filled('tahun')) {
             $query->whereYear('tanggal_bergabung', $request->tahun);
@@ -136,8 +96,7 @@ class ReportUnitDanUmkmController extends Controller
             $query->where('tahun_berdiri', $request->tahun_berdiri);
         }
 
-
-        if (auth()->user()->role === 'admin' && $request->filled('unit_id')) {
+        if ($request->filled('unit_id')) {
             $query->where('unit_id', $request->unit_id);
         }
 
@@ -145,60 +104,40 @@ class ReportUnitDanUmkmController extends Controller
             ->orderByDesc('total_modal_sum')
             ->get();
 
-        if (auth()->user()->role === 'admin') {
-            $unitList = Unit::orderBy('nama_unit')
-                ->when($request->filled('unit_id'), fn($q) => $q->where('id', $request->unit_id))
-                ->when($request->unit_status === 'aktif', fn($q) => $q->where('is_active', true))
-                ->when($request->unit_status === 'nonaktif', fn($q) => $q->where('is_active', false))
-                ->get();
+        $unitList = Unit::orderBy('nama_unit')
+            ->when($request->filled('unit_id'), fn($q) => $q->where('id', $request->unit_id))
+            ->when($request->unit_status === 'aktif', fn($q) => $q->where('is_active', true))
+            ->when($request->unit_status === 'nonaktif', fn($q) => $q->where('is_active', false))
+            ->get();
 
-            // Saring umkmList agar hanya berisi unit yang lolos filter unit_status
-            if ($request->filled('unit_status')) {
-                $filteredUnitIds = $unitList->pluck('id');
-                $umkmList = $umkmList->filter(fn($u) => $filteredUnitIds->contains($u->unit_id));
-            }
-
-            // Group by unit_id
-            $umkmList = $umkmList->groupBy('unit_id');
-
-            // Jika filter UMKM diisi, sembunyikan unit yang tidak punya data matching
-            if ($request->filled(['tahun', 'tahun_berdiri'])) {
-                $unitIdsWithData = $umkmList->keys();
-                $unitList = $unitList->whereIn('id', $unitIdsWithData);
-            }
-
-            $pdf = Pdf::loadView('admin.report-unit.pdf', compact('umkmList', 'unitList'))
-                ->setPaper('a4', 'portrait')
-                ->setOption(['defaultFont' => 'sans-serif', 'isHtml5ParserEnabled' => true]);
-
-            $filename = 'laporan-unit-umkm-' . now()->format('Ymd-His') . '.pdf';
-            return $pdf->stream($filename);
+        // Saring umkmList agar hanya berisi unit yang lolos filter unit_status
+        if ($request->filled('unit_status')) {
+            $filteredUnitIds = $unitList->pluck('id');
+            $umkmList = $umkmList->filter(fn($u) => $filteredUnitIds->contains($u->unit_id));
         }
 
-        $pdf = Pdf::loadView('umkm.pdf.report_all', compact('umkmList'))
-            ->setPaper('a4', 'landscape')
+        // Group by unit_id
+        $umkmList = $umkmList->groupBy('unit_id');
+
+        // Jika filter UMKM diisi, sembunyikan unit yang tidak punya data matching
+        if ($request->filled(['tahun', 'tahun_berdiri'])) {
+            $unitIdsWithData = $umkmList->keys();
+            $unitList = $unitList->whereIn('id', $unitIdsWithData);
+        }
+
+        $pdf = Pdf::loadView('admin.report-unit.pdf', compact('umkmList', 'unitList'))
+            ->setPaper('a4', 'portrait')
             ->setOption(['defaultFont' => 'sans-serif', 'isHtml5ParserEnabled' => true]);
 
-        $filename = 'laporan-umkm-' . now()->format('Ymd-His') . '.pdf';
+        $filename = 'laporan-unit-umkm-' . now()->format('Ymd-His') . '.pdf';
         return $pdf->stream($filename);
     }
 
     /**
-     * Download Laporan UMKM Individual (Single PDF)
+     * Download Laporan UMKM Individual (Single PDF) - Admin Only
      */
     public function downloadSingle(Request $request, Umkm $umkm)
     {
-        if (!in_array(auth()->user()->role, ['admin', 'unit'])) {
-            abort(403);
-        }
-
-        if (auth()->user()->role !== 'admin') {
-            $userUnit = Unit::where('user_id', auth()->id())->first();
-            if (!$userUnit || $umkm->unit_id !== $userUnit->id) {
-                abort(403, 'Anda tidak memiliki akses ke data ini.');
-            }
-        }
-
         $umkm->load([
             'unit',
             'user',
@@ -213,7 +152,7 @@ class ReportUnitDanUmkmController extends Controller
             'verifiedBy',
         ]);
 
-        $pdf = Pdf::loadView('umkm.pdf.report_single', compact('umkm'))
+        $pdf = Pdf::loadView('admin.umkm.pdf.report_single', compact('umkm'))
             ->setPaper('a4', 'portrait')
             ->setOption(['defaultFont' => 'sans-serif', 'isHtml5ParserEnabled' => true]);
 
@@ -222,21 +161,10 @@ class ReportUnitDanUmkmController extends Controller
     }
 
     /**
-     * Download Laporan UMKM per Unit (Support Filters)
+     * Download Laporan UMKM per Unit (Support Filters) - Admin Only
      */
     public function downloadByUnit(Request $request, $unitId)
     {
-        if (!in_array(auth()->user()->role, ['admin', 'unit'])) {
-            abort(403);
-        }
-
-        if (auth()->user()->role !== 'admin') {
-            $userUnit = Unit::where('user_id', auth()->id())->first();
-            if (!$userUnit || $userUnit->id != $unitId) {
-                abort(403, 'Anda tidak memiliki akses ke unit ini.');
-            }
-        }
-
         $query = Umkm::with(['unit', 'kategori', 'modalUmkm', 'produkUmkm', 'province', 'city', 'district', 'village']);
 
         if ($unitId == 0 || $unitId == '0') {
@@ -254,8 +182,6 @@ class ReportUnitDanUmkmController extends Controller
         if ($request->filled('tahun')) {
             $query->whereYear('tanggal_bergabung', $request->tahun);
         }
-
-
 
         $umkmList = $query->withSum('modalUmkm as total_modal_sum', 'nilai_modal')
             ->orderByDesc('total_modal_sum')

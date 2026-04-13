@@ -52,13 +52,33 @@
             align-items: stretch;
         }
 
-        /* Setiap slot kartu: lebar fixed, tinggi stretch */
+        /* Setiap slot kartu: lebar dinamis agar tidak terpotong */
         .carousel-card {
-            flex: 0 0 200px;
-            width: 200px;
+            flex: 0 0 calc((100% - (3 * 16px)) / 4);
+            width: calc((100% - (3 * 16px)) / 4);
             min-width: 0;
             display: flex;
-            /* agar produk-card bisa h-full */
+        }
+
+        @media (max-width: 1100px) {
+            .carousel-card {
+                flex: 0 0 calc((100% - (2 * 16px)) / 3);
+                width: calc((100% - (2 * 16px)) / 3);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .carousel-card {
+                flex: 0 0 calc((100% - (1 * 16px)) / 2);
+                width: calc((100% - (1 * 16px)) / 2);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .carousel-card {
+                flex: 0 0 100%;
+                width: 100%;
+            }
         }
 
         /* produk-card mengisi penuh slot */
@@ -99,6 +119,21 @@
 
         #carousel-next {
             right: -18px;
+        }
+
+        @media (max-width: 640px) {
+            #carousel-prev {
+                left: -10px;
+            }
+
+            #carousel-next {
+                right: -10px;
+            }
+
+            .carousel-nav-btn {
+                width: 32px;
+                height: 32px;
+            }
         }
     </style>
 @endpush
@@ -1047,13 +1082,43 @@
             const emptyMsg = document.getElementById('carousel-empty');
             if (!outer || !track) return;
 
-            // Harus sama dengan CSS: flex: 0 0 200px + gap 16px
-            const CARD_W = 200 + 16;
+            // Ambil lebar kartu + gap secara dinamis
+            function getCardWidth() {
+                const first = track.querySelector('.carousel-card');
+                return first ? first.offsetWidth + 16 : 240 + 16;
+            }
+
             const activeCat = '{{ addslashes($activeCatName) }}';
             let idx = 0;
 
+            // Autoplay
+            let autoplayTimer = null;
+            function startAutoplay() {
+                if(autoplayTimer) return;
+                autoplayTimer = setInterval(() => {
+                    const visible = visibleCards();
+                    if (visible.length === 0) return;
+                    
+                    idx++;
+                    render();
+
+                    // Jika sampai di klon (idx === total kartu asli), tunggu transisi selesai lalu loncat ke 0
+                    if (idx >= visible.length) {
+                        setTimeout(() => {
+                            idx = 0;
+                            render(true);
+                        }, 410); // sedikit lebih lama dari durasi transisi
+                    }
+                }, 4000);
+            }
+            function stopAutoplay() {
+                clearInterval(autoplayTimer);
+                autoplayTimer = null;
+            }
+
             function allCards() {
-                return Array.from(track.querySelectorAll('.carousel-card'));
+                // Hanya ambil kartu asli, bukan klon
+                return Array.from(track.querySelectorAll('.carousel-card:not(.is-clone)'));
             }
 
             function visibleCards() {
@@ -1063,42 +1128,71 @@
                 });
             }
 
-            function perPage() {
-                return Math.max(1, Math.floor(outer.offsetWidth / CARD_W));
+            function perPage(w) {
+                const width = w || getCardWidth();
+                // Gunakan pembulatan yang lebih ketat agar tidak ada desimal terpotong
+                return Math.max(1, Math.round(outer.offsetWidth / width));
             }
 
             function applyFilter() {
+                // Hapus klon sebelumnya
+                track.querySelectorAll('.carousel-card.is-clone').forEach(el => el.remove());
+
                 allCards().forEach(c => {
                     const cat = (c.dataset.cat || '').trim();
                     const show = activeCat === 'all' || cat === activeCat;
                     c.style.display = show ? 'flex' : 'none';
+                    c.classList.remove('is-clone');
                 });
+
+                // Tambahkan klon di akhir sebanyak item per halaman untuk seamless loop
+                const visible = visibleCards();
+                if (visible.length > 0) {
+                    const n = perPage();
+                    for(let i=0; i<n; i++) {
+                        if(!visible[i]) break;
+                        const clone = visible[i].cloneNode(true);
+                        clone.classList.add('is-clone');
+                        // Hilangkan ID agar tidak duplikat jika ada
+                        clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+                        track.appendChild(clone);
+                    }
+                }
+
                 idx = 0;
-                render();
+                render(true);
                 if (emptyMsg) emptyMsg.style.display = visibleCards().length === 0 ? 'block' : 'none';
             }
 
-            function render() {
-                const visible = visibleCards();
-                const maxIdx = Math.max(0, visible.length - perPage());
-                idx = Math.min(Math.max(idx, 0), maxIdx);
+            function render(instant = false) {
+                const visible = visibleCards(); // Hanya kartu asli (karena klon punya .is-clone)
+                const w = getCardWidth();
+                const totalReal = visible.length;
+                
+                // Batasi idx untuk manual navigation
+                const maxRealIdx = Math.max(0, totalReal - perPage(w));
+                
+                // Jika sedang tidak autoplay (manual click), batasi idx
+                if (!autoplayTimer && !instant) {
+                    idx = Math.min(Math.max(idx, 0), maxRealIdx);
+                }
 
-                // Hitung offset: cari posisi kartu visible[idx] dalam DOM flex
-                // (hidden cards masih ada tapi display:none, jadi tidak mengambil ruang)
-                // Kita geser sejumlah idx * CARD_W dari posisi awal track visible
-                track.style.transform = `translateX(-${idx * CARD_W}px)`;
+                track.style.transition = instant ? 'none' : 'transform .4s cubic-bezier(.4, 0, .2, 1)';
+                track.style.transform = `translateX(-${idx * w}px)`;
 
-                btnPrev.classList.toggle('disabled', idx === 0);
-                btnNext.classList.toggle('disabled', idx >= maxIdx);
+                if (btnPrev) btnPrev.classList.toggle('disabled', idx === 0);
+                if (btnNext) btnNext.classList.toggle('disabled', idx >= maxRealIdx);
             }
 
             btnPrev.addEventListener('click', () => {
-                idx -= perPage();
+                idx -= perPage(getCardWidth());
                 render();
+                stopAutoplay();
             });
             btnNext.addEventListener('click', () => {
-                idx += perPage();
+                idx += perPage(getCardWidth());
                 render();
+                stopAutoplay();
             });
 
             // Swipe
@@ -1123,7 +1217,11 @@
                 render();
             });
 
+            outer.addEventListener('mouseenter', stopAutoplay);
+            outer.addEventListener('mouseleave', startAutoplay);
+
             applyFilter();
+            startAutoplay();
         })();
     </script>
 

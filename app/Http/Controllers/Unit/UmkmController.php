@@ -9,6 +9,7 @@ use App\Models\Unit;
 use App\Models\Kategori;
 use App\Models\Users;
 use App\Mail\UmkmRegistrationMail;
+use App\Services\ActivityLogger;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,15 +26,29 @@ use Laravolt\Indonesia\Models\Village;
 
 class UmkmController extends Controller
 {
+    /**
+     * Menampilkan daftar UMKM milik unit yang sedang login.
+     * Jika admin mengakses ini, akan diarahkan ke admin dashboard UMKM.
+     */
     public function index(Request $request)
     {
+        $user = auth()->user();
+
+        // Redirect admin ke controller khusus admin
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.umkm.index');
+        }
+
         $query = Umkm::with(['unit', 'user', 'creator', 'kategori', 'province', 'city', 'produkUmkm', 'modalUmkm']);
 
-        $userUnit = null;
-        if (auth()->user()->role !== 'admin') {
-            $userUnit = Unit::where('user_id', auth()->id())->first();
-            if ($userUnit) {
-                $query->where('unit_id', $userUnit->id);
+        // Filter otomatis berdasarkan unit user
+        $userUnit = Unit::where('user_id', $user->id)->first();
+        if ($userUnit) {
+            $query->where('unit_id', $userUnit->id);
+        } else {
+            // Jika role umkm, biarkan login as umkm melihat datanya sendiri (biasanya ditangani router lain tapi aman aja)
+            if ($user->role === 'umkm') {
+                $query->where('user_id', $user->id);
             } else {
                 $query->whereRaw('1 = 0');
             }
@@ -48,15 +63,6 @@ class UmkmController extends Controller
         if ($request->filled('kategori_id')) {
             $query->byKategori($request->kategori_id);
         }
-        if ($request->filled('province_code')) {
-            $query->byProvince($request->province_code);
-        }
-        if ($request->filled('city_code')) {
-            $query->byCity($request->city_code);
-        }
-        if (auth()->user()->role === 'admin' && $request->filled('unit_id')) {
-            $query->where('unit_id', $request->unit_id);
-        }
 
         $umkmList = $query->withSum('modalUmkm as total_modal_sum', 'nilai_modal')
             ->latest()
@@ -64,57 +70,56 @@ class UmkmController extends Controller
 
         $kategoriList = Kategori::orderBy('nama')->get();
         $provinceList = Province::orderBy('name')->get();
-        $unitList     = auth()->user()->role === 'admin' ? Unit::orderBy('nama_unit')->get() : collect();
-
+        
         $cityList = [];
         if ($request->filled('province_code')) {
             $cityList = City::where('province_code', $request->province_code)->orderBy('name')->get();
         }
 
-        $userRole = auth()->user()->role;
-
         $permissions = [
-            'canCreate'       => $userRole === 'unit',
-            'canEdit'         => $userRole === 'unit',
-            'canDelete'       => $userRole === 'unit',
-            'canVerify'       => in_array($userRole, ['admin', 'unit']),
-            'canCreateAccount'=> in_array($userRole, ['admin', 'unit']),
-            'canChangeStatus' => $userRole === 'admin',
-            'userRole'        => $userRole,
+            'canCreate'       => $user->role === 'unit',
+            'canEdit'         => $user->role === 'unit',
+            'canDelete'       => $user->role === 'unit',
+            'canVerify'       => $user->role === 'unit', // Unit bisa verify UMKM barunya sendiri jika diizinkan sistem
+            'canCreateAccount'=> true,
+            'canChangeStatus' => false, // Hanya admin
+            'userRole'        => $user->role,
         ];
 
         $breadcrumbs = [
             ['name' => 'Kelola UMKM', 'url' => route('umkm.index')],
         ];
 
-        return view('umkm.index', compact('umkmList', 'permissions', 'kategoriList', 'provinceList', 'cityList', 'unitList', 'breadcrumbs'));
+        return view('unit.umkm.index', compact('umkmList', 'permissions', 'kategoriList', 'provinceList', 'cityList', 'breadcrumbs'));
     }
 
     public function create()
     {
         if (auth()->user()->role !== 'unit') {
-            abort(403, 'Anda tidak memiliki akses untuk menambah UMKM.');
+            abort(403, 'Hanya Unit yang dapat mendaftarkan UMKM baru.');
         }
 
         $kategoriList = Kategori::orderBy('nama')->get();
         $provinceList = Province::orderBy('name')->get();
-        $unitList     = Unit::orderBy('id')->get();
-
+        
         $breadcrumbs = [
             ['name' => 'Kelola UMKM', 'url' => route('umkm.index')],
             ['name' => 'Tambah UMKM', 'url' => route('umkm.create')],
         ];
 
-        return view('umkm.create', compact('kategoriList', 'provinceList', 'unitList', 'breadcrumbs'));
+        return view('unit.umkm.create', compact('kategoriList', 'provinceList', 'breadcrumbs'));
     }
 
     public function store(Request $request)
     {
-        if (!in_array(auth()->user()->role, ['admin', 'unit'])) {
-            abort(403, 'Anda tidak memiliki akses untuk menambah UMKM.');
+        if (auth()->user()->role !== 'unit') {
+            abort(403);
         }
 
-        $tablePrefix = config('laravolt.indonesia.table_prefix', '');
+        $userUnit = Unit::where('user_id', auth()->id())->first();
+        if (!$userUnit) {
+            return back()->with('error', 'Akun Anda tidak terhubung ke unit manapun.');
+        }
 
         $validated = $request->validate([
             'nama_pemilik'    => 'required|string|max:255',
@@ -124,77 +129,30 @@ class UmkmController extends Controller
             'telepon'         => 'required|string|max:20',
             'email'           => 'required|email|unique:umkm,email',
             'alamat'          => 'required|string',
-            'province_code'   => "nullable|exists:{$tablePrefix}provinces,code",
-            'city_code'       => "nullable|exists:{$tablePrefix}cities,code",
-            'district_code'   => "nullable|exists:{$tablePrefix}districts,code",
-            'village_code'    => "nullable|exists:{$tablePrefix}villages,code",
+            'province_code'   => 'nullable|exists:indonesia_provinces,code',
+            'city_code'       => 'nullable|exists:indonesia_cities,code',
+            'district_code'   => 'nullable|exists:indonesia_districts,code',
+            'village_code'    => 'nullable|exists:indonesia_villages,code',
             'kode_pos'        => 'nullable|string|max:5',
             'tentang'         => 'nullable|string',
-            'facebook'        => 'nullable|string|max:255',
-            'instagram'       => 'nullable|string|max:255',
-            'youtube'         => 'nullable|string|max:255',
-            'tiktok'          => 'nullable|string|max:255',
             'logo_umkm'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'create_account'  => 'nullable|boolean',
-            'unit_id'         => 'nullable|exists:units,id',
             'nama_produk'     => 'nullable|string|max:255',
             'harga_produk'    => 'nullable|numeric|min:0',
-            'deskripsi_produk' => 'nullable|string',
             'kategori_satuan' => 'nullable|in:pcs,bungkus,gram,kg,liter,ml,box,pack,porsi,cup,karung,paket,unit',
             'foto_produk'     => 'nullable|array|max:5',
             'foto_produk.*'   => 'image|mimes:jpg,jpeg,png,webp|max:2048',
-            'modals'            => 'nullable|array',
-            'modals.*.nama_item' => 'nullable|string|max:255',
-            'modals.*.kategori'  => 'nullable|in:peralatan,kendaraan,perlengkapan,bangunan,lainnya',
-            'modals.*.nilai'     => 'nullable|integer|min:0',
-            'modals.*.kondisi'   => 'nullable|in:baru,baik,cukup,rusak',
-            'modals.*.tanggal'   => 'nullable|date',
-            'modals.*.keterangan' => 'nullable|string',
-            'modals.*.foto'      => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         DB::beginTransaction();
         try {
             if ($request->hasFile('logo_umkm')) {
-                $filename = time() . '_logo_' . uniqid() . '.' . $request->file('logo_umkm')->getClientOriginalExtension();
-                $validated['logo_umkm'] = $request->file('logo_umkm')->storeAs('umkm/logo', $filename, 'public');
-            }
-
-            if (auth()->user()->role === 'unit') {
-                $unit = Unit::where('user_id', auth()->id())->first();
-                if (!$unit) {
-                    throw new \Exception('Akun Anda belum terhubung ke unit manapun. Hubungi admin.');
-                }
-                $validated['unit_id'] = $unit->id;
-            } else {
-                if (empty($validated['unit_id'])) {
-                    $firstUnit = Unit::first();
-                    if (!$firstUnit) {
-                        throw new \Exception('Belum ada data unit. Buat unit terlebih dahulu.');
-                    }
-                    $validated['unit_id'] = $firstUnit->id;
-                }
-            }
-
-            $validated['uuid']              = (string) Str::uuid();
-            $validated['kode_umkm']         = $this->generateKodeUmkm();
-            $validated['tanggal_bergabung'] = now()->toDateString();
-            $validated['created_by']        = auth()->id();
-
-            $unitForUmkm = Unit::find($validated['unit_id']);
-            if ($unitForUmkm && !$unitForUmkm->is_active) {
-                $validated['status']      = 'nonaktif';
-                $validated['verified_at'] = null;
-                $validated['verified_by'] = null;
-            } else {
-                $validated['status']      = 'aktif';
-                $validated['verified_at'] = now();
-                $validated['verified_by'] = auth()->id();
+                $validated['logo_umkm'] = $request->file('logo_umkm')->store('umkm/logo', 'public');
             }
 
             $umkm = Umkm::create([
-                'uuid'              => $validated['uuid'],
-                'unit_id'           => $validated['unit_id'],
+                'uuid'              => (string) Str::uuid(),
+                'unit_id'           => $userUnit->id,
                 'kategori_id'       => $validated['kategori_id'],
                 'nama_pemilik'      => $validated['nama_pemilik'],
                 'nama_usaha'        => $validated['nama_usaha'],
@@ -209,25 +167,20 @@ class UmkmController extends Controller
                 'kode_pos'          => $validated['kode_pos'],
                 'logo_umkm'         => $validated['logo_umkm'] ?? null,
                 'tentang'           => $validated['tentang'],
-                'facebook'          => $validated['facebook'],
-                'instagram'         => $validated['instagram'],
-                'youtube'           => $validated['youtube'],
-                'tiktok'            => $validated['tiktok'],
-                'kode_umkm'         => $validated['kode_umkm'],
-                'tanggal_bergabung' => $validated['tanggal_bergabung'],
-                'status'            => $validated['status'],
-                'created_by'        => $validated['created_by'],
-                'verified_at'       => $validated['verified_at'],
-                'verified_by'       => $validated['verified_by'],
+                'kode_umkm'         => $this->generateKodeUmkm(),
+                'tanggal_bergabung' => now()->toDateString(),
+                'status'            => $userUnit->is_active ? 'aktif' : 'nonaktif',
+                'created_by'        => auth()->id(),
+                'verified_at'       => $userUnit->is_active ? now() : null,
+                'verified_by'       => $userUnit->is_active ? auth()->id() : null,
             ]);
 
+            // Handle Produk jika ada
             if ($request->filled('nama_produk')) {
                 $fotoProdukPaths = [];
                 if ($request->hasFile('foto_produk')) {
                     foreach ($request->file('foto_produk') as $file) {
-                        $filename = time() . '_produk_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                        $path = $file->storeAs('produk/' . $umkm->kode_umkm, $filename, 'public');
-                        $fotoProdukPaths[] = $path;
+                        $fotoProdukPaths[] = $file->store('produk/' . $umkm->kode_umkm, 'public');
                     }
                 }
 
@@ -235,7 +188,7 @@ class UmkmController extends Controller
                     'uuid'             => (string) Str::uuid(),
                     'umkm_id'          => $umkm->id,
                     'nama_produk'      => $validated['nama_produk'],
-                    'deskripsi_produk' => $validated['deskripsi_produk'] ?? $validated['nama_produk'],
+                    'deskripsi_produk' => $validated['nama_produk'],
                     'harga'            => $validated['harga_produk'] ?? 0,
                     'kategori_satuan'  => $validated['kategori_satuan'],
                     'foto_produk'      => !empty($fotoProdukPaths) ? $fotoProdukPaths : null,
@@ -243,81 +196,23 @@ class UmkmController extends Controller
                 ]);
             }
 
-            if ($request->filled('modals')) {
-                foreach ($request->input('modals') as $index => $modalData) {
-                    // Skip if name is empty
-                    if (empty($modalData['nama_item'])) continue;
-
-                    $fotoModalPaths = [];
-                    if ($request->hasFile("modals.{$index}.foto")) {
-                        $file = $request->file("modals.{$index}.foto");
-                        $filename = time() . '_modal_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                        $path = $file->storeAs('modal_umkm/' . $umkm->kode_umkm, $filename, 'public');
-                        $fotoModalPaths[] = $path;
-                    }
-
-                    \App\Models\ModalUmkm::create([
-                        'uuid'              => (string) \Illuminate\Support\Str::uuid(),
-                        'umkm_id'           => $umkm->id,
-                        'nama_item'         => $modalData['nama_item'],
-                        'kategori_modal'    => $modalData['kategori'] ?? 'lainnya',
-                        'nilai_modal'       => $modalData['nilai'] ?? 0,
-                        'kondisi'           => $modalData['kondisi'] ?? 'baik',
-                        'tanggal_perolehan' => $modalData['tanggal'] ?? null,
-                        'keterangan'        => $modalData['keterangan'] ?? null,
-                        'foto'              => !empty($fotoModalPaths) ? $fotoModalPaths : null,
-                        'status'            => 'aktif',
-                        'created_by'        => auth()->id(),
-                    ]);
-                }
-            }
-
-            if ($request->boolean('create_account')) {
-                $this->createUserAccount($umkm, true);
-            }
+            ActivityLogger::logCreate($umkm, "Mendaftarkan UMKM baru '{$umkm->nama_usaha}'");
 
             DB::commit();
-
-            $message = 'UMKM berhasil ditambahkan dan langsung diaktifkan.';
-            if ($request->boolean('create_account')) {
-                $message .= ' Akun login telah dikirim ke email UMKM.';
-            }
-
-            return redirect()->route('umkm.index')->with('success', $message);
+            return redirect()->route('umkm.index')->with('success', 'UMKM berhasil didaftarkan.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-
-            if (!empty($validated['logo_umkm'])) {
-                Storage::disk('public')->delete($validated['logo_umkm']);
-            }
-
-            Log::error('Failed to create UMKM: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-            ]);
-
+            Log::error('Gagal daftarkan UMKM: ' . $e->getMessage());
             return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
-
     public function edit(Umkm $umkm)
     {
-        if (auth()->user()->role !== 'unit') {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit UMKM.');
-        }
-
-        $userUnit   = Unit::where('user_id', auth()->id())->first();
-        $userUnitId = $userUnit ? $userUnit->id : null;
-
-        if (auth()->user()->role !== 'admin' && $umkm->unit_id !== $userUnitId) {
-            abort(403, 'Anda tidak memiliki akses ke data ini.');
-        }
-
-        if (auth()->user()->role === 'unit') {
-            if ($umkm->created_by !== auth()->id()) {
-                abort(403, 'Anda hanya bisa mengedit data yang Anda buat.');
-            }
+        $userUnit = Unit::where('user_id', auth()->id())->first();
+        if (!$userUnit || $umkm->unit_id !== $userUnit->id) {
+            abort(403);
         }
 
         $umkm->load(['kategori', 'province', 'city', 'district', 'village', 'modalUmkm', 'produkUmkm']);
@@ -328,34 +223,21 @@ class UmkmController extends Controller
         $cityList      = $umkm->province_code ? City::where('province_code', $umkm->province_code)->orderBy('name')->get() : [];
         $districtList  = $umkm->city_code ? District::where('city_code', $umkm->city_code)->orderBy('name')->get() : [];
         $villageList   = $umkm->district_code ? Village::where('district_code', $umkm->district_code)->orderBy('name')->get() : [];
-        $kategoriModal = ['peralatan', 'kendaraan', 'perlengkapan', 'bangunan', 'lainnya'];
-        $kondisiModal  = ['baru', 'baik', 'cukup', 'rusak'];
 
         $breadcrumbs = [
             ['name' => 'Kelola UMKM', 'url' => route('umkm.index')],
             ['name' => 'Ubah UMKM', 'url' => route('umkm.edit', $umkm)],
         ];
 
-        return view('umkm.edit', compact(
-            'umkm', 'kategoriList', 'provinceList', 'cityList',
-            'districtList', 'villageList', 'kategoriModal', 'kondisiModal', 'breadcrumbs', 'produkUtama'
-        ));
+        return view('unit.umkm.edit', compact('umkm', 'kategoriList', 'provinceList', 'cityList', 'districtList', 'villageList', 'breadcrumbs', 'produkUtama'));
     }
 
     public function update(Request $request, Umkm $umkm)
     {
-        if (!in_array(auth()->user()->role, ['admin', 'unit'])) {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit UMKM.');
+        $userUnit = Unit::where('user_id', auth()->id())->first();
+        if (!$userUnit || $umkm->unit_id !== $userUnit->id) {
+            abort(403);
         }
-
-        $userUnit   = Unit::where('user_id', auth()->id())->first();
-        $userUnitId = $userUnit ? $userUnit->id : null;
-
-        if (auth()->user()->role !== 'admin' && $umkm->unit_id !== $userUnitId) {
-            abort(403, 'Anda tidak memiliki akses ke data ini.');
-        }
-
-        $tablePrefix = config('laravolt.indonesia.table_prefix', '');
 
         $validated = $request->validate([
             'nama_pemilik'      => 'required|string|max:255',
@@ -365,398 +247,39 @@ class UmkmController extends Controller
             'telepon'           => 'required|string|max:20',
             'email'             => ['required', 'email', Rule::unique('umkm', 'email')->ignore($umkm->id)],
             'alamat'            => 'required|string',
-            'province_code'     => "nullable|exists:{$tablePrefix}provinces,code",
-            'city_code'         => "nullable|exists:{$tablePrefix}cities,code",
-            'district_code'     => "nullable|exists:{$tablePrefix}districts,code",
-            'village_code'      => "nullable|exists:{$tablePrefix}villages,code",
-            'kode_pos'          => 'nullable|string|max:5',
-            'tentang'           => 'nullable|string',
-            'facebook'          => 'nullable|string|max:255',
-            'instagram'         => 'nullable|string|max:255',
-            'youtube'           => 'nullable|string|max:255',
-            'tiktok'            => 'nullable|string|max:255',
             'logo_umkm'         => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'remove_logo_umkm'  => 'nullable|boolean',
-            'nama_produk'       => 'nullable|string|max:255',
-            'harga_produk'      => 'nullable|numeric|min:0',
-            'deskripsi_produk'  => 'nullable|string',
-            'kategori_satuan'   => 'nullable|in:pcs,bungkus,gram,kg,liter,ml,box,pack,porsi,cup,karung,paket,unit',
-            'foto_produk'       => 'nullable|array|max:5',
-            'foto_produk.*'     => 'image|mimes:jpg,jpeg,png,webp|max:2048',
-            'foto_produk_existing' => 'nullable|array',
-            'foto_produk_existing.*' => 'string',
         ]);
 
-        if ($request->boolean('remove_logo_umkm')) {
-            if ($umkm->logo_umkm) {
-                Storage::disk('public')->delete($umkm->logo_umkm);
-            }
-            $validated['logo_umkm'] = null;
-        }
+        $old = ActivityLogger::safeAttributes($umkm);
 
         if ($request->hasFile('logo_umkm')) {
-            if ($umkm->logo_umkm) {
-                Storage::disk('public')->delete($umkm->logo_umkm);
-            }
-            $filename = time() . '_logo_' . uniqid() . '.' . $request->file('logo_umkm')->getClientOriginalExtension();
-            $validated['logo_umkm'] = $request->file('logo_umkm')->storeAs('umkm/logo', $filename, 'public');
+            if ($umkm->logo_umkm) Storage::disk('public')->delete($umkm->logo_umkm);
+            $validated['logo_umkm'] = $request->file('logo_umkm')->store('umkm/logo', 'public');
         }
 
-        $validated['updated_by'] = auth()->id();
         $umkm->update($validated);
 
-        if ($request->filled('nama_produk')) {
-            $produkUtama = $umkm->produkUmkm()->first();
-
-            // Handle Photos
-            $finalFotos = $request->input('foto_produk_existing', []);
-
-            // Delete removed photos from storage
-            if ($produkUtama) {
-                $oldFotos = $produkUtama->foto_produk ?? [];
-                foreach ($oldFotos as $old) {
-                    if (!in_array($old, $finalFotos)) {
-                        Storage::disk('public')->delete($old);
-                    }
-                }
-            }
-
-            // Upload new photos
-            if ($request->hasFile('foto_produk')) {
-                foreach ($request->file('foto_produk') as $file) {
-                    $filename = time() . '_produk_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                    $path = $file->storeAs('produk/' . $umkm->kode_umkm, $filename, 'public');
-                    $finalFotos[] = $path;
-                }
-            }
-
-            $productData = [
-                'nama_produk'      => $request->nama_produk,
-                'deskripsi_produk' => $request->deskripsi_produk ?? $request->nama_produk,
-                'harga'            => $request->harga_produk ?? 0,
-                'kategori_satuan'  => $request->kategori_satuan,
-                'foto_produk'      => !empty($finalFotos) ? array_values($finalFotos) : null,
-                'updated_by'       => auth()->id(),
-            ];
-
-            if ($produkUtama) {
-                $produkUtama->update($productData);
-            } else {
-                $productData['uuid'] = (string) Str::uuid();
-                $productData['umkm_id'] = $umkm->id;
-                $productData['created_by'] = auth()->id();
-                \App\Models\ProdukUmkm::create($productData);
-            }
-        }
+        ActivityLogger::logUpdate($umkm, "Memperbarui data UMKM '{$umkm->nama_usaha}'", $old, ActivityLogger::safeAttributes($umkm->refresh()));
 
         return redirect()->route('umkm.index')->with('success', 'Data UMKM berhasil diperbarui.');
     }
 
     public function destroy(Umkm $umkm)
     {
-        if (!in_array(auth()->user()->role, ['admin', 'unit'])) {
-            abort(403, 'Anda tidak memiliki akses untuk menghapus UMKM.');
+        $userUnit = Unit::where('user_id', auth()->id())->first();
+        if (!$userUnit || $umkm->unit_id !== $userUnit->id) {
+            abort(403);
         }
 
-        $userUnit   = Unit::where('user_id', auth()->id())->first();
-        $userUnitId = $userUnit ? $userUnit->id : null;
+        ActivityLogger::logDelete("Menghapus UMKM '{$umkm->nama_usaha}'", get_class($umkm), $umkm->id, $umkm->nama_usaha);
 
-        if (auth()->user()->role !== 'admin' && $umkm->unit_id !== $userUnitId) {
-            abort(403, 'Anda tidak memiliki akses ke data ini.');
-        }
-
-        if (auth()->user()->role === 'unit') {
-            if ($umkm->created_by !== auth()->id()) {
-                abort(403, 'Anda hanya bisa menghapus data yang Anda buat.');
-            }
-        }
-
-        if ($umkm->logo_umkm) {
-            Storage::disk('public')->delete($umkm->logo_umkm);
-        }
-
-        if ($umkm->user_id) {
-            $userAccount = Users::find($umkm->user_id);
-            if ($userAccount) {
-                $userAccount->delete();
-            }
-        }
-
+        if ($umkm->logo_umkm) Storage::disk('public')->delete($umkm->logo_umkm);
         $umkm->delete();
 
         return redirect()->route('umkm.index')->with('success', 'Data UMKM berhasil dihapus.');
     }
 
-    // =========================================================================
-    // MODAL UMKM
-    // =========================================================================
-
-    public function storeModal(Request $request, Umkm $umkm)
-    {
-        if (auth()->user()->role !== 'unit') {
-            abort(403, 'Anda tidak memiliki akses untuk mengelola modal UMKM.');
-        }
-
-        $validated = $request->validate([
-            'nama_item'          => 'required|string|max:255',
-            'kategori_modal'     => 'required|in:peralatan,kendaraan,perlengkapan,bangunan,lainnya',
-            'keterangan'         => 'nullable|string',
-            'nilai_modal'        => 'required|integer|min:0',
-            'kondisi'            => 'required|in:baru,baik,cukup,rusak',
-            'tanggal_perolehan'  => 'nullable|date',
-            'foto'               => 'nullable|array|max:10',
-            'foto.*'             => 'image|mimes:jpg,jpeg,png,webp|max:2048',
-        ]);
-
-        $fotoPaths = [];
-        if ($request->hasFile('foto')) {
-            foreach ($request->file('foto') as $file) {
-                $filename    = time() . '_modal_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                $fotoPaths[] = $file->storeAs('modal_umkm/' . $umkm->kode_umkm, $filename, 'public');
-            }
-        }
-
-        $umkm->modalUmkm()->create([
-            'nama_item'         => $validated['nama_item'],
-            'kategori_modal'    => $validated['kategori_modal'],
-            'keterangan'        => $validated['keterangan'] ?? null,
-            'nilai_modal'       => $validated['nilai_modal'],
-            'kondisi'           => $validated['kondisi'],
-            'tanggal_perolehan' => $validated['tanggal_perolehan'] ?? null,
-            'foto'              => !empty($fotoPaths) ? $fotoPaths : null,
-            'created_by'        => auth()->id(),
-        ]);
-
-        return back()->with('success', 'Item modal berhasil ditambahkan.');
-    }
-
-    public function updateModal(Request $request, Umkm $umkm, ModalUmkm $modal)
-    {
-        if (auth()->user()->role !== 'unit') {
-            abort(403, 'Anda tidak memiliki akses untuk mengelola modal UMKM.');
-        }
-
-        $validated = $request->validate([
-            'nama_item'         => 'required|string|max:255',
-            'kategori_modal'    => 'required|in:peralatan,kendaraan,perlengkapan,bangunan,lainnya',
-            'keterangan'        => 'nullable|string',
-            'nilai_modal'       => 'required|integer|min:0',
-            'kondisi'           => 'required|in:baru,baik,cukup,rusak',
-            'tanggal_perolehan' => 'nullable|date',
-            'foto'              => 'nullable|array|max:10',
-            'foto.*'            => 'image|mimes:jpg,jpeg,png,webp|max:2048',
-            'foto_existing'     => 'nullable|array',
-            'foto_existing.*'   => 'string',
-        ]);
-
-        $fotoPaths = $request->input('foto_existing', []);
-
-        $fotoLama = $modal->foto ?? [];
-        foreach ($fotoLama as $path) {
-            if (!in_array($path, $fotoPaths)) {
-                Storage::disk('public')->delete($path);
-            }
-        }
-
-        if ($request->hasFile('foto')) {
-            foreach ($request->file('foto') as $file) {
-                $filename    = time() . '_modal_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                $fotoPaths[] = $file->storeAs('modal_umkm/' . $umkm->kode_umkm, $filename, 'public');
-            }
-        }
-
-        $modal->update([
-            'nama_item'         => $validated['nama_item'],
-            'kategori_modal'    => $validated['kategori_modal'],
-            'keterangan'        => $validated['keterangan'] ?? null,
-            'nilai_modal'       => $validated['nilai_modal'],
-            'kondisi'           => $validated['kondisi'],
-            'tanggal_perolehan' => $validated['tanggal_perolehan'] ?? null,
-            'foto'              => !empty($fotoPaths) ? $fotoPaths : null,
-            'updated_by'        => auth()->id(),
-        ]);
-
-        return back()->with('success', 'Item modal berhasil diperbarui.');
-    }
-
-    public function destroyModal(Umkm $umkm, ModalUmkm $modal)
-    {
-        if (auth()->user()->role !== 'unit') {
-            abort(403, 'Anda tidak memiliki akses untuk mengelola modal UMKM.');
-        }
-
-        if (!empty($modal->foto)) {
-            foreach ($modal->foto as $path) {
-                Storage::disk('public')->delete($path);
-            }
-        }
-
-        $modal->delete();
-
-        return back()->with('success', 'Item modal berhasil dihapus.');
-    }
-
-    // =========================================================================
-    // STATUS & AKUN
-    // =========================================================================
-
-    public function verify(Umkm $umkm)
-    {
-        if (!in_array(auth()->user()->role, ['admin', 'unit'])) {
-            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk mengaktifkan UMKM.');
-        }
-
-        if (auth()->user()->role === 'unit') {
-            $userUnit = Unit::where('user_id', auth()->id())->first();
-            if (!$userUnit || $umkm->unit_id !== $userUnit->id) {
-                return redirect()->back()->with('error', 'Anda tidak memiliki akses ke data ini.');
-            }
-        }
-
-        if ($umkm->unit && !$umkm->unit->is_active) {
-            return redirect()->back()->with('error', 'Gagal mengaktifkan UMKM. Unit yang menaungi sedang tidak aktif.');
-        }
-
-        $umkm->update([
-            'status'      => 'aktif',
-            'verified_at' => now(),
-            'verified_by' => auth()->id(),
-        ]);
-
-        if ($umkm->user) {
-            $umkm->user->update(['is_active' => true]);
-        }
-
-        return redirect()->back()->with('success', 'UMKM berhasil diaktifkan.');
-    }
-
-    public function reject(Umkm $umkm)
-    {
-        if (!in_array(auth()->user()->role, ['admin', 'unit'])) {
-            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk menonaktifkan UMKM.');
-        }
-
-        if (auth()->user()->role === 'unit') {
-            $userUnit = Unit::where('user_id', auth()->id())->first();
-            if (!$userUnit || $umkm->unit_id !== $userUnit->id) {
-                return redirect()->back()->with('error', 'Anda tidak memiliki akses ke data ini.');
-            }
-        }
-
-        $umkm->update([
-            'status'      => 'nonaktif',
-            'verified_at' => null,
-            'verified_by' => null,
-        ]);
-
-        if ($umkm->user) {
-            $umkm->user->update(['is_active' => false]);
-        }
-
-        return redirect()->back()->with('success', 'UMKM berhasil dinonaktifkan.');
-    }
-
-    public function toggleStatus(Request $request, Umkm $umkm)
-    {
-        if (auth()->user()->role !== 'admin') {
-            abort(403, 'Hanya admin yang dapat mengubah status UMKM melalui menu ini.');
-        }
-
-        $newStatus = $request->input('status');
-
-        if (!in_array($newStatus, ['aktif', 'nonaktif'])) {
-            return back()->with('error', 'Status tidak valid.');
-        }
-
-        if ($newStatus === 'aktif' && $umkm->unit && !$umkm->unit->is_active) {
-            return back()->with('error', 'Gagal mengaktifkan UMKM. Unit yang menaungi sedang tidak aktif.');
-        }
-
-        $umkm->update([
-            'status'      => $newStatus,
-            'verified_at' => $newStatus === 'aktif' ? now() : $umkm->verified_at,
-            'verified_by' => $newStatus === 'aktif' ? auth()->id() : $umkm->verified_by,
-        ]);
-
-        if ($umkm->user) {
-            $umkm->user->update(['is_active' => ($newStatus === 'aktif')]);
-        }
-
-        $statusLabels = ['aktif' => 'Aktif', 'nonaktif' => 'Nonaktif'];
-
-        return back()->with('success', 'Status berhasil diubah menjadi ' . ($statusLabels[$newStatus] ?? $newStatus));
-    }
-
-    public function createAccount(Umkm $umkm)
-    {
-        if (!in_array(auth()->user()->role, ['admin', 'unit'])) {
-            abort(403, 'Tidak memiliki akses.');
-        }
-
-        if ($umkm->user_id) {
-            return back()->with('error', 'UMKM sudah memiliki akun.');
-        }
-
-        DB::beginTransaction();
-        try {
-            $this->createUserAccount($umkm, true);
-            DB::commit();
-
-            return back()->with('success', 'Akun UMKM berhasil dibuat dan email telah dikirim.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Failed to create account: ' . $e->getMessage());
-            return back()->with('error', 'Gagal membuat akun: ' . $e->getMessage());
-        }
-    }
-
-    // =========================================================================
-    // LAPORAN PDF
-    // =========================================================================
-
-    /**
-     * Download Laporan UMKM Individual (Single PDF)
-     */
-    public function downloadSingle(Umkm $umkm)
-    {
-        if (!in_array(auth()->user()->role, ['admin', 'unit'])) {
-            abort(403);
-        }
-
-        if (auth()->user()->role !== 'admin') {
-            $userUnit = Unit::where('user_id', auth()->id())->first();
-            if (!$userUnit || $umkm->unit_id !== $userUnit->id) {
-                abort(403, 'Anda tidak memiliki akses ke data ini.');
-            }
-        }
-
-        $umkm->load([
-            'unit',
-            'user',
-            'kategori',
-            'province',
-            'city',
-            'district',
-            'village',
-            'modalUmkm',
-            'produkUmkm',
-            'creator',
-            'verifiedBy',
-        ]);
-
-        $pdf = Pdf::loadView('umkm.pdf.report_single', compact('umkm'))
-            ->setPaper('a4', 'portrait')
-            ->setOption(['defaultFont' => 'sans-serif', 'isHtml5ParserEnabled' => true]);
-
-        $filename = 'laporan-' . Str::slug($umkm->nama_usaha) . '-' . now()->format('Ymd') . '.pdf';
-
-        return $pdf->stream($filename);
-    }
-
-    // =========================================================================
-    // AJAX WILAYAH
-    // =========================================================================
-
+    // Modal, Ajax Wilayah, dan Helper Kode UMKM tetap ada di sini karena Unit yang paling sering pakai
     public function getCities(Request $request)
     {
         $cities = City::where('province_code', $request->province_code)
@@ -784,11 +307,79 @@ class UmkmController extends Controller
         return response()->json($villages);
     }
 
-    // =========================================================================
-    // PRIVATE HELPERS
-    // =========================================================================
+    public function verify(Umkm $umkm)
+    {
+        $userUnit = Unit::where('user_id', auth()->id())->first();
+        if (!$userUnit || $umkm->unit_id !== $userUnit->id) {
+            abort(403);
+        }
 
-    private function createUserAccount(Umkm $umkm, bool $mustSendEmail = false): array
+        if ($umkm->unit && !$umkm->unit->is_active) {
+            return redirect()->back()->with('error', 'Gagal mengaktifkan UMKM. Unit Anda sedang tidak aktif.');
+        }
+
+        $umkm->update([
+            'status'      => 'aktif',
+            'verified_at' => now(),
+            'verified_by' => auth()->id(),
+        ]);
+
+        if ($umkm->user) {
+            $umkm->user->update(['is_active' => true]);
+        }
+
+        ActivityLogger::log('verify', "Unit '" . $userUnit->nama_unit . "' memverifikasi UMKM '{$umkm->nama_usaha}'", $umkm);
+
+        return redirect()->back()->with('success', 'UMKM berhasil diaktifkan.');
+    }
+
+    public function reject(Umkm $umkm)
+    {
+        $userUnit = Unit::where('user_id', auth()->id())->first();
+        if (!$userUnit || $umkm->unit_id !== $userUnit->id) {
+            abort(403);
+        }
+
+        $umkm->update([
+            'status'      => 'nonaktif',
+            'verified_at' => null,
+            'verified_by' => null,
+        ]);
+
+        if ($umkm->user) {
+            $umkm->user->update(['is_active' => false]);
+        }
+
+        ActivityLogger::log('reject', "Unit '" . $userUnit->nama_unit . "' menonaktifkan UMKM '{$umkm->nama_usaha}'", $umkm);
+
+        return redirect()->back()->with('success', 'UMKM berhasil dinonaktifkan.');
+    }
+
+    public function createAccount(Umkm $umkm)
+    {
+        $userUnit = Unit::where('user_id', auth()->id())->first();
+        if (!$userUnit || $umkm->unit_id !== $userUnit->id) {
+            abort(403);
+        }
+
+        if ($umkm->user_id) {
+            return back()->with('error', 'UMKM sudah memiliki akun.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $this->createUserAccount($umkm, true);
+            DB::commit();
+
+            return back()->with('success', 'Akun UMKM berhasil dibuat dan email telah dikirim.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to create account: ' . $e->getMessage());
+            return back()->with('error', 'Gagal membuat akun: ' . $e->getMessage());
+        }
+    }
+
+    private function createUserAccount(Umkm $umkm, bool $mustSendEmail = false)
     {
         $username = $this->generateUsername($umkm->nama_pemilik);
         $password = '12345678';
@@ -799,50 +390,39 @@ class UmkmController extends Controller
             'email'             => $umkm->email,
             'password'          => Hash::make($password),
             'role'              => 'umkm',
-            'is_active'         => ($umkm->unit && $umkm->unit->is_active),
+            'is_active'         => $umkm->status === 'aktif',
             'email_verified_at' => now(),
         ]);
 
         $umkm->update(['user_id' => $user->id]);
-        $umkm->relationLoaded('kategori') ?: $umkm->load('kategori');
 
-        try {
-            Mail::to($umkm->email)->send(new UmkmRegistrationMail($umkm, $username, $password));
-        } catch (\Exception $e) {
-            Log::error('Failed to send registration email: ' . $e->getMessage());
-
-            if ($mustSendEmail) {
-                throw new \RuntimeException(
-                    'Akun tidak jadi dibuat karena email gagal dikirim ke ' . $umkm->email . '. Periksa konfigurasi mail server.',
-                    0,
-                    $e
-                );
+        if ($mustSendEmail) {
+            try {
+                Mail::to($umkm->email)->send(new UmkmRegistrationMail($umkm, $password));
+            } catch (\Exception $e) {
+                Log::error('Gagal kirim email akun UMKM: ' . $e->getMessage());
             }
         }
 
-        return [$username, $password];
+        return $user;
     }
 
-    private function generateKodeUmkm(): string
+    private function generateUsername($name)
     {
-        $lastUmkm   = Umkm::orderBy('id', 'desc')->lockForUpdate()->first();
-        $lastNumber = ($lastUmkm && $lastUmkm->kode_umkm)
-            ? intval(substr($lastUmkm->kode_umkm, -4))
-            : 0;
-
-        return sprintf('UMKM-%04d', $lastNumber + 1);
-    }
-
-    private function generateUsername(string $namaPemilik): string
-    {
-        $base     = Str::slug(Str::limit($namaPemilik, 15, ''));
+        $base = strtolower(str_replace(' ', '', $name));
         $username = $base;
-        $counter  = 1;
-
+        $counter = 1;
         while (Users::where('username', $username)->exists()) {
             $username = $base . $counter++;
         }
-
         return $username;
+    }
+
+    private function generateKodeUmkm()
+    {
+        $prefix = 'UMKM' . date('Y');
+        $latest = Umkm::where('kode_umkm', 'LIKE', $prefix . '%')->orderBy('kode_umkm', 'desc')->first();
+        $number = $latest ? ((int)substr($latest->kode_umkm, -4) + 1) : 1;
+        return $prefix . str_pad($number, 4, '0', STR_PAD_LEFT);
     }
 }

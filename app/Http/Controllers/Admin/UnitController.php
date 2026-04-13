@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use App\Services\ActivityLogger;
 use Laravolt\Indonesia\Models\Province;
 use Laravolt\Indonesia\Models\City;
 use Laravolt\Indonesia\Models\District;
@@ -60,10 +61,10 @@ class UnitController extends Controller
         }
 
         $breadcrumbs = [
-            ['name' => 'Kelola Unit', 'url' => route('unit.index')]
+            ['name' => 'Kelola Unit', 'url' => route('admin.unit.index')]
         ];
 
-        return view('unit.index', compact('units', 'breadcrumbs', 'provinces', 'cities'));
+        return view('admin.unit.index', compact('units', 'breadcrumbs', 'provinces', 'cities'));
     }
 
     public function create()
@@ -78,11 +79,11 @@ class UnitController extends Controller
             ->get();
 
         $breadcrumbs = [
-            ['name' => 'Kelola Unit', 'url' => route('unit.index')],
-            ['name' => 'Tambah Unit', 'url' => route('unit.create')]
+            ['name' => 'Kelola Unit', 'url' => route('admin.unit.index')],
+            ['name' => 'Tambah Unit', 'url' => route('admin.unit.create')]
         ];
 
-        return view('unit.create', compact('breadcrumbs', 'provinces', 'availableUsers'));
+        return view('admin.unit.create', compact('breadcrumbs', 'provinces', 'availableUsers'));
     }
 
     public function store(Request $request)
@@ -159,6 +160,13 @@ class UnitController extends Controller
 
         $unit = Unit::create($data);
 
+        ActivityLogger::logCreate($unit, "Unit baru '{$unit->nama_unit}' berhasil dibuat", [
+            'nama_unit'  => $unit->nama_unit,
+            'kode_unit'  => $unit->kode_unit,
+            'kota_nama'  => $unit->kota_nama,
+            'is_active'  => $unit->is_active,
+        ]);
+
         $defaultPassword = '12345678';
         $userUnit = Users::find($request->user_id);
 
@@ -179,7 +187,7 @@ class UnitController extends Controller
         }
 
         return redirect()
-            ->route('unit.index')
+            ->route('admin.unit.index')
             ->with('success', 'Unit berhasil ditambahkan. Email notifikasi telah dikirim ke ' . ($userUnit?->email ?? '-'));
     }
 
@@ -188,7 +196,7 @@ class UnitController extends Controller
         $unit = Unit::with('user')->where('uuid', $uuid)->first();
 
         if (!$unit) {
-            return redirect()->route('unit.index')
+            return redirect()->route('admin.unit.index')
                 ->with('error', 'Data unit tidak ditemukan!');
         }
 
@@ -218,11 +226,11 @@ class UnitController extends Controller
             ->get();
 
         $breadcrumbs = [
-            ['name' => 'Kelola Unit', 'url' => route('unit.index')],
-            ['name' => 'Edit Unit', 'url' => route('unit.edit', $uuid)]
+            ['name' => 'Kelola Unit', 'url' => route('admin.unit.index')],
+            ['name' => 'Edit Unit', 'url' => route('admin.unit.edit', $uuid)]
         ];
 
-        return view('unit.edit', compact('unit', 'breadcrumbs', 'provinces', 'cities', 'districts', 'villages', 'availableUsers'));
+        return view('admin.unit.edit', compact('unit', 'breadcrumbs', 'provinces', 'cities', 'districts', 'villages', 'availableUsers'));
     }
 
     public function update(Request $request, $uuid)
@@ -324,7 +332,11 @@ class UnitController extends Controller
             $data['logo'] = null;
         }
 
+        $old = ActivityLogger::safeAttributes($unit);
         $unit->update($data);
+        $unit->refresh();
+
+        ActivityLogger::logUpdate($unit, "Unit '{$unit->nama_unit}' diupdate", $old, ActivityLogger::safeAttributes($unit));
 
         if ($unit->is_active === false) {
             $unit->umkm()->update(['status' => 'nonaktif']);
@@ -340,13 +352,19 @@ class UnitController extends Controller
         }
 
         return redirect()
-            ->route('unit.index')
+            ->route('admin.unit.index')
             ->with('success', 'Unit berhasil diupdate');
     }
 
     public function destroy($uuid)
     {
         $unit = Unit::where('uuid', $uuid)->firstOrFail();
+
+        ActivityLogger::logDelete(
+            "Unit '{$unit->nama_unit}' dihapus",
+            get_class($unit), $unit->id, $unit->nama_unit,
+            ['kode_unit' => $unit->kode_unit]
+        );
 
         if ($unit->admin_foto) {
             Storage::disk('public')->delete($unit->admin_foto);
@@ -358,7 +376,7 @@ class UnitController extends Controller
         $unit->delete();
 
         return redirect()
-            ->route('unit.index')
+            ->route('admin.unit.index')
             ->with('success', 'Unit berhasil dihapus');
     }
 
@@ -385,8 +403,12 @@ class UnitController extends Controller
 
         $status = $unit->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
+        ActivityLogger::log('toggle_status', "Unit '{$unit->nama_unit}' {$status}", $unit, [
+            'is_active' => $unit->is_active,
+        ]);
+
         return redirect()
-            ->route('unit.index')
+            ->route('admin.unit.index')
             ->with('success', "Unit berhasil {$status}");
     }
 

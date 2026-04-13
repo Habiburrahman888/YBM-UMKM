@@ -58,7 +58,7 @@
                         </button>
 
                         {{-- Tombol Download PDF --}}
-                        <a href="{{ route('umkm.report.all', request()->query()) }}" target="_blank"
+                        <a href="{{ route('admin.report.all', request()->query()) }}" target="_blank"
                             class="inline-flex items-center justify-center px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all shadow-sm">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -105,7 +105,7 @@
                             </div>
 
                             <div class="flex items-center gap-2 flex-shrink-0">
-                                <a href="{{ route('umkm.report.preview') }}"
+                                <a href="{{ route('admin.report.preview') }}"
                                     class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium rounded-lg transition-colors whitespace-nowrap">
                                     Reset
                                 </a>
@@ -261,7 +261,7 @@
                                     </td>
 
                                     <td class="px-6 py-4 text-right" onclick="event.stopPropagation()">
-                                        <a href="{{ route('umkm.report.unit', array_merge(['unitId' => $unitId, 'slug' => Str::slug($unit->nama_unit ?? 'pusat')], request()->query())) }}"
+                                        <a href="{{ route('admin.report.unit', array_merge(['unitId' => $unitId, 'slug' => Str::slug($unit->nama_unit ?? 'pusat')], request()->query())) }}"
                                             target="_blank"
                                             class="inline-flex items-center p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                             title="Download PDF Unit">
@@ -329,7 +329,7 @@
 
                                         {{-- Modal Bantuan --}}
                                         <td class="px-4 py-4 min-w-[220px] overflow-visible">
-                                            @include('umkm.partials.modal_usaha_column', ['item' => $item])
+                                            @include('admin.umkm.partials.modal_usaha_column', ['item' => $item])
                                         </td>
 
                                         {{-- Status --}}
@@ -351,7 +351,7 @@
 
                                         {{-- Aksi (Download PDF) --}}
                                         <td class="px-6 py-4 text-right" onclick="event.stopPropagation()">
-                                            <a href="{{ route('umkm.report.single', $item->uuid) }}" target="_blank"
+                                            <a href="{{ route('admin.report.single', $item->uuid) }}" target="_blank"
                                                 class="inline-flex items-center p-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                 title="Download PDF UMKM">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor"
@@ -367,7 +367,7 @@
                                     <tr id="detail-{{ $item->uuid }}"
                                         class="unit-group-{{ $unitId }} hidden bg-gray-50">
                                         <td colspan="5" class="px-4 sm:px-6 py-3">
-                                            @include('umkm.partials.detail_accordion', ['item' => $item])
+                                            @include('admin.umkm.partials.detail_accordion', ['item' => $item])
                                         </td>
                                     </tr>
                                 @empty

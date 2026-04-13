@@ -11,7 +11,11 @@ use App\Http\Controllers\Admin\KategoriController;
 use App\Http\Controllers\Umkm\SettingUmkmController;
 use App\Http\Controllers\Umkm\ProdukController;
 use App\Http\Controllers\Unit\UmkmController;
+use App\Http\Controllers\Admin\UmkmController as AdminUmkmController;
 use App\Http\Controllers\Admin\ReportUnitDanUmkmController;
+use App\Http\Controllers\Unit\ReportUmkmController;
+use App\Http\Controllers\Admin\LaporanTransaksiController as AdminLaporanTransaksiController;
+use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Guest\GuestController;
 
 Route::get('/', [GuestController::class, 'beranda'])->name('root');
@@ -82,7 +86,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/email/verify/{token}', [ProfileController::class, 'verifyEmailChange'])->name('email.verify');
     });
 
-    Route::middleware(['role:admin'])->group(function () {
+    Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/api/cities/{provinceCode}', [UnitController::class, 'getCities'])->name('api.cities');
+        Route::get('/api/districts/{cityCode}', [UnitController::class, 'getDistricts'])->name('api.districts');
+        Route::get('/api/villages/{districtCode}', [UnitController::class, 'getVillages'])->name('api.villages');
 
         Route::prefix('user')->name('user.')->group(function () {
             Route::get('/', [UserController::class, 'index'])->name('index');
@@ -103,9 +110,6 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/{uuid}', [UnitController::class, 'update'])->name('update');
             Route::delete('/{uuid}', [UnitController::class, 'destroy'])->name('destroy');
             Route::post('/{uuid}/toggle-status', [UnitController::class, 'toggleStatus'])->name('toggle-status');
-            Route::get('/api/cities/{provinceCode}', [UnitController::class, 'getCities'])->name('api.cities');
-            Route::get('/api/districts/{cityCode}', [UnitController::class, 'getDistricts'])->name('api.districts');
-            Route::get('/api/villages/{districtCode}', [UnitController::class, 'getVillages'])->name('api.villages');
         });
 
         Route::prefix('kategori')->name('kategori.')->group(function () {
@@ -124,11 +128,34 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/test-mail', [SettingController::class, 'testMail'])->name('test-mail');
         });
 
-        Route::patch('/umkm/{umkm}/approve', [UmkmController::class, 'approve'])->name('umkm.approve');
-        Route::patch('/umkm/{umkm}/reject', [UmkmController::class, 'reject'])->name('umkm.reject');
-        Route::patch('/umkm/{umkm}/toggle-status', [UmkmController::class, 'toggleStatus'])->name('umkm.toggleStatus');
-        Route::patch('/umkm/{umkm}/change-status', [UmkmController::class, 'changeStatus'])->name('umkm.changeStatus');
-        Route::post('/umkm/{umkm}/create-account', [UmkmController::class, 'createAccount'])->name('umkm.createAccount');
+        Route::prefix('laporan-transaksi')->name('laporan-transaksi.')->group(function () {
+            Route::get('/', [AdminLaporanTransaksiController::class, 'index'])->name('index');
+            Route::get('/export-pdf', [AdminLaporanTransaksiController::class, 'exportPdf'])->name('export-pdf');
+        });
+
+        Route::prefix('activity-log')->name('activity-log.')->group(function () {
+            Route::get('/', [ActivityLogController::class, 'index'])->name('index');
+            Route::delete('/bulk', [ActivityLogController::class, 'destroyBulk'])->name('destroy-bulk');
+            Route::delete('/{activityLog}', [ActivityLogController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('umkm')->name('umkm.')->group(function () {
+            Route::get('/', [AdminUmkmController::class, 'index'])->name('index');
+            Route::get('/{umkm}/edit', [AdminUmkmController::class, 'edit'])->name('edit');
+            Route::put('/{umkm}', [AdminUmkmController::class, 'update'])->name('update');
+            Route::delete('/{umkm}', [AdminUmkmController::class, 'destroy'])->name('destroy');
+            Route::patch('/{umkm}/approve', [AdminUmkmController::class, 'verify'])->name('approve');
+            Route::patch('/{umkm}/reject', [AdminUmkmController::class, 'reject'])->name('reject');
+            Route::patch('/{umkm}/toggle-status', [AdminUmkmController::class, 'toggleStatus'])->name('toggleStatus');
+            Route::post('/{umkm}/create-account', [AdminUmkmController::class, 'createAccount'])->name('create-account');
+        });
+
+        Route::prefix('report')->name('report.')->group(function () {
+            Route::get('/preview', [ReportUnitDanUmkmController::class, 'preview'])->name('preview');
+            Route::get('/all', [ReportUnitDanUmkmController::class, 'downloadAll'])->name('all');
+            Route::get('/unit/{unitId}/{slug?}', [ReportUnitDanUmkmController::class, 'downloadByUnit'])->name('unit');
+            Route::get('/{umkm:uuid}/single', [ReportUnitDanUmkmController::class, 'downloadSingle'])->name('single');
+        });
     });
 
     // routes specifically for unit to manage UMKM
@@ -142,6 +169,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{umkm}/modal', [UmkmController::class, 'storeModal'])->name('modal.store');
         Route::put('/{umkm}/modal/{modal}', [UmkmController::class, 'updateModal'])->name('modal.update');
         Route::delete('/{umkm}/modal/{modal}', [UmkmController::class, 'destroyModal'])->name('modal.destroy');
+        Route::post('/{umkm}/create-account', [UmkmController::class, 'createAccount'])->name('create-account');
     });
 
     Route::middleware(['auth', 'role:admin,unit,umkm'])->prefix('umkm')->name('umkm.')->group(function () {
@@ -153,20 +181,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/get-districts', [UmkmController::class, 'getDistricts'])->name('getDistricts');
         Route::get('/get-villages', [UmkmController::class, 'getVillages'])->name('getVillages');
 
+        // Ini akan diarahkan ke index sesuai role di middleware atau logic controller
         Route::get('/', [UmkmController::class, 'index'])->name('index');
 
-        // ── Laporan PDF (Pindahkan ke atas wildcard agar tidak terbentur) ──
-        Route::get('/report', [ReportUnitDanUmkmController::class, 'downloadAll'])->name('report.all');
-        Route::get('/report-preview', [ReportUnitDanUmkmController::class, 'preview'])->name('report.preview');
-        Route::get('/report/unit/{unitId}/{slug?}', [ReportUnitDanUmkmController::class, 'downloadByUnit'])->name('report.unit');
-        
-        
-        Route::get('/{umkm}/report', [UmkmController::class, 'downloadSingle'])->name('report.single');
-
-        // Verify & Create Account accessible to Admin & Unit
-        Route::post('/{umkm}/verify', [UmkmController::class, 'verify'])->name('verify');
-        Route::post('/{umkm}/reject', [UmkmController::class, 'reject'])->name('reject');
-        Route::post('/{umkm}/create-account', [UmkmController::class, 'createAccount'])->name('create-account');
     });
 
     Route::middleware(['role:admin,unit'])->group(function () {
@@ -177,6 +194,12 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:unit'])->prefix('unit')->name('unit.')->group(function () {
         Route::get('/laporan-transaksi', [\App\Http\Controllers\Unit\LaporanTransaksiController::class, 'index'])->name('laporan-transaksi.index');
         Route::get('/laporan-transaksi/export-pdf', [\App\Http\Controllers\Unit\LaporanTransaksiController::class, 'exportPdf'])->name('laporan-transaksi.export-pdf');
+
+        Route::prefix('report')->name('report.')->group(function () {
+            Route::get('/preview', [ReportUmkmController::class, 'preview'])->name('preview');
+            Route::get('/all', [ReportUmkmController::class, 'downloadAll'])->name('all');
+            Route::get('/{umkm:uuid}/single', [ReportUmkmController::class, 'downloadSingle'])->name('single');
+        });
     });
 
     Route::middleware(['role:umkm'])->group(function () {

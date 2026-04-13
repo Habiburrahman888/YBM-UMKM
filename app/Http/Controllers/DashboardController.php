@@ -137,7 +137,7 @@ class DashboardController extends Controller
             'umkm_no_user' => Umkm::whereNull('user_id')->count(),
         ];
 
-        return view('dashboard.admin', compact(
+        return view('admin.dashboard', compact(
             'totalUsers',
             'totalUnits',
             'unitAktif',
@@ -399,7 +399,7 @@ class DashboardController extends Controller
             ->distinct('umkm_id')
             ->count('umkm_id');
 
-        return view('dashboard.unit', compact(
+        return view('unit.dashboard', compact(
             'unit',
             'totalUmkm',
             'umkmAktif',
@@ -742,7 +742,7 @@ class DashboardController extends Controller
             ['name' => 'Dashboard', 'url' => route('dashboard')],
         ];
 
-        return view('dashboard.umkm', compact(
+        return view('umkm.dashboard', compact(
             'umkm',
             'isVerified',
             'statusUmkm',

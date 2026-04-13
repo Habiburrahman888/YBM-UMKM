@@ -32,7 +32,7 @@ class ProdukController extends Controller
             ['name' => 'Produk Saya', 'url' => route('umkm.produk.index')],
         ];
 
-        return view('produk.index', compact('produks', 'breadcrumbs'));
+        return view('umkm.produk.index', compact('produks', 'breadcrumbs'));
     }
 
     // ── SHOW — Detail satu produk ─────────────────────────────────────────
@@ -48,7 +48,7 @@ class ProdukController extends Controller
             ['name' => $produk->nama_produk, 'url' => route('umkm.produk.show', $produk->uuid)],
         ];
 
-        return view('produk.show', compact('produk', 'breadcrumbs'));
+        return view('umkm.produk.show', compact('produk', 'breadcrumbs'));
     }
 
     // ── CREATE — Form tambah produk baru ──────────────────────────────────
@@ -59,7 +59,7 @@ class ProdukController extends Controller
             ['name' => 'Tambah Produk', 'url' => route('umkm.produk.create')],
         ];
 
-        return view('produk.create', compact('breadcrumbs'));
+        return view('umkm.produk.create', compact('breadcrumbs'));
     }
 
     // ── STORE — Simpan produk baru ────────────────────────────────────────
@@ -135,7 +135,7 @@ class ProdukController extends Controller
             ['name' => 'Edit', 'url' => route('umkm.produk.edit', $produk->uuid)],
         ];
 
-        return view('produk.edit', compact('produk', 'breadcrumbs'));
+        return view('umkm.produk.edit', compact('produk', 'breadcrumbs'));
     }
 
     // ── UPDATE — Simpan perubahan produk ──────────────────────────────────

@@ -20,6 +20,7 @@ use App\Models\GoogleConfig;
 use App\Models\MailConfig;
 use App\Models\RecaptchaConfig;
 use App\Models\SettingAdmin;
+use App\Services\ActivityLogger;
 use Carbon\Carbon;
 use Laravolt\Indonesia\Models\Province;
 use Laravolt\Indonesia\Models\City;
@@ -333,6 +334,7 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
+            ActivityLogger::logAuth('login', $user);
             return redirect()->intended(route('dashboard'))
                 ->with('success', 'Selamat datang, ' . ($user->username ?? $this->maskEmail($user->email)) . '!');
         }

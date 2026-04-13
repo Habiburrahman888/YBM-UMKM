@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Users;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -45,20 +46,20 @@ class UserController extends Controller
         $users = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
 
         $breadcrumbs = [
-            ['name' => 'Kelola Pengguna', 'url' => route('user.index')]
+            ['name' => 'Kelola Pengguna', 'url' => route('admin.user.index')]
         ];
 
-        return view('user.index', compact('users', 'breadcrumbs'));
+        return view('admin.user.index', compact('users', 'breadcrumbs'));
     }
 
     public function create()
     {
         $breadcrumbs = [
-            ['name' => 'Kelola Pengguna', 'url' => route('user.index')],
-            ['name' => 'Tambah Pengguna', 'url' => route('user.create')]
+            ['name' => 'Kelola Pengguna', 'url' => route('admin.user.index')],
+            ['name' => 'Tambah Pengguna', 'url' => route('admin.user.create')]
         ];
 
-        return view('user.create', compact('breadcrumbs'));
+        return view('admin.user.create', compact('breadcrumbs'));
     }
 
     public function store(Request $request)
@@ -85,10 +86,16 @@ class UserController extends Controller
             $data['foto_profil'] = $request->file('foto_profil')->store('users/profiles', 'public');
         }
 
-        Users::create($data);
+        $user = Users::create($data);
+
+        ActivityLogger::logCreate($user, "User baru '{$user->username}' berhasil dibuat", [
+            'username' => $user->username,
+            'email'    => $user->email,
+            'role'     => $user->role,
+        ]);
 
         return redirect()
-            ->route('user.index')
+            ->route('admin.user.index')
             ->with('success', 'User berhasil ditambahkan');
     }
 
@@ -97,16 +104,16 @@ class UserController extends Controller
         $user = Users::where('uuid', $uuid)->first();
 
         if (!$user) {
-            return redirect()->route('user.index')
+            return redirect()->route('admin.user.index')
                 ->with('error', 'Data user tidak ditemukan!');
         }
 
         $breadcrumbs = [
-            ['name' => 'Kelola Pengguna', 'url' => route('user.index')],
-            ['name' => 'Edit Pengguna', 'url' => route('user.edit', $uuid)]
+            ['name' => 'Kelola Pengguna', 'url' => route('admin.user.index')],
+            ['name' => 'Edit Pengguna', 'url' => route('admin.user.edit', $uuid)]
         ];
 
-        return view('user.edit', compact('user', 'breadcrumbs'));
+        return view('admin.user.edit', compact('user', 'breadcrumbs'));
     }
 
     public function update(Request $request, $uuid)
@@ -149,10 +156,14 @@ class UserController extends Controller
             $data['foto_profil'] = null;
         }
 
+        $old = ActivityLogger::safeAttributes($user);
         $user->update($data);
+        $user->refresh();
+
+        ActivityLogger::logUpdate($user, "User '{$user->username}' diupdate", $old, ActivityLogger::safeAttributes($user));
 
         return redirect()
-            ->route('user.index')
+            ->route('admin.user.index')
             ->with('success', 'User berhasil diupdate');
     }
 
@@ -163,7 +174,7 @@ class UserController extends Controller
         // Proteksi: tidak bisa hapus akun sendiri
         if ($user->id === auth()->id()) {
             return redirect()
-                ->route('user.index')
+                ->route('admin.user.index')
                 ->with('error', 'Tidak dapat menghapus akun sendiri');
         }
 
@@ -172,10 +183,16 @@ class UserController extends Controller
             Storage::disk('public')->delete($user->foto_profil);
         }
 
+        ActivityLogger::logDelete(
+            "User '{$user->username}' dihapus",
+            get_class($user), $user->id, $user->username,
+            ['email' => $user->email, 'role' => $user->role]
+        );
+
         $user->delete();
 
         return redirect()
-            ->route('user.index')
+            ->route('admin.user.index')
             ->with('success', 'User berhasil dihapus');
     }
 
@@ -188,7 +205,7 @@ class UserController extends Controller
 
         if ($user->email_verified_at) {
             return redirect()
-                ->route('user.index')
+                ->route('admin.user.index')
                 ->with('info', 'Email sudah terverifikasi sebelumnya');
         }
 
@@ -198,8 +215,10 @@ class UserController extends Controller
             'verification_token_expires_at' => null,
         ]);
 
+        ActivityLogger::log('verify', "Email user '{$user->username}' diverifikasi manual", $user);
+
         return redirect()
-            ->route('user.index')
+            ->route('admin.user.index')
             ->with('success', 'Email user berhasil diverifikasi');
     }
 
@@ -213,7 +232,7 @@ class UserController extends Controller
         // Proteksi: tidak bisa nonaktifkan akun sendiri
         if ($user->id === auth()->id()) {
             return redirect()
-                ->route('user.index')
+                ->route('admin.user.index')
                 ->with('error', 'Tidak dapat mengubah status akun sendiri');
         }
 
@@ -223,8 +242,12 @@ class UserController extends Controller
 
         $status = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
+        ActivityLogger::log('toggle_status', "User '{$user->username}' {$status}", $user, [
+            'is_active' => $user->is_active,
+        ]);
+
         return redirect()
-            ->route('user.index')
+            ->route('admin.user.index')
             ->with('success', "User berhasil {$status}");
     }
 }

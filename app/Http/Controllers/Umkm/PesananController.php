@@ -29,7 +29,7 @@ class PesananController extends Controller
 
         $pesanans = $query->latest()->paginate(10)->withQueryString();
 
-        return view('umkm.produk.pesanan.index', compact('umkm', 'pesanans'));
+        return view('umkm.pesanan.index', compact('umkm', 'pesanans'));
     }
 
     public function show($uuid)
@@ -42,7 +42,7 @@ class PesananController extends Controller
             ->where('uuid', $uuid)
             ->firstOrFail();
 
-        return view('umkm.produk.pesanan.show', compact('umkm', 'pesanan'));
+        return view('umkm.pesanan.show', compact('umkm', 'pesanan'));
     }
 
     public function updateStatus(Request $request, $uuid)
@@ -113,7 +113,7 @@ class PesananController extends Controller
         $totalPendapatan = $pesanans->where('status', 'selesai')->sum('total_harga');
         $filters         = $request->only(['status', 'dari', 'sampai']);
 
-        $pdf = Pdf::loadView('umkm.produk.pesanan.pdf', compact('umkm', 'pesanans', 'totalPendapatan', 'filters'))
+        $pdf = Pdf::loadView('umkm.pesanan.pdf', compact('umkm', 'pesanans', 'totalPendapatan', 'filters'))
             ->setPaper('a4', 'landscape');
 
         return $pdf->download('laporan-pesanan-' . $umkm->nama_usaha . '-' . now()->format('Ymd') . '.pdf');

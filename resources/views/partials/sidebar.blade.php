@@ -62,11 +62,11 @@
                 </p>
 
                 {{-- Pengguna --}}
-                <a href="{{ route('user.index') }}"
+                <a href="{{ route('admin.user.index') }}"
                     class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200
-                            {{ request()->routeIs('user*') ? 'bg-primary-50 text-primary shadow-sm' : 'text-gray-600 hover:bg-gray-50 hover:text-primary' }}">
+                            {{ request()->routeIs('admin.user*') ? 'bg-primary-50 text-primary shadow-sm' : 'text-gray-600 hover:bg-gray-50 hover:text-primary' }}">
                     <svg class="w-5 h-5 mr-3 transition-colors
-                                {{ request()->routeIs('user*') ? 'text-primary' : 'text-gray-400 group-hover:text-primary' }}"
+                                {{ request()->routeIs('admin.user*') ? 'text-primary' : 'text-gray-400 group-hover:text-primary' }}"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zm14 10v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
@@ -82,11 +82,11 @@
                 </p>
 
                 {{-- Kategori UMKM --}}
-                <a href="{{ route('kategori.index') }}"
+                <a href="{{ route('admin.kategori.index') }}"
                     class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200
-                            {{ request()->routeIs('kategori*') ? 'bg-primary-50 text-primary shadow-sm' : 'text-gray-600 hover:bg-gray-50 hover:text-primary' }}">
+                            {{ request()->routeIs('admin.kategori*') ? 'bg-primary-50 text-primary shadow-sm' : 'text-gray-600 hover:bg-gray-50 hover:text-primary' }}">
                     <svg class="w-5 h-5 mr-3 transition-colors
-                                {{ request()->routeIs('kategori*') ? 'text-primary' : 'text-gray-400 group-hover:text-primary' }}"
+                                {{ request()->routeIs('admin.kategori*') ? 'text-primary' : 'text-gray-400 group-hover:text-primary' }}"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0
@@ -103,11 +103,11 @@
                 </p>
 
                 {{-- Data Unit --}}
-                <a href="{{ route('unit.index') }}"
+                <a href="{{ route('admin.unit.index') }}"
                     class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200
-                            {{ request()->routeIs('unit*') ? 'bg-primary-50 text-primary shadow-sm' : 'text-gray-600 hover:bg-gray-50 hover:text-primary' }}">
+                            {{ request()->routeIs('admin.unit*') ? 'bg-primary-50 text-primary shadow-sm' : 'text-gray-600 hover:bg-gray-50 hover:text-primary' }}">
                     <svg class="w-5 h-5 mr-3 transition-colors
-                                {{ request()->routeIs('unit*') ? 'text-primary' : 'text-gray-400 group-hover:text-primary' }}"
+                                {{ request()->routeIs('admin.unit*') ? 'text-primary' : 'text-gray-400 group-hover:text-primary' }}"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -123,11 +123,11 @@
                 </p>
 
                 {{-- Data UMKM --}}
-                <a href="{{ route('umkm.index') }}"
+                <a href="{{ route('admin.umkm.index') }}"
                     class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200
-                            {{ request()->routeIs('umkm.index', 'umkm.edit', 'umkm.create') ? 'bg-primary-50 text-primary shadow-sm' : 'text-gray-600 hover:bg-gray-50 hover:text-primary' }}">
+                            {{ request()->routeIs('admin.umkm.*') ? 'bg-primary-50 text-primary shadow-sm' : 'text-gray-600 hover:bg-gray-50 hover:text-primary' }}">
                     <svg class="w-5 h-5 mr-3 transition-colors
-                                {{ request()->routeIs('umkm.index', 'umkm.edit', 'umkm.create') ? 'text-primary' : 'text-gray-400 group-hover:text-primary' }}"
+                                {{ request()->routeIs('admin.umkm.*') ? 'text-primary' : 'text-gray-400 group-hover:text-primary' }}"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
                             d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993
@@ -145,16 +145,42 @@
                 </p>
 
                 {{-- Laporan Unit --}}
-                <a href="{{ route('umkm.report.preview') }}"
+                <a href="{{ route('admin.report.preview') }}"
                     class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors
-                            {{ request()->routeIs('umkm.report*') ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100' }}">
+                            {{ request()->routeIs('admin.report*') ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100' }}">
                     <svg class="w-5 h-5 mr-3 transition-colors
-                                {{ request()->routeIs('umkm.report*') ? 'text-blue-700' : 'text-gray-500 group-hover:text-gray-700' }}"
+                                {{ request()->routeIs('admin.report*') ? 'text-blue-700' : 'text-gray-500 group-hover:text-gray-700' }}"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                     Laporan Unit
+                </a>
+
+                {{-- Laporan Transaksi (Admin) --}}
+                <a href="{{ route('admin.laporan-transaksi.index') }}"
+                    class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors
+                            {{ request()->routeIs('admin.laporan-transaksi*') ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:bg-gray-100' }}">
+                    <svg class="w-5 h-5 mr-3 transition-colors
+                                {{ request()->routeIs('admin.laporan-transaksi*') ? 'text-indigo-700' : 'text-gray-500 group-hover:text-gray-700' }}"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    Laporan Transaksi
+                </a>
+
+                {{-- Audit Log (Admin) --}}
+                <a href="{{ route('admin.activity-log.index') }}"
+                    class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors
+                            {{ request()->routeIs('admin.activity-log*') ? 'bg-slate-100 text-slate-800' : 'text-gray-700 hover:bg-gray-100' }}">
+                    <svg class="w-5 h-5 mr-3 transition-colors
+                                {{ request()->routeIs('admin.activity-log*') ? 'text-slate-700' : 'text-gray-500 group-hover:text-gray-700' }}"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    Audit Log
                 </a>
             </div>
 
@@ -164,11 +190,11 @@
                     Pengaturan
                 </p>
 
-                <a href="{{ route('settings.show') }}"
+                <a href="{{ route('admin.settings.show') }}"
                     class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200
-                            {{ request()->routeIs('settings*') ? 'bg-primary-50 text-primary shadow-sm' : 'text-gray-600 hover:bg-gray-50 hover:text-primary' }}">
+                            {{ request()->routeIs('admin.settings*') ? 'bg-primary-50 text-primary shadow-sm' : 'text-gray-600 hover:bg-gray-50 hover:text-primary' }}">
                     <svg class="w-5 h-5 mr-3 transition-colors
-                                {{ request()->routeIs('settings*') ? 'text-primary' : 'text-gray-400 group-hover:text-primary' }}"
+                                {{ request()->routeIs('admin.settings*') ? 'text-primary' : 'text-gray-400 group-hover:text-primary' }}"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
@@ -211,11 +237,11 @@
                 </div>
 
                 {{-- Laporan UMKM (unit) --}}
-                <a href="{{ route('umkm.report.preview') }}"
+                <a href="{{ route('unit.report.preview') }}"
                     class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors
-                    {{ request()->routeIs('umkm.report*') ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100' }}">
+                    {{ request()->routeIs('unit.report*') ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100' }}">
                     <svg class="w-5 h-5 mr-3 transition-colors
-                        {{ request()->routeIs('umkm.report*') ? 'text-blue-700' : 'text-gray-500 group-hover:text-gray-700' }}"
+                        {{ request()->routeIs('unit.report*') ? 'text-blue-700' : 'text-gray-500 group-hover:text-gray-700' }}"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

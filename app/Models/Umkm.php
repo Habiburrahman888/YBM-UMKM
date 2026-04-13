@@ -48,8 +48,6 @@ class Umkm extends Model
         'verified_at',
         'verified_by',
         'qris_foto',
-        'latitude',
-        'longitude',
     ];
 
     protected $casts = [

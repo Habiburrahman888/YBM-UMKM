@@ -180,7 +180,7 @@ class GuestController extends Controller
             ->where('status', 'aktif')
             ->whereNotNull('province_code')
             ->whereNotNull('city_code')
-            ->get(['uuid', 'nama_usaha', 'province_code', 'city_code', 'alamat', 'status', 'latitude', 'longitude']);
+            ->get(['uuid', 'nama_usaha', 'province_code', 'city_code', 'alamat', 'status']);
 
         $cleanCityName = function (string $raw): string {
             $prefixes = ['KOTA ADMINISTRASI ', 'KAB. ADMINISTRASI ', 'KABUPATEN ADMINISTRASI ', 'KOTA ', 'KABUPATEN ', 'KAB. ', 'KAB '];
@@ -212,9 +212,6 @@ class GuestController extends Controller
                     $lat = $u->city->meta['lat'] ?? $u->city->meta['latitude'] ?? null;
                     $lng = $u->city->meta['long'] ?? $u->city->meta['longitude'] ?? null;
                     if ($lat && $lng) $coords = [(float) $lat, (float) $lng];
-                }
-                if (!$coords && $u->latitude && $u->longitude) {
-                    $coords = [(float) $u->latitude, (float) $u->longitude];
                 }
                 if (!$coords) {
                     $provKey = substr((string) ($u->province_code), 0, 2);

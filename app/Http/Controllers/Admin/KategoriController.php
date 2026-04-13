@@ -21,20 +21,20 @@ class KategoriController extends Controller
         $kategoris = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
 
         $breadcrumbs = [
-            ['name' => 'Kelola Kategori', 'url' => route('kategori.index')]
+            ['name' => 'Kelola Kategori', 'url' => route('admin.kategori.index')]
         ];
 
-        return view('kategori.index', compact('kategoris', 'breadcrumbs'));
+        return view('admin.kategori.index', compact('kategoris', 'breadcrumbs'));
     }
 
     public function create()
     {
         $breadcrumbs = [
-            ['name' => 'Kelola Kategori', 'url' => route('kategori.index')],
-            ['name' => 'Tambah Kategori', 'url' => route('kategori.create')]
+            ['name' => 'Kelola Kategori', 'url' => route('admin.kategori.index')],
+            ['name' => 'Tambah Kategori', 'url' => route('admin.kategori.create')]
         ];
 
-        return view('kategori.create', compact('breadcrumbs'));
+        return view('admin.kategori.create', compact('breadcrumbs'));
     }
 
     public function store(Request $request)
@@ -48,7 +48,7 @@ class KategoriController extends Controller
         ]);
 
         return redirect()
-            ->route('kategori.index')
+            ->route('admin.kategori.index')
             ->with('success', 'Kategori berhasil ditambahkan');
     }
 
@@ -57,16 +57,16 @@ class KategoriController extends Controller
         $kategori = Kategori::where('uuid', $uuid)->first();
 
         if (!$kategori) {
-            return redirect()->route('kategori.index')
+            return redirect()->route('admin.kategori.index')
                 ->with('error', 'Data kategori tidak ditemukan!');
         }
 
         $breadcrumbs = [
-            ['name' => 'Kelola Kategori', 'url' => route('kategori.index')],
-            ['name' => 'Edit Kategori', 'url' => route('kategori.edit', $uuid)]
+            ['name' => 'Kelola Kategori', 'url' => route('admin.kategori.index')],
+            ['name' => 'Edit Kategori', 'url' => route('admin.kategori.edit', $uuid)]
         ];
 
-        return view('kategori.edit', compact('kategori', 'breadcrumbs'));
+        return view('admin.kategori.edit', compact('kategori', 'breadcrumbs'));
     }
 
     public function update(Request $request, $uuid)
@@ -82,7 +82,7 @@ class KategoriController extends Controller
         ]);
 
         return redirect()
-            ->route('kategori.index')
+            ->route('admin.kategori.index')
             ->with('success', 'Kategori berhasil diupdate');
     }
 
@@ -93,7 +93,7 @@ class KategoriController extends Controller
         $kategori->delete();
 
         return redirect()
-            ->route('kategori.index')
+            ->route('admin.kategori.index')
             ->with('success', 'Kategori berhasil dihapus');
     }
 }

@@ -26,7 +26,7 @@ class SettingUmkmController extends Controller
             ['name' => 'Pengaturan Profil', 'url' => route('umkm.settings.show')],
         ];
 
-        return view('settings-umkm.show', compact('umkm', 'breadcrumbs'));
+        return view('umkm.settings.show', compact('umkm', 'breadcrumbs'));
     }
 
     public function edit()
@@ -39,7 +39,7 @@ class SettingUmkmController extends Controller
             ['name' => 'Edit Profil', 'url' => route('umkm.settings.edit')],
         ];
 
-        return view('settings-umkm.edit', compact('umkm', 'breadcrumbs'));
+        return view('umkm.settings.edit', compact('umkm', 'breadcrumbs'));
     }
 
     public function update(Request $request)
