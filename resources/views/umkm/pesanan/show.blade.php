@@ -157,6 +157,12 @@
                         <p class="text-green-800 font-bold">Pesanan Selesai</p>
                         <p class="text-green-600 text-xs">Status pesanan ini tidak dapat diubah lagi.</p>
                     </div>
+                @elseif ($pesanan->status === 'dibatalkan')
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                        <i class="fas fa-times-circle text-red-500 text-3xl mb-2"></i>
+                        <p class="text-red-800 font-bold">Pesanan Dibatalkan</p>
+                        <p class="text-red-600 text-xs">Status pesanan ini tidak dapat diubah lagi.</p>
+                    </div>
                 @else
                     <form action="{{ route('umkm.pesanan.update-status', $pesanan->uuid) }}" method="POST">
                         @csrf

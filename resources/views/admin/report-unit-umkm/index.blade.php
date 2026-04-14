@@ -309,7 +309,7 @@
                                                     <p class="text-sm font-semibold text-gray-900 leading-snug">
                                                         {{ $item->nama_usaha }}</p>
                                                     <p class="text-xs font-medium text-gray-400 mt-0.5">
-                                                        {{ $item->nama_pemilik }}</p>
+                                                        {{ $item->nama_pemilik }} | {{ $item->unit->nama_unit ?? 'Pusat' }}</p>
                                                 </div>
                                             </div>
                                         </td>

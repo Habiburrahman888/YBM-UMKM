@@ -122,26 +122,34 @@ class UmkmController extends Controller
         }
 
         $validated = $request->validate([
-            'nama_pemilik'    => 'required|string|max:255',
-            'nama_usaha'      => 'required|string|max:255',
-            'tahun_berdiri'   => 'nullable|integer|min:1900|max:' . date('Y'),
-            'kategori_id'     => 'nullable|exists:kategori,id',
-            'telepon'         => 'required|string|max:20',
-            'email'           => 'required|email|unique:umkm,email',
-            'alamat'          => 'required|string',
-            'province_code'   => 'nullable|exists:indonesia_provinces,code',
-            'city_code'       => 'nullable|exists:indonesia_cities,code',
-            'district_code'   => 'nullable|exists:indonesia_districts,code',
-            'village_code'    => 'nullable|exists:indonesia_villages,code',
-            'kode_pos'        => 'nullable|string|max:5',
-            'tentang'         => 'nullable|string',
-            'logo_umkm'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'create_account'  => 'nullable|boolean',
-            'nama_produk'     => 'nullable|string|max:255',
-            'harga_produk'    => 'nullable|numeric|min:0',
-            'kategori_satuan' => 'nullable|in:pcs,bungkus,gram,kg,liter,ml,box,pack,porsi,cup,karung,paket,unit',
-            'foto_produk'     => 'nullable|array|max:5',
-            'foto_produk.*'   => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+            'nama_pemilik'        => 'required|string|max:255',
+            'nama_usaha'          => 'required|string|max:255',
+            'tahun_berdiri'       => 'nullable|integer|min:1900|max:' . date('Y'),
+            'kategori_id'         => 'nullable|exists:kategori,id',
+            'telepon'             => 'required|string|max:20',
+            'email'               => 'required|email|unique:umkm,email',
+            'alamat'              => 'required|string',
+            'province_code'       => 'nullable|exists:indonesia_provinces,code',
+            'city_code'           => 'nullable|exists:indonesia_cities,code',
+            'district_code'       => 'nullable|exists:indonesia_districts,code',
+            'village_code'        => 'nullable|exists:indonesia_villages,code',
+            'kode_pos'            => 'nullable|string|max:5',
+            'tentang'             => 'nullable|string',
+            'logo_umkm'           => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'create_account'      => 'nullable|boolean',
+            'nama_produk'         => 'nullable|string|max:255',
+            'harga_produk'        => 'nullable|numeric|min:0',
+            'kategori_satuan'     => 'nullable|in:pcs,bungkus,gram,kg,liter,ml,box,pack,porsi,cup,karung,paket,unit',
+            'foto_produk'         => 'nullable|array|max:5',
+            'foto_produk.*'       => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+            'modals'              => 'nullable|array',
+            'modals.*.nama_item'  => 'nullable|string|max:255',
+            'modals.*.kategori'   => 'nullable|string',
+            'modals.*.nilai'      => 'nullable|string',
+            'modals.*.kondisi'    => 'nullable|in:baru,baik,cukup,rusak',
+            'modals.*.tanggal'    => 'nullable|date',
+            'modals.*.keterangan' => 'nullable|string',
+            'modals.*.foto'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         DB::beginTransaction();
@@ -169,10 +177,10 @@ class UmkmController extends Controller
                 'tentang'           => $validated['tentang'],
                 'kode_umkm'         => $this->generateKodeUmkm(),
                 'tanggal_bergabung' => now()->toDateString(),
-                'status'            => $userUnit->is_active ? 'aktif' : 'nonaktif',
+                'status'            => 'aktif',
                 'created_by'        => auth()->id(),
-                'verified_at'       => $userUnit->is_active ? now() : null,
-                'verified_by'       => $userUnit->is_active ? auth()->id() : null,
+                'verified_at'       => now(),
+                'verified_by'       => auth()->id(),
             ]);
 
             // Handle Produk jika ada
@@ -194,6 +202,45 @@ class UmkmController extends Controller
                     'foto_produk'      => !empty($fotoProdukPaths) ? $fotoProdukPaths : null,
                     'created_by'       => auth()->id(),
                 ]);
+            }
+
+            // Handle Modal Usaha (Aset)
+            $modalsData = $request->input('modals', []);
+            if (is_array($modalsData)) {
+                foreach ($modalsData as $idx => $modal) {
+                    // Lewati baris yang benar-benar kosong
+                    if (empty($modal['nama_item']) && empty($modal['nilai'])) {
+                        continue;
+                    }
+
+                    $fotoModal = null;
+                    if ($request->hasFile("modals.{$idx}.foto")) {
+                        $fotoModal = [$request->file("modals.{$idx}.foto")->store('modal_umkm', 'public')];
+                    }
+
+                    // Bersihkan format rupiah (titik pemisah ribuan)
+                    $nilaiModal = isset($modal['nilai'])
+                        ? (int) str_replace(['.', ','], ['', ''], $modal['nilai'])
+                        : 0;
+
+                    ModalUmkm::create([
+                        'umkm_id'           => $umkm->id,
+                        'nama_item'         => $modal['nama_item'] ?? null,
+                        'kategori_modal'    => $modal['kategori'] ?? null,
+                        'nilai_modal'       => $nilaiModal,
+                        'kondisi'           => $modal['kondisi'] ?? 'baik',
+                        'tanggal_perolehan' => !empty($modal['tanggal']) ? $modal['tanggal'] : null,
+                        'keterangan'        => $modal['keterangan'] ?? null,
+                        'foto'              => $fotoModal,
+                        'status'            => 'aktif',
+                        'created_by'        => auth()->id(),
+                    ]);
+                }
+            }
+
+            // Buat akun login dan kirim email notifikasi jika dicentang
+            if ($request->boolean('create_account')) {
+                $this->createUserAccount($umkm, true);
             }
 
             ActivityLogger::logCreate($umkm, "Mendaftarkan UMKM baru '{$umkm->nama_usaha}'");
@@ -398,7 +445,7 @@ class UmkmController extends Controller
 
         if ($mustSendEmail) {
             try {
-                Mail::to($umkm->email)->send(new UmkmRegistrationMail($umkm, $password));
+                Mail::to($umkm->email)->send(new UmkmRegistrationMail($umkm, $username, $password));
             } catch (\Exception $e) {
                 Log::error('Gagal kirim email akun UMKM: ' . $e->getMessage());
             }

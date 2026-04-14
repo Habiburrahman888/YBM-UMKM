@@ -186,6 +186,7 @@
                                 <td class="no">{{ $index + 1 }}</td>
                                 <td>
                                     <div class="umkm-info">{{ $item->nama_usaha }}</div>
+                                    <div class="owner">Unit: {{ $item->unit->nama_unit ?? 'Pusat' }}</div>
                                     <div class="owner">{{ $item->nama_pemilik }}</div>
                                     <div class="owner">{{ $item->kategori->nama ?? '-' }} | Berdiri {{ $item->tahun_berdiri ?? '-' }}</div>
                                 </td>

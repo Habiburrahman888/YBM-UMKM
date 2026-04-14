@@ -209,6 +209,7 @@
             <div class="hero-title">{{ $umkm->nama_usaha }}</div>
             <div class="hero-meta">
                 {{ $umkm->kode_umkm }} &bull;
+                {{ $umkm->unit->nama_unit ?? 'Pusat' }} &bull;
                 @if ($umkm->kategori)
                     {{ $umkm->kategori->nama }} &bull;
                 @endif
@@ -227,6 +228,10 @@
                 <div class="grid-row">
                     <div class="grid-cell label">Pemilik</div>
                     <div class="grid-cell value">{{ $umkm->nama_pemilik }}</div>
+                </div>
+                <div class="grid-row">
+                    <div class="grid-cell label">Unit</div>
+                    <div class="grid-cell value">{{ $umkm->unit->nama_unit ?? 'Pusat' }}</div>
                 </div>
                 <div class="grid-row">
                     <div class="grid-cell label">Kontak</div>

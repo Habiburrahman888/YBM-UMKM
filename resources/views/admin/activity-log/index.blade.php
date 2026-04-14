@@ -426,7 +426,7 @@
         <h3 class="text-base font-semibold text-gray-900 mb-1">Hapus Log Lama</h3>
         <p class="text-sm text-gray-500 mb-5">Log yang dibuat sebelum tanggal yang dipilih akan dihapus permanen.</p>
         <form action="{{ route('admin.activity-log.destroy-bulk') }}" method="POST">
-            @csrf
+            @csrf @method('DELETE')
             <div class="mb-4">
                 <label class="block text-xs font-medium text-gray-600 mb-1.5">Hapus log sebelum tanggal</label>
                 <input type="date" name="before_date" required

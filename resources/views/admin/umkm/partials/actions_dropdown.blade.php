@@ -8,8 +8,9 @@
     <div id="menu-{{ $item->uuid }}" class="dropdown-menu">
         <div class="py-1">
             @php 
-                $routePrefix = ($permissions['userRole'] === 'admin') ? 'admin.umkm.' : 'umkm.'; 
+                $routePrefix  = ($permissions['userRole'] === 'admin') ? 'admin.umkm.' : 'umkm.';
                 $approveRoute = ($permissions['userRole'] === 'admin') ? $routePrefix . 'approve' : $routePrefix . 'verify';
+                $actionMethod = ($permissions['userRole'] === 'admin') ? 'PATCH' : 'POST';
             @endphp
             @if ($permissions['canEdit'])
                 <a href="{{ route($routePrefix . 'edit', $item->uuid) }}"
@@ -22,11 +23,8 @@
                 </a>
             @endif
             @if ($permissions['canVerify'])
-                <div class="border-t border-gray-100 mt-1 pt-1">
-                    <p class="px-4 py-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-                        Ubah Status</p>
                     @if ($item->status !== 'aktif' || ($item->user && !$item->user->is_active))
-                        <button type="button" onclick="submitAction('{{ route($approveRoute, $item->uuid) }}', 'POST')"
+                        <button type="button" onclick="submitAction('{{ route($approveRoute, $item->uuid) }}', '{{ $actionMethod }}')"
                             class="flex items-center w-full px-4 py-2 text-sm text-green-600 hover:bg-green-50 transition-colors">
                             <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -36,7 +34,7 @@
                         </button>
                     @endif
                     @if ($item->status !== 'nonaktif')
-                        <button type="button" onclick="submitAction('{{ route($routePrefix . 'reject', $item->uuid) }}', 'POST')"
+                        <button type="button" onclick="submitAction('{{ route($routePrefix . 'reject', $item->uuid) }}', '{{ $actionMethod }}')"
                             class="flex items-center w-full px-4 py-2 text-sm text-orange-600 hover:bg-orange-50 transition-colors">
                             <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -45,7 +43,6 @@
                             Nonaktifkan
                         </button>
                     @endif
-                </div>
             @endif
             @if ($permissions['canCreateAccount'] && !$item->user_id)
                 <div class="{{ $permissions['canVerify'] ? '' : 'border-t border-gray-100 mt-1 pt-1' }}">

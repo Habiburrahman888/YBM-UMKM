@@ -10,7 +10,6 @@ use App\Models\Users;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Laravolt\Indonesia\Models\Province;
-use Laravolt\Indonesia\Models\City;
 
 class UmkmController extends Controller
 {
@@ -49,7 +48,7 @@ class UmkmController extends Controller
 
         $permissions = [
             'canCreate'       => true,
-            'canEdit'         => true,
+            'canEdit'         => false,
             'canDelete'       => true,
             'canVerify'       => true,
             'canCreateAccount'=> true,
@@ -116,42 +115,6 @@ class UmkmController extends Controller
         return redirect()->back()->with('success', 'UMKM berhasil diaktifkan.');
     }
 
-    public function edit(Umkm $umkm)
-    {
-        $umkm->load(['kategori', 'province', 'city', 'district', 'village', 'modalUmkm', 'produkUmkm']);
-        $produkUtama = $umkm->produkUmkm->first();
-
-        $kategoriList  = Kategori::orderBy('nama')->get();
-        $provinceList  = Province::orderBy('name')->get();
-        $cityList      = $umkm->province_code ? City::where('province_code', $umkm->province_code)->orderBy('name')->get() : [];
-        $districtList  = $umkm->city_code ? \Laravolt\Indonesia\Models\District::where('city_code', $umkm->city_code)->orderBy('name')->get() : [];
-        $villageList   = $umkm->district_code ? \Laravolt\Indonesia\Models\Village::where('district_code', $umkm->district_code)->orderBy('name')->get() : [];
-
-        $breadcrumbs = [
-            ['name' => 'Kelola UMKM', 'url' => route('admin.umkm.index')],
-            ['name' => 'Ubah UMKM', 'url' => '#'],
-        ];
-
-        return view('admin.umkm.edit', compact('umkm', 'kategoriList', 'provinceList', 'cityList', 'districtList', 'villageList', 'breadcrumbs', 'produkUtama'));
-    }
-
-    public function update(Request $request, Umkm $umkm)
-    {
-        $validated = $request->validate([
-            'nama_pemilik' => 'required|string|max:255',
-            'nama_usaha'   => 'required|string|max:255',
-            'email'        => 'required|email|unique:umkm,email,' . $umkm->id,
-            'telepon'      => 'required',
-            'alamat'       => 'required',
-        ]);
-
-        $old = ActivityLogger::safeAttributes($umkm);
-        $umkm->update($validated);
-        ActivityLogger::logUpdate($umkm, "Admin memperbarui data UMKM '{$umkm->nama_usaha}'", $old, ActivityLogger::safeAttributes($umkm->refresh()));
-
-        return redirect()->route('admin.umkm.index')->with('success', 'Data UMKM berhasil diperbarui oleh Admin.');
-    }
-
     public function destroy(Umkm $umkm)
     {
         ActivityLogger::logDelete("Admin menghapus UMKM '{$umkm->nama_usaha}'", get_class($umkm), $umkm->id, $umkm->nama_usaha);
@@ -214,7 +177,7 @@ class UmkmController extends Controller
 
         if ($mustSendEmail) {
             try {
-                \Illuminate\Support\Facades\Mail::to($umkm->email)->send(new \App\Mail\UmkmRegistrationMail($umkm, $password));
+                \Illuminate\Support\Facades\Mail::to($umkm->email)->send(new \App\Mail\UmkmRegistrationMail($umkm, $username, $password));
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error('Gagal kirim email akun UMKM: ' . $e->getMessage());
             }

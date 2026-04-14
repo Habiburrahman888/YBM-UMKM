@@ -72,7 +72,7 @@ class ReportUnitDanUmkmController extends Controller
             $unitList = $unitList->whereIn('id', $unitIdsWithData);
         }
 
-        return view('admin.report-unit.index', compact(
+        return view('admin.report-unit-umkm.index', compact(
             'umkmList',
             'kategoriList',
             'unitList',
@@ -125,7 +125,7 @@ class ReportUnitDanUmkmController extends Controller
             $unitList = $unitList->whereIn('id', $unitIdsWithData);
         }
 
-        $pdf = Pdf::loadView('admin.report-unit.pdf', compact('umkmList', 'unitList'))
+        $pdf = Pdf::loadView('admin.report-unit-umkm.pdf', compact('umkmList', 'unitList'))
             ->setPaper('a4', 'portrait')
             ->setOption(['defaultFont' => 'sans-serif', 'isHtml5ParserEnabled' => true]);
 
@@ -152,7 +152,7 @@ class ReportUnitDanUmkmController extends Controller
             'verifiedBy',
         ]);
 
-        $pdf = Pdf::loadView('admin.umkm.pdf.report_single', compact('umkm'))
+        $pdf = Pdf::loadView('admin.report-unit-umkm.report_single', compact('umkm'))
             ->setPaper('a4', 'portrait')
             ->setOption(['defaultFont' => 'sans-serif', 'isHtml5ParserEnabled' => true]);
 
@@ -187,11 +187,11 @@ class ReportUnitDanUmkmController extends Controller
             ->orderByDesc('total_modal_sum')
             ->get();
 
-        $pdf = Pdf::loadView('admin.report-unit.pdf', [
+        $pdf = Pdf::loadView('admin.report-unit-umkm.pdf', [
             'umkmList' => $umkmList->groupBy('unit_id'),
             'unitList' => $unitList
         ])->setPaper('a4', 'portrait')
-          ->setOption(['defaultFont' => 'sans-serif', 'isHtml5ParserEnabled' => true]);
+            ->setOption(['defaultFont' => 'sans-serif', 'isHtml5ParserEnabled' => true]);
 
         $filename = 'laporan-umkm-' . Str::slug($unitName) . '-' . now()->format('Ymd') . '.pdf';
         return $pdf->stream($filename);

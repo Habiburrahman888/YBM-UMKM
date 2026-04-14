@@ -141,8 +141,6 @@ Route::middleware(['auth'])->group(function () {
 
         Route::prefix('umkm')->name('umkm.')->group(function () {
             Route::get('/', [AdminUmkmController::class, 'index'])->name('index');
-            Route::get('/{umkm}/edit', [AdminUmkmController::class, 'edit'])->name('edit');
-            Route::put('/{umkm}', [AdminUmkmController::class, 'update'])->name('update');
             Route::delete('/{umkm}', [AdminUmkmController::class, 'destroy'])->name('destroy');
             Route::patch('/{umkm}/approve', [AdminUmkmController::class, 'verify'])->name('approve');
             Route::patch('/{umkm}/reject', [AdminUmkmController::class, 'reject'])->name('reject');

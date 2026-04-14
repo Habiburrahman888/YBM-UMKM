@@ -3,6 +3,11 @@
 @section('title', 'Edit UMKM')
 @section('page-title', 'Edit UMKM')
 
+@php
+    $isAdmin = auth()->user()->role === 'admin';
+    $routePrefix = $isAdmin ? 'admin.umkm.' : 'umkm.';
+@endphp
+
 @section('content')
     <div class="space-y-4 sm:space-y-6">
         <div class="bg-white rounded-xl sm:rounded-2xl shadow-card border border-gray-100 overflow-hidden animate-slide-up">
@@ -16,7 +21,7 @@
             {{-- ══════════════════════════════════════════════════════════ --}}
             {{-- FORM UTAMA UMKM (TIDAK mengandung form modal di dalamnya) --}}
             {{-- ══════════════════════════════════════════════════════════ --}}
-            <form action="{{ route('umkm.update', $umkm->uuid) }}" method="POST" enctype="multipart/form-data"
+            <form action="{{ route($routePrefix . 'update', $umkm->uuid) }}" method="POST" enctype="multipart/form-data"
                 class="p-4 sm:p-6" id="form-umkm-utama">
                 @csrf
                 @method('PUT')
@@ -727,6 +732,7 @@
                                                     Edit
                                                 </button>
                                                 {{-- Tombol hapus pakai JS submitAction agar tidak perlu form nested --}}
+                                                @if (!$isAdmin)
                                                 <button type="button"
                                                     onclick="hapusModal('{{ route('umkm.modal.destroy', [$umkm->uuid, $modal->id]) }}', '{{ addslashes($modal->nama_item) }}')"
                                                     class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
@@ -738,6 +744,7 @@
                                                     </svg>
                                                     Hapus
                                                 </button>
+                                                @endif
                                             </div>
                                         </div>
 
@@ -864,7 +871,7 @@
                                                     Batal
                                                 </button>
                                                 <button type="button"
-                                                    onclick="submitUpdateModal('{{ route('umkm.modal.update', [$umkm->uuid, $modal->id]) }}', {{ $modal->id }})"
+                                                    onclick="submitUpdateModal('{{ $isAdmin ? '#' : route('umkm.modal.update', [$umkm->uuid, $modal->id]) }}', {{ $modal->id }})"
                                                     class="px-3 py-1.5 text-xs font-medium text-white bg-primary hover:bg-primary-600 rounded-lg transition-colors shadow-sm">
                                                     Simpan Perubahan Modal
                                                 </button>
@@ -959,7 +966,8 @@
                                         Batal
                                     </button>
                                     <button type="button"
-                                        onclick="submitTambahModal('{{ route('umkm.modal.store', $umkm->uuid) }}')"
+                                        onclick="submitTambahModal('{{ $isAdmin ? '#' : route('umkm.modal.store', $umkm->uuid) }}')"
+                                        {{ $isAdmin ? 'disabled title="Fitur ini hanya tersedia untuk role Unit"' : '' }}
                                         class="px-3 py-1.5 text-xs font-medium text-white bg-primary hover:bg-primary-600 rounded-lg transition-colors shadow-sm">
                                         Tambah Item Modal
                                     </button>
@@ -1021,7 +1029,7 @@
                 {{-- ── TOMBOL AKSI FORM UTAMA ── --}}
                 <div
                     class="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3 mt-6 pt-6 border-t border-gray-200">
-                    <a href="{{ route('umkm.index') }}"
+                    <a href="{{ route($isAdmin ? 'admin.umkm.index' : 'umkm.index') }}"
                         class="inline-flex items-center justify-center px-4 py-2.5 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
                         Batal
                     </a>

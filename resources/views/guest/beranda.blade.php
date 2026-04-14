@@ -1073,6 +1073,7 @@
     </script>
 
     {{-- ══ CAROUSEL SCRIPT ══ --}}
+    {{-- ══ CAROUSEL SCRIPT ══ --}}
     <script>
         (function() {
             const outer = document.getElementById('carousel-outer');
@@ -1082,145 +1083,151 @@
             const emptyMsg = document.getElementById('carousel-empty');
             if (!outer || !track) return;
 
-            // Ambil lebar kartu + gap secara dinamis
-            function getCardWidth() {
-                const first = track.querySelector('.carousel-card');
-                return first ? first.offsetWidth + 16 : 240 + 16;
-            }
+            const GAP = 16;
+            const DURATION = 420; // ms transisi CSS
+            const INTERVAL = 3800; // ms autoplay
 
             const activeCat = '{{ addslashes($activeCatName) }}';
-            let idx = 0;
+            let isTransitioning = false;
+            let autoTimer = null;
+            let currentIdx = 0; // index di dalam array cloned track (diawali dari 1 set klon)
 
-            // Autoplay
-            let autoplayTimer = null;
+            /* ── helpers ── */
+            function cardWidth() {
+                const c = track.querySelector('.carousel-card:not(.is-clone)');
+                return c ? c.offsetWidth + GAP : 240 + GAP;
+            }
+
+            function perPage() {
+                return Math.max(1, Math.round(outer.offsetWidth / cardWidth()));
+            }
+
+            function realCards() {
+                return Array.from(track.querySelectorAll('.carousel-card:not(.is-clone)'))
+                    .filter(c => {
+                        const cat = (c.dataset.cat || '').trim();
+                        return activeCat === 'all' || cat === activeCat;
+                    });
+            }
+
+            /* ── build clones ── */
+            function buildLoop() {
+                track.querySelectorAll('.is-clone').forEach(el => el.remove());
+                track.querySelectorAll('.carousel-card').forEach(c => {
+                    const cat = (c.dataset.cat || '').trim();
+                    c.style.display = (activeCat === 'all' || cat === activeCat) ? 'flex' : 'none';
+                });
+
+                const visible = realCards();
+                if (!visible.length) {
+                    if (emptyMsg) emptyMsg.style.display = 'block';
+                    if (btnPrev) btnPrev.classList.add('disabled');
+                    if (btnNext) btnNext.classList.add('disabled');
+                    return;
+                }
+                if (emptyMsg) emptyMsg.style.display = 'none';
+
+                // Klon cukup 1 set di depan & 1 set di belakang
+                const clonesBefore = visible.map(c => {
+                    const cl = c.cloneNode(true);
+                    cl.classList.add('is-clone');
+                    cl.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+                    return cl;
+                });
+                const clonesAfter = visible.map(c => {
+                    const cl = c.cloneNode(true);
+                    cl.classList.add('is-clone');
+                    cl.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+                    return cl;
+                });
+
+                clonesBefore.reverse().forEach(cl => track.insertBefore(cl, track.firstChild));
+                clonesAfter.forEach(cl => track.appendChild(cl));
+
+                currentIdx = visible.length; // mulai dari set asli (setelah 1 set klon depan)
+                setPos(true);
+                updateBtns();
+            }
+
+            /* ── posisi tanpa animasi ── */
+            function setPos(instant) {
+                const w = cardWidth();
+                track.style.transition = instant ? 'none' : `transform ${DURATION}ms cubic-bezier(.4,0,.2,1)`;
+                track.style.transform = `translateX(-${currentIdx * w}px)`;
+            }
+
+            /* ── update state tombol (selalu aktif kalau ada cukup kartu) ── */
+            function updateBtns() {
+                const len = realCards().length;
+                const disabled = len <= perPage();
+                if (btnPrev) btnPrev.classList.toggle('disabled', disabled);
+                if (btnNext) btnNext.classList.toggle('disabled', disabled);
+            }
+
+            /* ── geser ── */
+            function slide(delta) {
+                if (isTransitioning) return;
+                isTransitioning = true;
+                currentIdx += delta;
+                setPos(false);
+
+                setTimeout(() => {
+                    const visible = realCards();
+                    const n = visible.length;
+                    // Jika sudah masuk klon belakang → loncat ke asli tanpa animasi
+                    if (currentIdx >= n * 2) {
+                        currentIdx -= n;
+                        setPos(true);
+                    }
+                    // Jika sudah masuk klon depan → loncat ke asli tanpa animasi
+                    if (currentIdx < n) {
+                        currentIdx += n;
+                        setPos(true);
+                    }
+                    isTransitioning = false;
+                }, DURATION + 10);
+            }
+
+            /* ── autoplay (tidak berhenti saat klik tombol) ── */
             function startAutoplay() {
-                if(autoplayTimer) return;
-                autoplayTimer = setInterval(() => {
-                    const visible = visibleCards();
-                    if (visible.length === 0) return;
-                    
-                    idx++;
-                    render();
-
-                    // Jika sampai di klon (idx === total kartu asli), tunggu transisi selesai lalu loncat ke 0
-                    if (idx >= visible.length) {
-                        setTimeout(() => {
-                            idx = 0;
-                            render(true);
-                        }, 410); // sedikit lebih lama dari durasi transisi
-                    }
-                }, 4000);
+                stopAutoplay();
+                autoTimer = setInterval(() => slide(1), INTERVAL);
             }
+
             function stopAutoplay() {
-                clearInterval(autoplayTimer);
-                autoplayTimer = null;
+                clearInterval(autoTimer);
+                autoTimer = null;
             }
 
-            function allCards() {
-                // Hanya ambil kartu asli, bukan klon
-                return Array.from(track.querySelectorAll('.carousel-card:not(.is-clone)'));
-            }
+            /* ── events ── */
+            btnPrev && btnPrev.addEventListener('click', () => slide(-perPage()));
+            btnNext && btnNext.addEventListener('click', () => slide(perPage()));
 
-            function visibleCards() {
-                return allCards().filter(c => {
-                    const cat = (c.dataset.cat || '').trim();
-                    return activeCat === 'all' || cat === activeCat;
-                });
-            }
+            // Pause saat hover, lanjut saat keluar
+            outer.addEventListener('mouseenter', stopAutoplay);
+            outer.addEventListener('mouseleave', startAutoplay);
 
-            function perPage(w) {
-                const width = w || getCardWidth();
-                // Gunakan pembulatan yang lebih ketat agar tidak ada desimal terpotong
-                return Math.max(1, Math.round(outer.offsetWidth / width));
-            }
-
-            function applyFilter() {
-                // Hapus klon sebelumnya
-                track.querySelectorAll('.carousel-card.is-clone').forEach(el => el.remove());
-
-                allCards().forEach(c => {
-                    const cat = (c.dataset.cat || '').trim();
-                    const show = activeCat === 'all' || cat === activeCat;
-                    c.style.display = show ? 'flex' : 'none';
-                    c.classList.remove('is-clone');
-                });
-
-                // Tambahkan klon di akhir sebanyak item per halaman untuk seamless loop
-                const visible = visibleCards();
-                if (visible.length > 0) {
-                    const n = perPage();
-                    for(let i=0; i<n; i++) {
-                        if(!visible[i]) break;
-                        const clone = visible[i].cloneNode(true);
-                        clone.classList.add('is-clone');
-                        // Hilangkan ID agar tidak duplikat jika ada
-                        clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
-                        track.appendChild(clone);
-                    }
-                }
-
-                idx = 0;
-                render(true);
-                if (emptyMsg) emptyMsg.style.display = visibleCards().length === 0 ? 'block' : 'none';
-            }
-
-            function render(instant = false) {
-                const visible = visibleCards(); // Hanya kartu asli (karena klon punya .is-clone)
-                const w = getCardWidth();
-                const totalReal = visible.length;
-                
-                // Batasi idx untuk manual navigation
-                const maxRealIdx = Math.max(0, totalReal - perPage(w));
-                
-                // Jika sedang tidak autoplay (manual click), batasi idx
-                if (!autoplayTimer && !instant) {
-                    idx = Math.min(Math.max(idx, 0), maxRealIdx);
-                }
-
-                track.style.transition = instant ? 'none' : 'transform .4s cubic-bezier(.4, 0, .2, 1)';
-                track.style.transform = `translateX(-${idx * w}px)`;
-
-                if (btnPrev) btnPrev.classList.toggle('disabled', idx === 0);
-                if (btnNext) btnNext.classList.toggle('disabled', idx >= maxRealIdx);
-            }
-
-            btnPrev.addEventListener('click', () => {
-                idx -= perPage(getCardWidth());
-                render();
-                stopAutoplay();
-            });
-            btnNext.addEventListener('click', () => {
-                idx += perPage(getCardWidth());
-                render();
-                stopAutoplay();
-            });
-
-            // Swipe
-            let tx = 0;
+            // Swipe touch
+            let touchX = 0;
             outer.addEventListener('touchstart', e => {
-                tx = e.touches[0].clientX;
+                touchX = e.touches[0].clientX;
             }, {
                 passive: true
             });
             outer.addEventListener('touchend', e => {
-                const diff = tx - e.changedTouches[0].clientX;
-                if (Math.abs(diff) > 40) {
-                    idx += diff > 0 ? 1 : -1;
-                    render();
-                }
+                const diff = touchX - e.changedTouches[0].clientX;
+                if (Math.abs(diff) > 40) slide(diff > 0 ? 1 : -1);
             }, {
                 passive: true
             });
 
             window.addEventListener('resize', () => {
-                idx = 0;
-                render();
+                stopAutoplay();
+                buildLoop();
+                startAutoplay();
             });
 
-            outer.addEventListener('mouseenter', stopAutoplay);
-            outer.addEventListener('mouseleave', startAutoplay);
-
-            applyFilter();
+            buildLoop();
             startAutoplay();
         })();
     </script>
@@ -1279,7 +1286,7 @@
                         count = city.count || umkmList.length;
                     const listHtml = umkmList.map(u =>
                         `<a href="/mitra/${u.uuid}" style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;gap:10px;text-decoration:none;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'"><span style="width:32px;height:32px;border-radius:8px;background:#eff6ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span style="flex:1;min-width:0;"><span style="display:block;font-size:12px;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.nama_usaha}</span><span style="display:block;font-size:10px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.alamat||'-'}</span></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></a>`
-                        ).join('');
+                    ).join('');
                     const popupContent =
                         `<div style="min-width:260px;max-width:300px;font-family:'Plus Jakarta Sans',sans-serif;"><div style="background:linear-gradient(135deg,#1e3a8a,#1e40af);padding:14px;border-radius:8px 8px 0 0;margin:-1px -1px 0;"><div style="font-size:10px;color:#93c5fd;font-weight:600;letter-spacing:.05em;text-transform:uppercase;">Kota / Kabupaten</div><div style="font-size:16px;font-weight:700;color:#fff;margin-top:2px;">${city.city_name}</div><div style="font-size:11px;color:#bfdbfe;margin-top:2px;">${count} UMKM terdaftar</div></div><div style="padding:4px 14px;max-height:240px;overflow-y:auto;scrollbar-width:thin;">${listHtml}</div></div>`;
                     L.marker([lat, lng], {

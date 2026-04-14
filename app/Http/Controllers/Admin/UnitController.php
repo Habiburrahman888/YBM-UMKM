@@ -447,7 +447,7 @@ class UnitController extends Controller
             $unitList = collect([$unit]);
         }
 
-        $pdf = Pdf::loadView('admin.report-unit.pdf', [
+        $pdf = Pdf::loadView('admin.report-unit-umkm.pdf', [
             'umkmList' => $umkmList->groupBy('unit_id'),
             'unitList' => $unitList
         ])->setPaper('a4', 'portrait')
@@ -500,7 +500,7 @@ class UnitController extends Controller
 
         if (auth()->user()->role === 'admin') {
             $pdfList  = $umkmList->groupBy('unit_id');
-            $viewName = 'admin.report-unit.pdf';
+            $viewName = 'admin.report-unit-umkm.pdf';
             $unitList = Unit::orderBy('nama_unit')
                 ->when($request->filled('unit_id'), fn($q) => $q->where('id', $request->unit_id))
                 ->get();
