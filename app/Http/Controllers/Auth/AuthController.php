@@ -297,8 +297,9 @@ class AuthController extends Controller
         }
 
         if (!$user->email_verified_at) {
+            $normalizedEmail = strtolower(trim($user->email));
             return redirect()->route('verify-otp')
-                ->with('email', $user->email)
+                ->with('email', $normalizedEmail)
                 ->with('warning', 'Email Anda belum diverifikasi. Silakan cek email Anda untuk kode OTP.');
         }
 
@@ -380,6 +381,17 @@ class AuthController extends Controller
         }
 
         try {
+            $otpData = Cache::get('otp_registration_' . $normalizedEmail);
+            $cooldown = Cache::get('otp_cooldown_' . $normalizedEmail);
+
+            // Jika OTP masih ada dan baru saja dikirim (masih dalam cooldown),
+            // tidak perlu buat baru, cukup arahkan ke halaman verifikasi.
+            if ($otpData && $cooldown && Carbon::now()->isBefore($cooldown)) {
+                return redirect()->route('verify-otp', ['email' => $normalizedEmail])
+                    ->with('email', $normalizedEmail)
+                    ->with('info', 'Kode OTP sudah dikirim sebelumnya. Silakan cek email Anda.');
+            }
+
             $otp       = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
             $expiresAt = Carbon::now()->addMinutes(self::OTP_EXPIRY_MINUTES);
 
@@ -515,30 +527,32 @@ class AuthController extends Controller
                 ->withErrors(['otp' => 'Verifikasi reCAPTCHA gagal. Silakan coba lagi.']);
         }
 
-        $cacheKey = 'otp_registration_' . $request->email;
-        $otpData  = Cache::get($cacheKey);
+        $normalizedEmail = strtolower(trim($request->email));
+        $cacheKey        = 'otp_registration_' . $normalizedEmail;
+        $otpData         = Cache::get($cacheKey);
 
         if (!$otpData) {
             return redirect()->back()
-                ->with('email', $request->email)
+                ->with('email', $normalizedEmail)
                 ->withErrors(['otp' => 'OTP telah kedaluwarsa. Silakan minta kode baru.']);
         }
 
-        if ($otpData['otp'] !== $request->otp) {
+        if (trim($otpData['otp']) !== trim($request->otp)) {
             return redirect()->back()
-                ->with('email', $request->email)
+                ->with('email', $normalizedEmail)
                 ->withErrors(['otp' => 'Kode OTP tidak valid.']);
         }
 
         DB::beginTransaction();
 
         try {
-            $user = Users::where('email', $request->email)->first();
+            $user = Users::where('email', $normalizedEmail)->first();
 
             if (!$user) {
                 $user = Users::create([
                     'uuid'              => (string) Str::uuid(),
-                    'email'             => $request->email,
+                    'username'          => $this->generateUniqueUsername($normalizedEmail),
+                    'email'             => $normalizedEmail,
                     'email_verified_at' => now(),
                     'role'              => 'unit',
                     'is_active'         => false,
@@ -549,18 +563,18 @@ class AuthController extends Controller
             }
 
             Cache::forget($cacheKey);
-            Cache::forget('otp_cooldown_' . $request->email);
+            Cache::forget('otp_cooldown_' . $normalizedEmail);
 
             $profileToken = (string) Str::uuid();
 
-            Cache::put('complete_profile_' . $request->email, [
-                'email'      => $request->email,
+            Cache::put('complete_profile_' . $normalizedEmail, [
+                'email'      => $normalizedEmail,
                 'user_id'    => $user->id,
                 'token'      => $profileToken,
                 'created_at' => now()->toDateTimeString(),
             ], 3600);
 
-            Cache::put('token_map_' . $profileToken, $request->email, 3600);
+            Cache::put('token_map_' . $profileToken, $normalizedEmail, 3600);
 
             DB::commit();
 
@@ -568,15 +582,19 @@ class AuthController extends Controller
                 ->with('success', 'Email berhasil diverifikasi. Silakan lengkapi profil Anda.');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('OTP Verification Transaction Error: ' . $e->getMessage(), [
+                'email' => $normalizedEmail,
+                'trace' => $e->getTraceAsString()
+            ]);
             return redirect()->back()
-                ->with('email', $request->email)
+                ->with('email', $normalizedEmail)
                 ->withErrors(['otp' => 'Terjadi kesalahan. Silakan coba lagi.']);
         }
     }
 
     public function resendOtp(Request $request)
     {
-        $email          = $request->input('email');
+        $email          = strtolower(trim($request->input('email')));
         $recaptchaToken = $request->input('recaptcha_token');
 
         if (!$email) {

@@ -141,13 +141,16 @@
 
                                     {{-- Stok --}}
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        @if ($produk->stok !== null && $produk->stok > 0)
+                                        @if ($produk->stok > 0)
                                             <span
                                                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                                 {{ number_format($produk->stok, 0, ',', '.') }} Item
                                             </span>
                                         @else
-                                            <span class="text-xs text-gray-400 italic">Unlimited</span>
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                Stok Habis
+                                            </span>
                                         @endif
                                     </td>
 
@@ -212,13 +215,16 @@
                                             <div class="flex items-center gap-2 mb-1">
                                                 <h3 class="text-sm font-semibold text-gray-900">{{ $produk->nama_produk }}
                                                 </h3>
-                                                @if ($produk->stok !== null && $produk->stok > 0)
+                                                @if ($produk->stok > 0)
                                                     <span
                                                         class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                        Ada
+                                                        Stok: {{ $produk->stok }}
                                                     </span>
                                                 @else
-                                                    <span class="text-xs text-gray-400 italic">Unlimited</span>
+                                                    <span
+                                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                        Habis
+                                                    </span>
                                                 @endif
                                             </div>
                                             <p class="text-xs text-gray-600 line-clamp-2">{{ $produk->deskripsi_produk }}

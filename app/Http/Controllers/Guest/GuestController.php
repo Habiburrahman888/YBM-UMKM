@@ -46,6 +46,12 @@ class GuestController extends Controller
         $orderItems = [];
         foreach ($request->items as $item) {
             $p = ProdukUmkm::find($item['id']);
+
+            // Validasi Stok
+            if ($p->stok !== null && $item['jumlah'] > $p->stok) {
+                return back()->with('error', "Stok produk {$p->nama_produk} tidak mencukupi. Stok tersedia: {$p->stok}")->withInput();
+            }
+
             $subtotal = $p->harga * $item['jumlah'];
             $totalHarga += $subtotal;
             $orderItems[] = [
@@ -53,7 +59,8 @@ class GuestController extends Controller
                 'nama' => $p->nama_produk,
                 'jumlah' => $item['jumlah'],
                 'harga' => $p->harga,
-                'subtotal' => $subtotal
+                'subtotal' => $subtotal,
+                'model' => $p // Simpan model untuk update stok nanti
             ];
         }
 

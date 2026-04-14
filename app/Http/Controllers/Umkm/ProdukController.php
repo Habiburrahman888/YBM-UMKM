@@ -79,7 +79,7 @@ class ProdukController extends Controller
             'deskripsi_produk' => 'required|string',
             'harga'            => 'required|numeric|min:0',
             'kategori_satuan'  => 'required|in:pcs,bungkus,gram,kg,liter,ml,box,pack,porsi,cup,karung,paket,unit',
-            'stok'             => 'nullable|integer|min:0',
+            'stok'             => 'required|integer|min:0',
             'foto_produk'      => 'nullable|array|max:5',
             'foto_produk.*'    => 'image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
@@ -158,7 +158,7 @@ class ProdukController extends Controller
             'deskripsi_produk' => 'required|string',
             'harga'            => 'required|numeric|min:0',
             'kategori_satuan'  => 'required|in:pcs,bungkus,gram,kg,liter,ml,box,pack,porsi,cup,karung,paket,unit',
-            'stok'             => 'nullable|integer|min:0',
+            'stok'             => 'required|integer|min:0',
             'foto_produk'      => 'nullable|array|max:5',
             'foto_produk.*'    => 'image|mimes:jpeg,png,jpg,webp|max:5120',
             'foto_hapus'       => 'nullable|array',

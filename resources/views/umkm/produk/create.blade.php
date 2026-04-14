@@ -91,10 +91,10 @@
                         <!-- Stok -->
                         <div>
                             <label for="stok" class="block text-sm font-medium text-gray-700 mb-2">
-                                Stok <span class="text-xs text-gray-400 font-normal">(Opsional)</span>
+                                Stok <span class="text-red-500">*</span>
                             </label>
                             <input type="number" name="stok" id="stok" value="{{ old('stok') }}" placeholder="0"
-                                min="0"
+                                min="0" required
                                 class="block w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary @error('stok') border-red-500 @enderror">
                             @error('stok')
                                 <p class="mt-1 text-xs sm:text-sm text-red-600">{{ $message }}</p>

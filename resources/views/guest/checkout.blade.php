@@ -661,13 +661,16 @@
                                             $up_fotos = $up->foto_produk;
                                             $up_foto  = is_array($up_fotos) ? ($up_fotos[0] ?? null) : null;
                                         @endphp
-                                        <div class="product-select-item"
+                                        <div class="product-select-item {{ $up->stok <= 0 ? 'opacity-50 cursor-not-allowed' : '' }}"
+                                            @if($up->stok > 0)
                                             onclick="addToCart(
                                                 {{ $up->id }},
                                                 '{{ addslashes($up->nama_produk) }}',
                                                 {{ $up->harga }},
-                                                '{{ $up_foto ? Storage::url($up_foto) : '' }}'
-                                            )">
+                                                '{{ $up_foto ? Storage::url($up_foto) : '' }}',
+                                                {{ $up->stok }}
+                                            )"
+                                            @endif>
                                             @if ($up_foto)
                                                 <img src="{{ Storage::url($up_foto) }}"
                                                      class="product-select-img"
@@ -688,6 +691,9 @@
                                             <div class="product-select-name">{{ $up->nama_produk }}</div>
                                             <div class="product-select-price">
                                                 Rp {{ number_format($up->harga, 0, ',', '.') }}
+                                            </div>
+                                            <div class="text-[10px] font-bold {{ $up->stok > 0 ? 'text-slate-400' : 'text-red-500' }}">
+                                                Stok: {{ $up->stok }}
                                             </div>
                                         </div>
                                     @endforeach
@@ -737,14 +743,27 @@
             name:  '{{ addslashes($produk->nama_produk) }}',
             price: {{ $produk->harga }},
             qty:   1,
-            foto:  '{{ $main_foto ? Storage::url($main_foto) : '' }}'
+            foto:  '{{ $main_foto ? Storage::url($main_foto) : '' }}',
+            stok:  {{ $produk->stok }}
         }];
 
         const settingLogo = '{{ $setting && $setting->logo_expo ? asset('storage/' . $setting->logo_expo) : '' }}';
 
-        function addToCart(id, name, price, foto) {
+        function addToCart(id, name, price, foto, stok) {
             const existing = cart.find(item => item.id === id);
-            existing ? existing.qty++ : cart.push({ id, name, price, qty: 1, foto });
+            if (existing) {
+                if (existing.qty >= existing.stok) {
+                    alert('Maaf, stok tidak mencukupi untuk menambah produk ini.');
+                    return;
+                }
+                existing.qty++;
+            } else {
+                if (stok <= 0) {
+                    alert('Maaf, stok produk ini sedang habis.');
+                    return;
+                }
+                cart.push({ id, name, price, qty: 1, foto, stok });
+            }
             renderCart();
         }
 
@@ -758,7 +777,12 @@
         }
 
         function updateQty(index, delta) {
-            cart[index].qty = Math.max(1, cart[index].qty + delta);
+            const item = cart[index];
+            if (delta > 0 && item.qty >= item.stok) {
+                alert('Maaf, stok maksimal tersedia adalah ' + item.stok);
+                return;
+            }
+            item.qty = Math.max(1, item.qty + delta);
             renderCart();
         }
 
@@ -786,6 +810,7 @@
                         ${imgHtml(item.foto, item.name)}
                         <div class="order-info">
                             <div class="name">${item.name}</div>
+                            <div class="text-[10px] text-slate-400 font-bold mb-1">Stok: ${item.stok}</div>
                             <div class="price-qty">
                                 <div class="price">Rp ${new Intl.NumberFormat('id-ID').format(item.price)}</div>
                                 <div class="qty-controls">

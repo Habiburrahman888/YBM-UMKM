@@ -277,23 +277,40 @@
                             </div>
                         </div>
 
+                        <div>
+                            <span class="section-label">Stok Tersedia</span>
+                            <div class="text-lg font-bold {{ $produk->stok > 0 ? 'text-slate-900' : 'text-red-500' }}">
+                                {{ $produk->stok }} {{ $produk->kategori_satuan }}
+                                @if ($produk->stok <= 0)
+                                    <span class="text-xs font-normal ml-2">(Habis)</span>
+                                @endif
+                            </div>
+                        </div>
+
                         <div class="flex flex-wrap gap-2">
-                             @if($produk->kategori_satuan)
+                            @if ($produk->kategori_satuan)
                                 <span class="category-badge">
                                     <i class="fas fa-box text-blue-400"></i>
                                     {{ $produk->kategori_satuan }}
                                 </span>
-                             @endif
-                             <span class="category-badge">
+                            @endif
+                            <span class="category-badge">
                                 <i class="fas fa-tag text-blue-400"></i>
                                 {{ $produk->umkm->kategori->nama ?? 'Umum' }}
                             </span>
                         </div>
 
-                        <a href="{{ route('guest.checkout', $produk->uuid) }}" class="buy-button">
-                            <i class="fas fa-shopping-cart"></i>
-                            Pesan Sekarang
-                        </a>
+                        @if ($produk->stok > 0)
+                            <a href="{{ route('guest.checkout', $produk->uuid) }}" class="buy-button">
+                                <i class="fas fa-shopping-cart"></i>
+                                Pesan Sekarang
+                            </a>
+                        @else
+                            <button class="buy-button opacity-50 cursor-not-allowed" disabled>
+                                <i class="fas fa-times-circle"></i>
+                                Stok Habis
+                            </button>
+                        @endif
                     </div>
 
                     {{-- Seller Card --}}

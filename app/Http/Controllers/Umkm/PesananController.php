@@ -73,17 +73,20 @@ class PesananController extends Controller
             'status' => $request->status
         ]);
 
-        if ($oldStatus == 'pending' && in_array($request->status, ['diproses', 'dikirim', 'selesai'])) {
-            // Kurangi stok saat pesanan diproses, dikirim atau selesai
+        $activeStatuses = ['diproses', 'dikirim', 'selesai'];
+        $inactiveStatuses = ['pending', 'dibatalkan'];
+
+        if (in_array($oldStatus, $inactiveStatuses) && in_array($request->status, $activeStatuses)) {
+            // Pindah dari tidak aktif ke aktif — Kurangi stok
             foreach ($pesanan->items as $item) {
-                if ($item->produk) {
+                if ($item->produk && $item->produk->stok !== null) {
                     $item->produk->decrement('stok', $item->jumlah);
                 }
             }
-        } elseif (in_array($oldStatus, ['diproses', 'dikirim', 'selesai']) && in_array($request->status, ['pending', 'dibatalkan'])) {
-            // Kembalikan stok jika pesanan dibatalkan atau dikembalikan ke pending
+        } elseif (in_array($oldStatus, $activeStatuses) && in_array($request->status, $inactiveStatuses)) {
+            // Pindah dari aktif ke tidak aktif — Kembalikan stok
             foreach ($pesanan->items as $item) {
-                if ($item->produk) {
+                if ($item->produk && $item->produk->stok !== null) {
                     $item->produk->increment('stok', $item->jumlah);
                 }
             }
