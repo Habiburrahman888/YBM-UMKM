@@ -763,8 +763,8 @@
 
     <script>
         /* ─────────────────────────────────────────
-                    AUTH-CARD OVERRIDE → single column
-                    ───────────────────────────────────────── */
+                        AUTH-CARD OVERRIDE → single column
+                        ───────────────────────────────────────── */
         document.addEventListener('DOMContentLoaded', function() {
             const card = document.querySelector('.auth-card');
             if (card) {

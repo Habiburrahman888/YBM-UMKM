@@ -16,7 +16,7 @@
             border-radius: 20px;
             padding: 3rem 2rem;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
             max-width: 650px;
             margin: 0 auto;
             text-align: center;
@@ -37,10 +37,23 @@
         }
 
         @keyframes bounceIn {
-            0% { transform: scale(0.3); opacity: 0; }
-            50% { transform: scale(1.05); opacity: 1; }
-            70% { transform: scale(0.9); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(0.3);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+
+            70% {
+                transform: scale(0.9);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .success-title {
@@ -73,10 +86,20 @@
             font-size: 0.9rem;
         }
 
-        .info-row:last-child { margin-bottom: 0; }
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
 
-        .info-label { color: #94a3b8; font-weight: 500; }
-        .info-value { color: #0f172a; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .info-label {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #0f172a;
+            font-weight: 700;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
 
         .btn-wa {
             display: inline-flex;
@@ -93,7 +116,7 @@
             font-size: 1.05rem;
             cursor: pointer;
             transition: all 0.3s var(--ease);
-            box-shadow: 0 10px 20px rgba(37,211,102,0.25);
+            box-shadow: 0 10px 20px rgba(37, 211, 102, 0.25);
             text-decoration: none;
             margin-bottom: 1rem;
         }
@@ -101,7 +124,7 @@
         .btn-wa:hover {
             background: #128c7e;
             transform: translateY(-2px);
-            box-shadow: 0 15px 30px rgba(37,211,102,0.35);
+            box-shadow: 0 15px 30px rgba(37, 211, 102, 0.35);
             color: #fff;
         }
 
@@ -127,7 +150,6 @@
             background: var(--brand-soft);
             transform: translateY(-2px);
         }
-
     </style>
 @endpush
 
@@ -140,7 +162,8 @@
 
             <h1 class="success-title">Pesanan Berhasil Dibuat!</h1>
             <p class="success-desc">
-                Data pesanan Anda telah tersimpan di sistem kami. Langkah terakhir adalah mengonfirmasi pesanan tersebut kepada penjual melalui WhatsApp.
+                Data pesanan Anda telah tersimpan di sistem kami. Langkah terakhir adalah mengonfirmasi pesanan tersebut
+                kepada penjual melalui WhatsApp.
             </p>
 
             <div class="order-info-box">
@@ -154,7 +177,8 @@
                 </div>
                 <div class="info-row">
                     <span class="info-label">Total Harga</span>
-                    <span class="info-value" style="color:#0d9488;">Rp {{ number_format($pesanan->total_harga, 0, ',', '.') }}</span>
+                    <span class="info-value" style="color:#0d9488;">Rp
+                        {{ number_format($pesanan->total_harga, 0, ',', '.') }}</span>
                 </div>
             </div>
 
@@ -163,7 +187,8 @@
                 Kirim Konfirmasi ke WhatsApp
             </a>
 
-            <a href="{{ route('guest.cek-pesanan', ['id_pesanan' => $pesanan->uuid, 'telepon' => $pesanan->telepon_pembeli]) }}" class="btn-check">
+            <a href="{{ route('guest.cek-pesanan', ['id_pesanan' => $pesanan->uuid, 'telepon' => $pesanan->telepon_pembeli]) }}"
+                class="btn-check">
                 <i class="fas fa-search"></i>
                 Lihat Status Pesanan
             </a>

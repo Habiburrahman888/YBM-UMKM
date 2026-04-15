@@ -324,13 +324,16 @@
                     @forelse($aktivitasTerbaru as $aktivitas)
                         <div class="flex gap-3">
                             <div class="mt-1.5 flex-shrink-0">
-                                <span class="block w-2.5 h-2.5 rounded-full" 
-                                      style="background-color: {{ 
-                                        $aktivitas['color'] === 'blue' ? '#3b82f6' : (
-                                        $aktivitas['color'] === 'green' ? '#22c55e' : (
-                                        $aktivitas['color'] === 'purple' ? '#a855f7' : (
-                                        $aktivitas['color'] === 'indigo' ? '#6366f1' : '#d1d5db'))) 
-                                      }}">
+                                <span class="block w-2.5 h-2.5 rounded-full"
+                                    style="background-color: {{ $aktivitas['color'] === 'blue'
+                                        ? '#3b82f6'
+                                        : ($aktivitas['color'] === 'green'
+                                            ? '#22c55e'
+                                            : ($aktivitas['color'] === 'purple'
+                                                ? '#a855f7'
+                                                : ($aktivitas['color'] === 'indigo'
+                                                    ? '#6366f1'
+                                                    : '#d1d5db'))) }}">
                                 </span>
                             </div>
                             <div class="flex-1 min-w-0 pb-3 border-b border-gray-50 last:border-0 last:pb-0">

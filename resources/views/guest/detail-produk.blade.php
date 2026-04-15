@@ -17,13 +17,14 @@
         .main-swiper {
             width: 100%;
             height: 0;
-            padding-bottom: 75%; /* 4:3 Aspect Ratio for better product display */
+            padding-bottom: 75%;
+            /* 4:3 Aspect Ratio for better product display */
             border-radius: 32px;
             overflow: hidden;
             display: block;
             position: relative;
             background: #f8fafc;
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
         }
 
         .main-swiper .swiper-wrapper {
@@ -63,7 +64,7 @@
             border-color: var(--brand);
             opacity: 1;
             transform: translateY(-4px);
-            box-shadow: 0 10px 20px -5px rgba(26,49,153,0.3);
+            box-shadow: 0 10px 20px -5px rgba(26, 49, 153, 0.3);
         }
 
         .thumb-swiper-container {
@@ -76,16 +77,19 @@
         .main-swiper .swiper-button-prev {
             width: 48px;
             height: 48px;
-            background: rgba(255,255,255,0.95);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(8px);
             border-radius: 50%;
             color: #1e293b;
             transition: all 0.3s var(--ease);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .main-swiper .swiper-button-next::after,
-        .main-swiper .swiper-button-prev::after { font-size: 1rem; font-weight: 900; }
+        .main-swiper .swiper-button-prev::after {
+            font-size: 1rem;
+            font-weight: 900;
+        }
 
         .main-swiper .swiper-button-next:hover,
         .main-swiper .swiper-button-prev:hover {
@@ -154,14 +158,14 @@
             font-weight: 700;
             font-size: 1rem;
             text-decoration: none;
-            box-shadow: 0 12px 24px -6px rgba(26,49,153,0.4);
+            box-shadow: 0 12px 24px -6px rgba(26, 49, 153, 0.4);
             transition: all 0.3s var(--ease);
         }
 
         .buy-button:hover {
             background: var(--brand-dark);
             transform: translateY(-3px);
-            box-shadow: 0 16px 32px -8px rgba(26,49,153,0.5);
+            box-shadow: 0 16px 32px -8px rgba(26, 49, 153, 0.5);
             color: white;
         }
 
@@ -170,7 +174,7 @@
             border-radius: 24px;
             border: 1px solid #f1f5f9;
             padding: 1.5rem;
-            box-shadow: 0 4px 20px -10px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 20px -10px rgba(0, 0, 0, 0.05);
         }
 
         .seller-link {
@@ -184,11 +188,19 @@
             transition: all 0.2s;
         }
 
-        .seller-link:hover { gap: 0.6rem; text-decoration: underline; }
+        .seller-link:hover {
+            gap: 0.6rem;
+            text-decoration: underline;
+        }
 
         @media (max-width: 640px) {
-            .price-big { font-size: 1.8rem; }
-            .main-swiper { border-radius: 24px; }
+            .price-big {
+                font-size: 1.8rem;
+            }
+
+            .main-swiper {
+                border-radius: 24px;
+            }
         }
     </style>
 @endpush
@@ -198,7 +210,8 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
 
             {{-- Breadcrumb --}}
-            <nav class="flex items-center gap-2 text-[0.7rem] font-bold uppercase tracking-wider text-slate-400 mb-8 overflow-x-auto whitespace-nowrap pb-2 no-scrollbar">
+            <nav
+                class="flex items-center gap-2 text-[0.7rem] font-bold uppercase tracking-wider text-slate-400 mb-8 overflow-x-auto whitespace-nowrap pb-2 no-scrollbar">
                 <a href="{{ route('guest.beranda') }}" class="hover:text-brand transition-colors">Beranda</a>
                 <span class="text-slate-300">/</span>
                 <a href="{{ route('guest.katalog') }}" class="hover:text-brand transition-colors">Katalog</a>
@@ -264,7 +277,8 @@
                     </div>
 
                     {{-- Card Utama --}}
-                    <div class="bg-white rounded-[32px] border border-slate-100 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] p-6 sm:p-8 space-y-8">
+                    <div
+                        class="bg-white rounded-[32px] border border-slate-100 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] p-6 sm:p-8 space-y-8">
                         <div>
                             <span class="section-label">Harga Produk</span>
                             <div class="price-big">Rp {{ number_format($produk->harga, 0, ',', '.') }}</div>
@@ -356,9 +370,11 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/mcstudios/glightbox/dist/js/glightbox.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             // Lightbox
-            const lightbox = GLightbox({ selector: '.glightbox' });
+            const lightbox = GLightbox({
+                selector: '.glightbox'
+            });
 
             // Swiper Thumbs
             const thumbSwiper = new Swiper('.thumb-swiper', {
@@ -373,12 +389,16 @@
                 loop: true,
                 spaceBetween: 0,
                 speed: 800,
-                autoplay: { delay: 4000 },
+                autoplay: {
+                    delay: 4000
+                },
                 navigation: {
                     nextEl: '.swiper-button-next',
                     prevEl: '.swiper-button-prev',
                 },
-                thumbs: { swiper: thumbSwiper },
+                thumbs: {
+                    swiper: thumbSwiper
+                },
             });
         });
     </script>

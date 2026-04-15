@@ -127,9 +127,11 @@
             <div class="mt-2.5 text-[11px] text-neutral-400 text-center leading-relaxed">
                 This site is protected by reCAPTCHA and the Google
                 <a href="https://policies.google.com/privacy" target="_blank"
-                    class="text-neutral-500 hover:underline">Privacy Policy</a> and
+                    class="text-neutral-500 hover:underline">Privacy
+                    Policy</a> and
                 <a href="https://policies.google.com/terms" target="_blank"
-                    class="text-neutral-500 hover:underline">Terms of Service</a> apply.
+                    class="text-neutral-500 hover:underline">Terms of
+                    Service</a> apply.
             </div>
         @else
             <div class="mt-2.5 text-[11px] text-red-500 text-center">
@@ -152,14 +154,49 @@
     @endif
 
     <script>
-        // ── Lottie ──
-        lottie.loadAnimation({
-            container: document.getElementById('lottie-logo'),
-            renderer: 'svg',
-            loop: true,
-            autoplay: true,
-            path: '{{ $setting && $setting->logo_expo ? $setting->logo_expo_url : asset('Auth/auth-logo.json') }}'
-        });
+        // ── Logo/Lottie Handler ──
+        async function initLogo() {
+            try {
+                const container = document.getElementById('lottie-logo');
+                if (!container) return;
+
+                const path = '{{ asset('auth/auth-logo.json') }}';
+
+                const response = await fetch(path);
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const blob = await response.blob();
+                const contentType = response.headers.get('content-type');
+
+                // Check if it's JSON or if we should try parsing it as such
+                if (contentType && contentType.includes('application/json') || path.toLowerCase().endsWith('.json')) {
+                    try {
+                        const text = await blob.text();
+                        const data = JSON.parse(text);
+                        lottie.loadAnimation({
+                            container: container,
+                            renderer: 'svg',
+                            loop: true,
+                            autoplay: true,
+                            animationData: data
+                        });
+                        return; // Success
+                    } catch (e) {
+                        console.warn('Failed to parse as JSON, falling back to image');
+                    }
+                }
+
+                // If not JSON or parsing failed, treat as standard image
+                container.innerHTML =
+                    `<img src="${path}" alt="Logo" class="w-full h-full object-contain relative z-10 transition-all duration-500 hover:scale-105">`;
+
+            } catch (err) {
+                console.error('Logo Error:', err);
+                const path =
+                    '{{ $setting && $setting->logo_expo ? $setting->logo_expo_url : asset('Auth/auth-logo.json') }}';
+                container.innerHTML = `<img src="${path}" alt="Logo" class="w-full h-full object-contain">`;
+            }
+        }
 
         let linkExpirySeconds = {{ $countdownSeconds }};
         let resendCooldownSeconds = {{ $canResendIn }};
@@ -215,9 +252,11 @@
             const btn = document.getElementById('resendBtn');
             const email = document.getElementById('email').value;
 
+            if (!btn) return;
+
             btn.disabled = true;
             const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<div class="spinner"></div><span>Mengirim...</span>';
+            btn.innerHTML = '<div class="spinner border-slate-400"></div><span>Mengirim...</span>';
 
             try {
                 @if (!empty($recaptchaSiteKey))
@@ -247,6 +286,9 @@
 
                 const data = await response.json();
 
+                // Restore original structure so functions can find #resendText
+                btn.innerHTML = originalHTML;
+
                 if (data.success) {
                     showAlert('success', data.message);
                     clearInterval(countdownInterval);
@@ -256,7 +298,9 @@
                     resendCooldownSeconds = data.canResendIn || 60;
 
                     const countdownEl = document.getElementById('countdown');
-                    countdownEl.classList.remove('!bg-red-200', '!text-red-900');
+                    if (countdownEl) {
+                        countdownEl.classList.remove('!bg-red-200', '!text-red-900');
+                    }
 
                     setResendCooldown(resendCooldownSeconds);
                     startLinkCountdown();
@@ -266,7 +310,9 @@
                     resendCooldownSeconds > 0 ? setResendCooldown(resendCooldownSeconds) : setResendReady();
                     btn.disabled = resendCooldownSeconds > 0;
                 }
-            } catch {
+            } catch (error) {
+                console.error('Resend error:', error);
+                btn.innerHTML = originalHTML;
                 showAlert('danger', 'Terjadi kesalahan. Silakan coba lagi.');
                 resendCooldownSeconds > 0 ? setResendCooldown(resendCooldownSeconds) : setResendReady();
                 btn.disabled = resendCooldownSeconds > 0;
@@ -316,6 +362,7 @@
 
             startLinkCountdown();
             resendCooldownSeconds > 0 ? startResendCountdown() : setResendReady();
+            initLogo();
         });
     </script>
 @endpush

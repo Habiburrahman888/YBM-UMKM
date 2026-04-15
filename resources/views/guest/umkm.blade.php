@@ -310,7 +310,8 @@
                                    text-sm text-neutral-400 font-medium outline-none cursor-pointer">
                             <option value="">Semua Kota</option>
                             @foreach ($cities_filter as $city)
-                                <option value="{{ $city->code }}" {{ request('city') == $city->code ? 'selected' : '' }}>
+                                <option value="{{ $city->code }}"
+                                    {{ request('city') == $city->code ? 'selected' : '' }}>
                                     {{ $city->name }}
                                 </option>
                             @endforeach

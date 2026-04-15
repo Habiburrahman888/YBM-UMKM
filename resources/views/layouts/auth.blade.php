@@ -15,7 +15,7 @@
 
     @php
         $setting = $setting ?? \App\Models\SettingAdmin::first();
-        $favicon = ($setting && $setting->logo_expo) ? $setting->logo_expo_url : asset('images/favicon.png');
+        $favicon = $setting && $setting->logo_expo ? $setting->logo_expo_url : asset('images/favicon.png');
     @endphp
 
     <link rel="icon" type="image/x-icon" href="{{ $favicon }}">

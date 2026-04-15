@@ -123,8 +123,7 @@
             </div>
 
             {{-- ── PANEL FILTER ── --}}
-            <div id="filter-section"
-                class="{{ $hasFilter ? '' : 'hidden' }} transition-all duration-300">
+            <div id="filter-section" class="{{ $hasFilter ? '' : 'hidden' }} transition-all duration-300">
                 <div class="px-4 sm:px-6 py-4 bg-gray-50">
                     <form method="GET" action="{{ route('admin.user.index') }}">
                         @if (request('q'))
@@ -379,7 +378,7 @@
                     </table>
                 </div>
 
-                                {{-- ── MOBILE CARDS ── --}}
+                {{-- ── MOBILE CARDS ── --}}
                 <div class="md:hidden divide-y divide-gray-100">
                     @foreach ($users as $user)
                         <div class="px-4 py-4 hover:bg-gray-50/60 transition-colors">
@@ -397,7 +396,8 @@
                                     @endif
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center gap-2 flex-wrap">
-                                            <h3 class="text-sm font-semibold text-gray-900">{{ '@' . $user->username }}</h3>
+                                            <h3 class="text-sm font-semibold text-gray-900">{{ '@' . $user->username }}
+                                            </h3>
                                             @if ($user->is_active)
                                                 <span
                                                     class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-green-50 text-green-600 text-xs font-medium">
@@ -672,7 +672,8 @@
             document.querySelectorAll('.dropdown-menu.open').forEach(m => m.classList.remove('open'));
         }
         document.getElementById('confirm-verify-btn').addEventListener('click', function() {
-            if (verifyUuid) submitAction('{{ route('admin.user.verify-email', ':id') }}'.replace(':id', verifyUuid),
+            if (verifyUuid) submitAction('{{ route('admin.user.verify-email', ':id') }}'.replace(':id',
+                verifyUuid),
                 'POST');
         });
         document.getElementById('verify-modal').addEventListener('click', function(e) {
@@ -714,7 +715,8 @@
             document.querySelectorAll('.dropdown-menu.open').forEach(m => m.classList.remove('open'));
         }
         document.getElementById('confirm-status-btn').addEventListener('click', function() {
-            if (statusUuid) submitAction('{{ route('admin.user.toggle-status', ':id') }}'.replace(':id', statusUuid),
+            if (statusUuid) submitAction('{{ route('admin.user.toggle-status', ':id') }}'.replace(':id',
+                    statusUuid),
                 'POST');
         });
         document.getElementById('status-modal').addEventListener('click', function(e) {

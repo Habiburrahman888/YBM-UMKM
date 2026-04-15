@@ -16,7 +16,7 @@
             border-radius: 20px;
             padding: 2rem;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
             max-width: 600px;
             margin: 0 auto;
         }
@@ -52,7 +52,7 @@
         .form-control:focus {
             border-color: var(--brand);
             outline: none;
-            box-shadow: 0 0 0 4px rgba(26,49,153,0.1);
+            box-shadow: 0 0 0 4px rgba(26, 49, 153, 0.1);
         }
 
         .btn-track {
@@ -66,14 +66,14 @@
             font-size: 1rem;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 8px 16px rgba(26,49,153,0.2);
+            box-shadow: 0 8px 16px rgba(26, 49, 153, 0.2);
             margin-top: 1rem;
         }
 
         .btn-track:hover {
             background: var(--brand-dark);
             transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(26,49,153,0.3);
+            box-shadow: 0 12px 24px rgba(26, 49, 153, 0.3);
         }
 
         /* ── STATUS TRACKER ── */
@@ -147,7 +147,7 @@
             border-color: var(--brand);
             background: var(--brand);
             color: #fff;
-            box-shadow: 0 0 0 4px rgba(26,49,153,0.15);
+            box-shadow: 0 0 0 4px rgba(26, 49, 153, 0.15);
         }
 
         .step-item.completed .step-dot {
@@ -164,7 +164,9 @@
             margin-bottom: 0.25rem;
         }
 
-        .step-item.active .step-title { color: var(--brand); }
+        .step-item.active .step-title {
+            color: var(--brand);
+        }
 
         .step-content .step-desc {
             font-size: 0.85rem;
@@ -179,16 +181,45 @@
             text-transform: uppercase;
         }
 
-        .badge-pending { background: #fef3c7; color: #92400e; }
-        .badge-diproses { background: #e0f2fe; color: #075985; }
-        .badge-dikirim { background: #fef9c3; color: #854d0e; }
-        .badge-selesai { background: #dcfce7; color: #166534; }
-        .badge-dibatalkan { background: #fee2e2; color: #991b1b; }
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-diproses {
+            background: #e0f2fe;
+            color: #075985;
+        }
+
+        .badge-dikirim {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .badge-selesai {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-dibatalkan {
+            background: #fee2e2;
+            color: #991b1b;
+        }
 
         @media (max-width: 640px) {
-            .card-tracking { padding: 1.5rem; }
-            .section-title { font-size: 1.5rem; }
-            .order-meta { flex-direction: column; gap: 1rem; align-items: flex-start; }
+            .card-tracking {
+                padding: 1.5rem;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+
+            .order-meta {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
         }
     </style>
 @endpush
@@ -200,7 +231,7 @@
             <div class="card-tracking">
                 <h1 class="section-title">Lacak Pesanan Saya</h1>
 
-                @if(session('error'))
+                @if (session('error'))
                     <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
                         <p class="text-red-700 text-sm">{{ session('error') }}</p>
                     </div>
@@ -212,24 +243,24 @@
                         <div class="form-group">
                             <label class="form-label">ID Pesanan (UUID)</label>
                             <input type="text" name="id_pesanan" class="form-control"
-                                   placeholder="Contoh: 123e4567-e89b-12d3..."
-                                   value="{{ old('id_pesanan', isset($pesanan) ? $pesanan->uuid : '') }}" required>
+                                placeholder="Contoh: 123e4567-e89b-12d3..."
+                                value="{{ old('id_pesanan', isset($pesanan) ? $pesanan->uuid : '') }}" required>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">Nomor WhatsApp Pembeli</label>
-                            <input type="text" name="telepon" class="form-control"
-                                   placeholder="Contoh: 08123456789"
-                                   value="{{ old('telepon', isset($pesanan) ? $pesanan->telepon_pembeli : '') }}" required>
+                            <input type="text" name="telepon" class="form-control" placeholder="Contoh: 08123456789"
+                                value="{{ old('telepon', isset($pesanan) ? $pesanan->telepon_pembeli : '') }}" required>
                         </div>
 
                         <button type="submit" class="btn-track">
                             <i class="fas fa-search mr-2"></i> Periksa Status
                         </button>
 
-                        @if(isset($pesanan) || old('id_pesanan'))
+                        @if (isset($pesanan) || old('id_pesanan'))
                             <div class="text-center mt-4">
-                                <a href="{{ route('guest.cek-pesanan') }}" class="text-sm font-bold text-slate-500 hover:text-brand transition-all flex items-center justify-center gap-2">
+                                <a href="{{ route('guest.cek-pesanan') }}"
+                                    class="text-sm font-bold text-slate-500 hover:text-brand transition-all flex items-center justify-center gap-2">
                                     <i class="fas fa-sync-alt text-xs"></i> Lacak Pesanan Lain
                                 </a>
                             </div>
@@ -247,18 +278,25 @@
                     </div>
                 </form>
 
-                @if(isset($pesanan))
+                @if (isset($pesanan))
                     <div class="status-container">
                         <div class="order-meta">
                             <div class="order-meta-item">
                                 <span class="label">Status Saat Ini</span>
                                 <span class="badge-status badge-{{ $pesanan->status }}">
-                                    @if($pesanan->status == 'pending') Pending
-                                    @elseif($pesanan->status == 'diproses') Diproses
-                                    @elseif($pesanan->status == 'dikirim') Sedang Diantar
-                                    @elseif($pesanan->status == 'selesai') Selesai
-                                    @elseif($pesanan->status == 'dibatalkan') Dibatalkan
-                                    @else {{ ucfirst($pesanan->status) }} @endif
+                                    @if ($pesanan->status == 'pending')
+                                        Pending
+                                    @elseif($pesanan->status == 'diproses')
+                                        Diproses
+                                    @elseif($pesanan->status == 'dikirim')
+                                        Sedang Diantar
+                                    @elseif($pesanan->status == 'selesai')
+                                        Selesai
+                                    @elseif($pesanan->status == 'dibatalkan')
+                                        Dibatalkan
+                                    @else
+                                        {{ ucfirst($pesanan->status) }}
+                                    @endif
                                 </span>
                             </div>
                             <div class="order-meta-item text-right">
@@ -268,7 +306,8 @@
                         </div>
 
                         <ul class="stepper">
-                            <li class="step-item {{ in_array($pesanan->status, ['pending', 'diproses', 'dikirim', 'selesai']) ? 'completed' : '' }}">
+                            <li
+                                class="step-item {{ in_array($pesanan->status, ['pending', 'diproses', 'dikirim', 'selesai']) ? 'completed' : '' }}">
                                 <div class="step-dot"><i class="fas fa-file-invoice"></i></div>
                                 <div class="step-content">
                                     <span class="step-title">Pesanan Diterima</span>
@@ -276,7 +315,8 @@
                                 </div>
                             </li>
 
-                            <li class="step-item {{ $pesanan->status == 'diproses' ? 'active' : (in_array($pesanan->status, ['dikirim', 'selesai']) ? 'completed' : '') }}">
+                            <li
+                                class="step-item {{ $pesanan->status == 'diproses' ? 'active' : (in_array($pesanan->status, ['dikirim', 'selesai']) ? 'completed' : '') }}">
                                 <div class="step-dot"><i class="fas fa-box-open"></i></div>
                                 <div class="step-content">
                                     <span class="step-title">Sedang Diproses</span>
@@ -284,7 +324,8 @@
                                 </div>
                             </li>
 
-                            <li class="step-item {{ $pesanan->status == 'dikirim' ? 'active' : ($pesanan->status == 'selesai' ? 'completed' : '') }}">
+                            <li
+                                class="step-item {{ $pesanan->status == 'dikirim' ? 'active' : ($pesanan->status == 'selesai' ? 'completed' : '') }}">
                                 <div class="step-dot"><i class="fas fa-truck-loading"></i></div>
                                 <div class="step-content">
                                     <span class="step-title">Sedang Diantar</span>
@@ -302,10 +343,11 @@
                         </ul>
 
                         {{-- Review Button placeholder for later --}}
-                        @if($pesanan->status == 'completed')
+                        @if ($pesanan->status == 'completed')
                             <div class="mt-8 p-4 bg-brand-soft rounded-xl border border-blue-100 text-center">
                                 <p class="text-sm font-semibold text-brand mb-2">Puas dengan pesanannya?</p>
-                                <button class="btn-track mt-0" style="background:#0d9488;box-shadow:0 8px 16px rgba(13,148,136,0.2);">
+                                <button class="btn-track mt-0"
+                                    style="background:#0d9488;box-shadow:0 8px 16px rgba(13,148,136,0.2);">
                                     <i class="fas fa-star mr-2"></i> Beri Ulasan (Segera Hadir)
                                 </button>
                             </div>
@@ -314,7 +356,7 @@
                         <div class="mt-6 text-center">
                             <p class="text-xs text-neutral-400">Hubungi penjual via WhatsApp jika ada pertanyaan.</p>
                             <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $pesanan->umkm->telepon) }}"
-                               class="text-brand font-bold text-sm hover:underline mt-1 inline-block">
+                                class="text-brand font-bold text-sm hover:underline mt-1 inline-block">
                                 <i class="fab fa-whatsapp mr-1"></i> Chat {{ $pesanan->umkm->nama_usaha }}
                             </a>
                         </div>
@@ -323,7 +365,8 @@
             </div>
 
             <div class="mt-8 text-center">
-                <a href="{{ route('guest.beranda') }}" class="text-neutral-500 hover:text-brand font-semibold text-sm transition-colors">
+                <a href="{{ route('guest.beranda') }}"
+                    class="text-neutral-500 hover:text-brand font-semibold text-sm transition-colors">
                     <i class="fas fa-arrow-left mr-2"></i> Kembali ke Beranda
                 </a>
             </div>
@@ -343,10 +386,11 @@
 
             if (history.length > 0 && !inputUuid.value) {
                 historySection.classList.remove('hidden');
-                
+
                 history.forEach((order, index) => {
                     const item = document.createElement('div');
-                    item.className = 'group p-3 bg-slate-50 border border-slate-100 rounded-xl hover:bg-white hover:border-brand-soft hover:shadow-md transition-all cursor-pointer';
+                    item.className =
+                        'group p-3 bg-slate-50 border border-slate-100 rounded-xl hover:bg-white hover:border-brand-soft hover:shadow-md transition-all cursor-pointer';
                     item.innerHTML = `
                         <div class="flex items-center justify-between">
                             <div>
@@ -356,20 +400,20 @@
                             <i class="fas fa-chevron-right text-[10px] text-slate-300 group-hover:text-brand transition-colors"></i>
                         </div>
                     `;
-                    
+
                     item.onclick = () => {
                         inputUuid.value = order.uuid;
                         inputTelp.value = order.telepon;
-                        
+
                         // Feedback visual
                         inputUuid.focus();
                         inputUuid.classList.add('ring-2', 'ring-brand/20');
                         setTimeout(() => inputUuid.classList.remove('ring-2', 'ring-brand/20'), 1000);
-                        
+
                         // Opsional: Langsung submit
                         // item.closest('form').submit();
                     };
-                    
+
                     historyList.appendChild(item);
                 });
             }

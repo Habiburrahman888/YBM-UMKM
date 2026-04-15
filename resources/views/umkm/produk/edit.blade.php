@@ -43,7 +43,7 @@
                                 <span
                                     class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-medium select-none">Rp</span>
                                 <input type="text" name="harga" id="harga"
-                                    value="{{ old('harga', $produk->harga) }}" placeholder="0"
+                                    value="{{ old('harga', (int) $produk->harga) }}" placeholder="0"
                                     class="block w-full pl-10 pr-3 py-2 text-sm sm:text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary @error('harga') border-red-500 @else border-gray-300 @enderror">
                             </div>
                             @error('harga')

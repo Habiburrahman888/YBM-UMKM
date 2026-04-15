@@ -348,6 +348,7 @@
 
             <h1>Password Berhasil Diubah!</h1>
             <p>Akun Anda telah berhasil diamankan</p>
+
         </div>
 
         <div class="content">
@@ -392,7 +393,8 @@
             </div>
 
             <div class="button-container">
-                <a href="{{ config('app.url') }}/login" class="action-button">Login ke Akun Saya</a>
+                <a href="{{ config('app.url') }}/login" class="action-button"
+                    style="color: #ffffff !important; text-decoration: none !important;">Login ke Akun Saya</a>
             </div>
 
             <div class="security-tips">

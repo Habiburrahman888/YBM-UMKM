@@ -59,6 +59,7 @@
 
         .header h1 {
             color: #ffffff;
+            /* Warna putih untuk judul Reset Password */
             font-size: 28px;
             font-weight: 700;
             margin-bottom: 10px;
@@ -66,7 +67,8 @@
         }
 
         .header p {
-            color: #e0f2fe;
+            color: #ffffff;
+            /* Warna putih untuk teks deskripsi */
             font-size: 15px;
             font-weight: 400;
         }
@@ -121,7 +123,7 @@
         .action-button {
             display: inline-block;
             background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
-            color: white;
+            color: #ffffff !important;
             text-decoration: none;
             padding: 16px 48px;
             font-weight: 600;
@@ -381,7 +383,8 @@
             <div class="important-note">
                 <p><strong>Penting:</strong> Link reset password ini akan kadaluarsa dalam
                     <strong>{{ $expiresInMinutes }} menit</strong>. Setelah waktu tersebut, Anda perlu meminta link
-                    reset password yang baru.</p>
+                    reset password yang baru.
+                </p>
                 <p><strong>Catatan:</strong> Setelah berhasil mereset password, Anda dapat login menggunakan password
                     baru Anda.</p>
             </div>

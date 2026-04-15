@@ -20,7 +20,9 @@
         }
 
         @media (max-width: 1024px) {
-            .checkout-grid { grid-template-columns: 1fr; }
+            .checkout-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* ── CARD ── */
@@ -29,7 +31,7 @@
             border-radius: 20px;
             padding: 2rem;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
         }
 
         /* ── SECTION TITLE ── */
@@ -49,7 +51,9 @@
         }
 
         /* ── FORM ── */
-        .form-group { margin-bottom: 1.25rem; }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
 
         .form-label {
             display: block;
@@ -76,12 +80,16 @@
         .form-control:focus {
             border-color: var(--brand);
             outline: none;
-            box-shadow: 0 0 0 4px rgba(26,49,153,0.08);
+            box-shadow: 0 0 0 4px rgba(26, 49, 153, 0.08);
         }
 
-        .form-control.border-red-500 { border-color: #ef4444; }
+        .form-control.border-red-500 {
+            border-color: #ef4444;
+        }
 
-        textarea.form-control { resize: vertical; }
+        textarea.form-control {
+            resize: vertical;
+        }
 
         /* ── PAYMENT TAB SWITCHER ── */
         .pay-tabs {
@@ -112,15 +120,19 @@
             white-space: nowrap;
         }
 
-        .pay-tab:hover { color: var(--brand); }
+        .pay-tab:hover {
+            color: var(--brand);
+        }
 
         .pay-tab.active {
             background: #fff;
             color: var(--brand);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
-        .pay-tab i { font-size: 0.8rem; }
+        .pay-tab i {
+            font-size: 0.8rem;
+        }
 
         /* ── TAB PANEL ── */
         .pay-panel {
@@ -133,8 +145,15 @@
         }
 
         @keyframes fadeSlideIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* ── UPLOAD ── */
@@ -195,7 +214,7 @@
         .product-select-item:hover {
             border-color: var(--brand);
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(26,49,153,0.1);
+            box-shadow: 0 6px 16px rgba(26, 49, 153, 0.1);
         }
 
         .product-select-img {
@@ -244,7 +263,9 @@
             border: none;
         }
 
-        .btn-remove:hover { opacity: 1; }
+        .btn-remove:hover {
+            opacity: 1;
+        }
 
         .order-img {
             width: 56px;
@@ -254,7 +275,10 @@
             flex-shrink: 0;
         }
 
-        .order-info { flex: 1; min-width: 0; }
+        .order-info {
+            flex: 1;
+            min-width: 0;
+        }
 
         .order-info .name {
             font-size: 0.85rem;
@@ -384,7 +408,7 @@
             margin: 1rem auto 0;
             display: block;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
         /* ── SUBMIT BUTTON ── */
@@ -402,7 +426,7 @@
             font-size: 0.95rem;
             border: none;
             cursor: pointer;
-            box-shadow: 0 8px 20px rgba(26,49,153,0.22);
+            box-shadow: 0 8px 20px rgba(26, 49, 153, 0.22);
             transition: all 0.3s var(--ease);
             margin-top: 1.25rem;
             text-decoration: none;
@@ -412,7 +436,7 @@
         .buy-button:hover:not(:disabled) {
             background: var(--brand-dark);
             transform: translateY(-2px);
-            box-shadow: 0 14px 28px rgba(26,49,153,0.32);
+            box-shadow: 0 14px 28px rgba(26, 49, 153, 0.32);
             color: white;
         }
 
@@ -425,7 +449,7 @@
         .spinner {
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-top-color: #fff;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
@@ -433,7 +457,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .sr-only {
@@ -461,13 +487,27 @@
             transition: color 0.2s;
         }
 
-        .back-link:hover { color: var(--brand); }
+        .back-link:hover {
+            color: var(--brand);
+        }
 
         @media (max-width: 640px) {
-            .card-checkout { padding: 1.25rem; border-radius: 16px; }
-            .section-title { font-size: 1.15rem; }
-            .product-select-grid { grid-template-columns: repeat(2, 1fr); }
-            .total-amount { font-size: 1.25rem; }
+            .card-checkout {
+                padding: 1.25rem;
+                border-radius: 16px;
+            }
+
+            .section-title {
+                font-size: 1.15rem;
+            }
+
+            .product-select-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .total-amount {
+                font-size: 1.25rem;
+            }
         }
     </style>
 @endpush
@@ -478,17 +518,15 @@
     <div class="bg-white border-b border-neutral-100 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
             <nav class="flex items-center gap-2 text-sm font-semibold flex-wrap">
-                <a href="{{ route('guest.beranda') }}"
-                   class="no-underline transition-colors duration-200 hover:underline"
-                   style="color: var(--brand);">Beranda</a>
+                <a href="{{ route('guest.beranda') }}" class="no-underline transition-colors duration-200 hover:underline"
+                    style="color: var(--brand);">Beranda</a>
                 <i class="fas fa-chevron-right text-neutral-300" style="font-size: 0.65rem;"></i>
-                <a href="{{ route('guest.katalog') }}"
-                   class="no-underline transition-colors duration-200 hover:underline"
-                   style="color: var(--brand);">Katalog</a>
+                <a href="{{ route('guest.katalog') }}" class="no-underline transition-colors duration-200 hover:underline"
+                    style="color: var(--brand);">Katalog</a>
                 <i class="fas fa-chevron-right text-neutral-300" style="font-size: 0.65rem;"></i>
                 <a href="{{ route('guest.detail-produk', $produk->uuid) }}"
-                   class="no-underline transition-colors duration-200 hover:underline line-clamp-1"
-                   style="color: var(--brand);">{{ $produk->nama_produk }}</a>
+                    class="no-underline transition-colors duration-200 hover:underline line-clamp-1"
+                    style="color: var(--brand);">{{ $produk->nama_produk }}</a>
                 <i class="fas fa-chevron-right text-neutral-300" style="font-size: 0.65rem;"></i>
                 <span class="text-neutral-600 font-bold">Form Pembelian</span>
             </nav>
@@ -498,7 +536,8 @@
     <div class="bg-neutral-50 min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 pb-24">
 
-            <form id="checkoutForm" action="{{ route('guest.store-checkout', $produk->uuid) }}" method="POST" enctype="multipart/form-data">
+            <form id="checkoutForm" action="{{ route('guest.store-checkout', $produk->uuid) }}" method="POST"
+                enctype="multipart/form-data">
                 @csrf
                 <div class="checkout-grid">
 
@@ -515,28 +554,27 @@
                                 <label class="form-label">Nama Lengkap <span class="text-red-500">*</span></label>
                                 <input type="text" name="nama_pembeli"
                                     class="form-control @error('nama_pembeli') border-red-500 @enderror"
-                                    value="{{ old('nama_pembeli') }}"
-                                    placeholder="Masukkan nama Anda" required>
+                                    value="{{ old('nama_pembeli') }}" placeholder="Masukkan nama Anda" required>
                                 @error('nama_pembeli')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Nomor Telepon (WhatsApp) <span class="text-red-500">*</span></label>
+                                <label class="form-label">Nomor Telepon (WhatsApp) <span
+                                        class="text-red-500">*</span></label>
                                 <input type="text" name="telepon_pembeli"
                                     class="form-control @error('telepon_pembeli') border-red-500 @enderror"
-                                    value="{{ old('telepon_pembeli') }}"
-                                    placeholder="Contoh: 08123456789" required>
+                                    value="{{ old('telepon_pembeli') }}" placeholder="Contoh: 08123456789" required>
                                 @error('telepon_pembeli')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Alamat Lengkap Pengiriman <span class="text-red-500">*</span></label>
-                                <textarea name="alamat_pembeli" rows="4"
-                                    class="form-control @error('alamat_pembeli') border-red-500 @enderror"
+                                <label class="form-label">Alamat Lengkap Pengiriman <span
+                                        class="text-red-500">*</span></label>
+                                <textarea name="alamat_pembeli" rows="4" class="form-control @error('alamat_pembeli') border-red-500 @enderror"
                                     placeholder="Masukkan alamat lengkap" required>{{ old('alamat_pembeli') }}</textarea>
                                 @error('alamat_pembeli')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -544,9 +582,10 @@
                             </div>
 
                             <div class="form-group" style="margin-bottom: 0;">
-                                <label class="form-label">Catatan Pesanan <span class="text-neutral-400 font-normal normal-case" style="letter-spacing:0;">(Opsional)</span></label>
-                                <textarea name="catatan" rows="2" class="form-control"
-                                    placeholder="Contoh: Ukuran XL, Warna Merah">{{ old('catatan') }}</textarea>
+                                <label class="form-label">Catatan Pesanan <span
+                                        class="text-neutral-400 font-normal normal-case"
+                                        style="letter-spacing:0;">(Opsional)</span></label>
+                                <textarea name="catatan" rows="2" class="form-control" placeholder="Contoh: Ukuran XL, Warna Merah">{{ old('catatan') }}</textarea>
                             </div>
                         </div>
 
@@ -573,13 +612,13 @@
                                 <div class="pay-tabs">
                                     @if ($hasBank)
                                         <button type="button" class="pay-tab {{ !$hasQris ? 'active' : '' }}"
-                                                id="tab-bank" onclick="switchTab('bank')">
+                                            id="tab-bank" onclick="switchTab('bank')">
                                             <i class="fas fa-university"></i> Transfer Bank
                                         </button>
                                     @endif
                                     @if ($hasQris)
                                         <button type="button" class="pay-tab {{ !$hasBank ? 'active' : '' }}"
-                                                id="tab-qris" onclick="switchTab('qris')">
+                                            id="tab-qris" onclick="switchTab('qris')">
                                             <i class="fas fa-qrcode"></i> QRIS
                                         </button>
                                     @endif
@@ -602,9 +641,8 @@
                                 @if ($hasQris)
                                     <div class="pay-panel {{ !$hasBank ? 'active' : '' }}" id="panel-qris">
                                         <div class="text-center py-2">
-                                            <img src="{{ Storage::url($produk->umkm->qris_foto) }}"
-                                                 class="qris-img"
-                                                 alt="QRIS {{ $produk->umkm->nama_usaha }}">
+                                            <img src="{{ Storage::url($produk->umkm->qris_foto) }}" class="qris-img"
+                                                alt="QRIS {{ $produk->umkm->nama_usaha }}">
                                             <p class="text-xs text-neutral-400 mt-3">
                                                 Scan dengan e-wallet atau mobile banking apapun
                                             </p>
@@ -617,13 +655,12 @@
 
                                 {{-- UPLOAD BUKTI --}}
                                 <p class="text-xs font-bold uppercase tracking-widest mb-3"
-                                   style="color: var(--brand); letter-spacing: 0.06em;">
+                                    style="color: var(--brand); letter-spacing: 0.06em;">
                                     <i class="fas fa-camera mr-1"></i> Unggah Bukti Pembayaran
                                 </p>
 
-                                <input type="file" name="bukti_transfer" id="bukti_transfer"
-                                    class="sr-only" accept="image/*" required
-                                    onchange="previewImage(this)">
+                                <input type="file" name="bukti_transfer" id="bukti_transfer" class="sr-only"
+                                    accept="image/*" required onchange="previewImage(this)">
 
                                 <div class="upload-area @error('bukti_transfer') border-red-500 @enderror"
                                     onclick="document.getElementById('bukti_transfer').click()">
@@ -659,32 +696,29 @@
                                     @foreach ($umkm_produk as $up)
                                         @php
                                             $up_fotos = $up->foto_produk;
-                                            $up_foto  = is_array($up_fotos) ? ($up_fotos[0] ?? null) : null;
+                                            $up_foto = is_array($up_fotos) ? $up_fotos[0] ?? null : null;
                                         @endphp
                                         <div class="product-select-item {{ $up->stok <= 0 ? 'opacity-50 cursor-not-allowed' : '' }}"
-                                            @if($up->stok > 0)
-                                            onclick="addToCart(
+                                            @if ($up->stok > 0) onclick="addToCart(
                                                 {{ $up->id }},
                                                 '{{ addslashes($up->nama_produk) }}',
                                                 {{ $up->harga }},
                                                 '{{ $up_foto ? Storage::url($up_foto) : '' }}',
                                                 {{ $up->stok }}
-                                            )"
-                                            @endif>
+                                            )" @endif>
                                             @if ($up_foto)
-                                                <img src="{{ Storage::url($up_foto) }}"
-                                                     class="product-select-img"
-                                                     alt="{{ $up->nama_produk }}">
+                                                <img src="{{ Storage::url($up_foto) }}" class="product-select-img"
+                                                    alt="{{ $up->nama_produk }}">
                                             @elseif (isset($setting) && $setting->logo_expo)
                                                 <div class="product-select-img"
-                                                     style="background:#f1f5f9;display:flex;align-items:center;justify-content:center;padding:10px;">
+                                                    style="background:#f1f5f9;display:flex;align-items:center;justify-content:center;padding:10px;">
                                                     <img src="{{ asset('storage/' . $setting->logo_expo) }}"
-                                                         alt="Placeholder"
-                                                         style="width:100%;height:100%;object-fit:contain;opacity:.2;filter:grayscale(1);">
+                                                        alt="Placeholder"
+                                                        style="width:100%;height:100%;object-fit:contain;opacity:.2;filter:grayscale(1);">
                                                 </div>
                                             @else
                                                 <div class="product-select-img"
-                                                     style="background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">
+                                                    style="background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">
                                                     🛍️
                                                 </div>
                                             @endif
@@ -692,7 +726,8 @@
                                             <div class="product-select-price">
                                                 Rp {{ number_format($up->harga, 0, ',', '.') }}
                                             </div>
-                                            <div class="text-[10px] font-bold {{ $up->stok > 0 ? 'text-slate-400' : 'text-red-500' }}">
+                                            <div
+                                                class="text-[10px] font-bold {{ $up->stok > 0 ? 'text-slate-400' : 'text-red-500' }}">
                                                 Stok: {{ $up->stok }}
                                             </div>
                                         </div>
@@ -734,17 +769,17 @@
 @push('scripts')
     <script>
         @php
-            $fotos     = $produk->foto_produk;
-            $main_foto = is_array($fotos) ? ($fotos[0] ?? null) : null;
+            $fotos = $produk->foto_produk;
+            $main_foto = is_array($fotos) ? $fotos[0] ?? null : null;
         @endphp
 
         let cart = [{
-            id:    {{ $produk->id }},
-            name:  '{{ addslashes($produk->nama_produk) }}',
+            id: {{ $produk->id }},
+            name: '{{ addslashes($produk->nama_produk) }}',
             price: {{ $produk->harga }},
-            qty:   1,
-            foto:  '{{ $main_foto ? Storage::url($main_foto) : '' }}',
-            stok:  {{ $produk->stok }}
+            qty: 1,
+            foto: '{{ $main_foto ? Storage::url($main_foto) : '' }}',
+            stok: {{ $produk->stok }}
         }];
 
         const settingLogo = '{{ $setting && $setting->logo_expo ? asset('storage/' . $setting->logo_expo) : '' }}';
@@ -762,7 +797,14 @@
                     alert('Maaf, stok produk ini sedang habis.');
                     return;
                 }
-                cart.push({ id, name, price, qty: 1, foto, stok });
+                cart.push({
+                    id,
+                    name,
+                    price,
+                    qty: 1,
+                    foto,
+                    stok
+                });
             }
             renderCart();
         }
@@ -796,8 +838,8 @@
         }
 
         function renderCart() {
-            const list  = document.getElementById('cart-list');
-            let total   = 0;
+            const list = document.getElementById('cart-list');
+            let total = 0;
             list.innerHTML = '';
 
             cart.forEach((item, index) => {
@@ -847,9 +889,9 @@
             document.querySelectorAll('.pay-tab').forEach(t => t.classList.remove('active'));
 
             const panel = document.getElementById('panel-' + tab);
-            const btn   = document.getElementById('tab-' + tab);
+            const btn = document.getElementById('tab-' + tab);
             if (panel) panel.classList.add('active');
-            if (btn)   btn.classList.add('active');
+            if (btn) btn.classList.add('active');
 
             document.getElementById('input-metode').value = tab;
         }

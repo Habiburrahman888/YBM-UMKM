@@ -1,6 +1,6 @@
 @php
-$nama_expo = $nama_expo ?? config('app.name', 'YBM UMKM');
-$logo_expo = $logo_expo ?? null;
+    $nama_expo = $nama_expo ?? config('app.name', 'YBM UMKM');
+    $logo_expo = $logo_expo ?? null;
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -371,9 +371,9 @@ $logo_expo = $logo_expo ?? null;
     <div class="email-wrapper">
         <div class="header">
             @if ($logo_expo)
-            <img src="{{ $message->embed($logo_expo) }}" alt="Logo {{ $nama_expo }}" class="header-logo">
+                <img src="{{ $message->embed($logo_expo) }}" alt="Logo {{ $nama_expo }}" class="header-logo">
             @else
-            <div class="header-text-logo">{{ $nama_expo }}</div>
+                <div class="header-text-logo">{{ $nama_expo }}</div>
             @endif
 
             <h1>Registrasi UMKM Berhasil</h1>
@@ -410,10 +410,10 @@ $logo_expo = $logo_expo ?? null;
                 </div>
 
                 @if ($umkm->tentang)
-                <div class="info-row">
-                    <div class="info-label">Deskripsi</div>
-                    <div class="info-value info-value-light">{{ $umkm->tentang }}</div>
-                </div>
+                    <div class="info-row">
+                        <div class="info-label">Deskripsi</div>
+                        <div class="info-value info-value-light">{{ $umkm->tentang }}</div>
+                    </div>
                 @endif
             </div>
 
@@ -445,10 +445,10 @@ $logo_expo = $logo_expo ?? null;
                 </div>
 
                 @if ($password)
-                <div class="info-row">
-                    <div class="info-label">Password</div>
-                    <div class="info-value"><span class="highlight-box">{{ $password }}</span></div>
-                </div>
+                    <div class="info-row">
+                        <div class="info-label">Password</div>
+                        <div class="info-value"><span class="highlight-box">{{ $password }}</span></div>
+                    </div>
                 @endif
 
                 <div class="info-row">
@@ -460,9 +460,9 @@ $logo_expo = $logo_expo ?? null;
                     <div class="info-label">Status</div>
                     <div class="info-value">
                         @if ($umkm->status === 'aktif')
-                        <span class="badge badge-success">Aktif</span>
+                            <span class="badge badge-success">Aktif</span>
                         @else
-                        <span class="badge badge-warning">Nonaktif</span>
+                            <span class="badge badge-warning">Nonaktif</span>
                         @endif
                     </div>
                 </div>
@@ -479,36 +479,36 @@ $logo_expo = $logo_expo ?? null;
                     <div class="info-value">{{ $umkm->unit->kode_unit ?? '-' }}</div>
                 </div>
                 @if ($umkm->unit->telepon)
-                <div class="info-row">
-                    <div class="info-label">Telepon Unit</div>
-                    <div class="info-value">{{ $umkm->unit->telepon }}</div>
-                </div>
+                    <div class="info-row">
+                        <div class="info-label">Telepon Unit</div>
+                        <div class="info-value">{{ $umkm->unit->telepon }}</div>
+                    </div>
                 @endif
                 @if ($umkm->unit->email)
-                <div class="info-row">
-                    <div class="info-label">Email Unit</div>
-                    <div class="info-value">{{ $umkm->unit->email }}</div>
-                </div>
+                    <div class="info-row">
+                        <div class="info-label">Email Unit</div>
+                        <div class="info-value">{{ $umkm->unit->email }}</div>
+                    </div>
                 @endif
             </div>
 
             @if ($password)
-            <div class="security-alert">
-                <p>
-                    <strong>Penting!</strong><br>
-                    Email ini berisi password akun Anda. Demi keamanan, segera ubah password Anda setelah login
-                    pertama kali dan jangan bagikan kredensial ini kepada siapapun.
-                </p>
-            </div>
+                <div class="security-alert">
+                    <p>
+                        <strong>Penting!</strong><br>
+                        Email ini berisi password akun Anda. Demi keamanan, segera ubah password Anda setelah login
+                        pertama kali dan jangan bagikan kredensial ini kepada siapapun.
+                    </p>
+                </div>
             @endif
 
             @if ($umkm->status === 'aktif')
-            <div class="info-box">
-                <p>
-                    <strong>Akun Anda Sudah Aktif!</strong><br>
-                    UMKM Anda telah terdaftar dan akun sudah aktif. Silakan login menggunakan kredensial di atas.
-                </p>
-            </div>
+                <div class="info-box">
+                    <p>
+                        <strong>Akun Anda Sudah Aktif!</strong><br>
+                        UMKM Anda telah terdaftar dan akun sudah aktif. Silakan login menggunakan kredensial di atas.
+                    </p>
+                </div>
             @endif
 
             <div class="divider"></div>

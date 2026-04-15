@@ -681,82 +681,92 @@ class DashboardController extends Controller
      * UMKM Dashboard - Overview untuk pemilik UMKM
      */
     public function umkmDashboard()
-    {
-        $user = auth()->user();
+{
+    $user = auth()->user();
 
-        if ($user->role !== 'umkm') {
-            return redirect()->route('home')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
-        }
-
-        $umkm = Umkm::with(['unit', 'kategori', 'produkUmkm'])
-            ->where('user_id', $user->id)
-            ->firstOrFail();
-
-        // ===== STATUS & VERIFIKASI =====
-        $isVerified = !is_null($umkm->verified_at);
-        $statusUmkm = $umkm->status;
-
-        // ===== INFORMASI PRODUK (hasMany) =====
-        $startOfMonth = Carbon::now()->startOfMonth();
-        $produk = $umkm->produkUmkm; // Returns a Collection
-
-        $totalProduk = $produk->count();
-        $produkTerbaru = $produk->sortByDesc('created_at')->take(5);
-        $produkHariIni = $produk->filter(fn($p) => $p->created_at->isToday())->count();
-        $produkBulanIni = $produk->filter(fn($p) => $p->created_at->gte($startOfMonth))->count();
-
-        // ===== INFORMASI PESANAN =====
-        $pesanan = \App\Models\Pesanan::where('umkm_id', $umkm->id)->get();
-        $totalPesanan = $pesanan->count();
-        $pesananPending = $pesanan->where('status', 'pending')->count();
-        $pesananTerbaru = $pesanan->sortByDesc('created_at')->take(5);
-        $pesananHariIni = $pesanan->filter(fn($p) => $p->created_at->isToday())->count();
-
-        // ===== QUICK STATS =====
-        $quickStats = [
-            'total_produk' => $totalProduk,
-            'produk_hari_ini' => $produkHariIni,
-            'total_pesanan' => $totalPesanan,
-            'pesanan_pending' => $pesananPending,
-            'pesanan_hari_ini' => $pesananHariIni,
-            'status' => $statusUmkm,
-            'is_verified' => $isVerified,
-        ];
-
-        // ===== SUMMARY =====
-        $umkmSummary = [
-            'nama_usaha' => $umkm->nama_usaha,
-            'nama_pemilik' => $umkm->nama_pemilik,
-            'status' => $statusUmkm,
-            'verified' => $isVerified,
-            'verified_at' => $umkm->verified_at,
-            'tanggal_bergabung' => $umkm->tanggal_bergabung,
-            'unit' => $umkm->unit?->nama_unit ?? '-',
-            'kategori' => $umkm->kategori?->nama ?? '-',
-            'total_produk' => $totalProduk,
-            'total_pesanan' => $totalPesanan,
-            'pesanan_pending' => $pesananPending,
-        ];
-
-        $breadcrumbs = [
-            ['name' => 'Dashboard', 'url' => route('dashboard')],
-        ];
-
-        return view('umkm.dashboard', compact(
-            'umkm',
-            'isVerified',
-            'statusUmkm',
-            'totalProduk',
-            'produkTerbaru',
-            'produkHariIni',
-            'produkBulanIni',
-            'totalPesanan',
-            'pesananPending',
-            'pesananTerbaru',
-            'pesananHariIni',
-            'quickStats',
-            'umkmSummary',
-            'breadcrumbs',
-        ));
+    if ($user->role !== 'umkm') {
+        return redirect()->route('home')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
     }
+
+    $umkm = Umkm::with(['unit', 'kategori', 'produkUmkm'])
+        ->where('user_id', $user->id)
+        ->firstOrFail();
+
+    // ===== STATUS & VERIFIKASI =====
+    $isVerified = !is_null($umkm->verified_at);
+    $statusUmkm = $umkm->status;
+
+    // ===== INFORMASI PRODUK (hasMany) =====
+    $startOfMonth = Carbon::now()->startOfMonth();
+    $produk = $umkm->produkUmkm; // Returns a Collection
+
+    $totalProduk = $produk->count();
+    $produkTerbaru = $produk->sortByDesc('created_at')->take(5);
+    $produkHariIni = $produk->filter(fn($p) => $p->created_at->isToday())->count();
+    $produkBulanIni = $produk->filter(fn($p) => $p->created_at->gte($startOfMonth))->count();
+
+    // ===== STOK RENDAH (stok <= 5) =====
+    $produkStokRendah = $produk
+        ->filter(fn($p) => !is_null($p->stok) && $p->stok <= 5)
+        ->sortBy('stok')
+        ->values();
+    $totalStokRendah = $produkStokRendah->count();
+
+    // ===== INFORMASI PESANAN =====
+    $pesanan = \App\Models\Pesanan::where('umkm_id', $umkm->id)->get();
+    $totalPesanan = $pesanan->count();
+    $pesananPending = $pesanan->where('status', 'pending')->count();
+    $pesananTerbaru = $pesanan->sortByDesc('created_at')->take(5);
+    $pesananHariIni = $pesanan->filter(fn($p) => $p->created_at->isToday())->count();
+
+    // ===== QUICK STATS =====
+    $quickStats = [
+        'total_produk'    => $totalProduk,
+        'produk_hari_ini' => $produkHariIni,
+        'total_pesanan'   => $totalPesanan,
+        'pesanan_pending' => $pesananPending,
+        'pesanan_hari_ini'=> $pesananHariIni,
+        'stok_rendah'     => $totalStokRendah,
+        'status'          => $statusUmkm,
+        'is_verified'     => $isVerified,
+    ];
+
+    // ===== SUMMARY =====
+    $umkmSummary = [
+        'nama_usaha'      => $umkm->nama_usaha,
+        'nama_pemilik'    => $umkm->nama_pemilik,
+        'status'          => $statusUmkm,
+        'verified'        => $isVerified,
+        'verified_at'     => $umkm->verified_at,
+        'tanggal_bergabung'=> $umkm->tanggal_bergabung,
+        'unit'            => $umkm->unit?->nama_unit ?? '-',
+        'kategori'        => $umkm->kategori?->nama ?? '-',
+        'total_produk'    => $totalProduk,
+        'total_pesanan'   => $totalPesanan,
+        'pesanan_pending' => $pesananPending,
+    ];
+
+    $breadcrumbs = [
+        ['name' => 'Dashboard', 'url' => route('dashboard')],
+    ];
+
+    return view('umkm.dashboard', compact(
+        'umkm',
+        'isVerified',
+        'statusUmkm',
+        'totalProduk',
+        'produkTerbaru',
+        'produkHariIni',
+        'produkBulanIni',
+        'totalPesanan',
+        'pesananPending',
+        'pesananTerbaru',
+        'pesananHariIni',
+        'quickStats',
+        'umkmSummary',
+        'breadcrumbs',
+        'produkStokRendah',
+        'totalStokRendah',
+    ));
+}
 }

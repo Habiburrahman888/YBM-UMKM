@@ -188,7 +188,7 @@
         .action-button {
             display: inline-block;
             background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
-            color: white;
+            color: #ffffff !important;
             text-decoration: none;
             padding: 16px 48px;
             font-weight: 600;

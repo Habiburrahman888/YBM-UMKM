@@ -16,7 +16,7 @@
 
         {{-- Alerts --}}
         @if ($statusUmkm === 'pending')
-            <div class="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl mb-6">
+            <div class="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl mb-4">
                 <div class="w-9 h-9 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
                     <svg class="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd"
@@ -33,7 +33,7 @@
         @endif
 
         @if (!$isVerified && $statusUmkm === 'aktif')
-            <div class="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-xl mb-6">
+            <div class="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-xl mb-4">
                 <div class="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
                     <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd"
@@ -50,7 +50,7 @@
         @endif
 
         {{-- Statistics Cards --}}
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
 
             {{-- Total Produk --}}
             <div class="bg-white rounded-xl p-5 hover:shadow-sm transition-shadow">
@@ -88,6 +88,21 @@
                 </div>
                 <h3 class="text-2xl font-bold text-gray-900 mb-0.5">{{ $quickStats['total_pesanan'] }}</h3>
                 <p class="text-xs text-gray-400">Total Pesanan</p>
+            </div>
+
+            {{-- Stok Rendah --}}
+            <div class="bg-white rounded-xl p-5 hover:shadow-sm transition-shadow">
+                <div class="mb-3">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" style="color: #dc2626">
+                        <path fill-rule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold mb-0.5 text-gray-900">
+                    {{ $totalStokRendah }}
+                </h3>
+                <p class="text-xs text-gray-400">Stok Rendah</p>
             </div>
 
         </div>
@@ -242,10 +257,26 @@
                                     @endif
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-semibold text-gray-800 truncate">{{ $produk->nama_produk }}</p>
+                                    <p class="text-sm font-semibold text-gray-800 truncate">{{ $produk->nama_produk }}
+                                    </p>
                                     <p class="text-xs font-bold text-gray-900 mt-0.5">Rp
                                         {{ number_format($produk->harga, 0, ',', '.') }}</p>
-                                    <p class="text-xs text-gray-400 mt-0.5">{{ $produk->created_at->diffForHumans() }}</p>
+                                    <div class="flex items-center gap-2 mt-0.5">
+                                        <p class="text-xs text-gray-400">{{ $produk->created_at->diffForHumans() }}</p>
+                                        {{-- Badge stok rendah inline di produk terbaru --}}
+                                        @if (!is_null($produk->stok) && $produk->stok <= 5)
+                                            <span
+                                                class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-semibold
+                                                {{ $produk->stok == 0 ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700' }}">
+                                                <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                                        clip-rule="evenodd" />
+                                                </svg>
+                                                {{ $produk->stok == 0 ? 'Habis' : 'Stok ' . $produk->stok }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 </div>
                                 <a href="{{ route('umkm.produk.edit', $produk->uuid) }}"
                                     class="w-7 h-7 shrink-0 text-gray-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100">
@@ -314,6 +345,15 @@
                             class="text-xs font-medium px-2 py-0.5 rounded-full
                             {{ $umkmSummary['verified'] ? 'bg-[#edf3f6] text-[#5b8fa8]' : 'bg-[#faf0ee] text-[#c47f6e]' }}">
                             {{ $umkmSummary['verified'] ? 'Terverifikasi' : 'Belum' }}
+                        </span>
+                    </div>
+                    {{-- Baris stok rendah di ringkasan --}}
+                    <div class="flex items-center justify-between py-3">
+                        <span class="text-sm text-gray-500">Stok Rendah</span>
+                        <span
+                            class="text-xs font-medium px-2 py-0.5 rounded-full
+                            {{ $totalStokRendah > 0 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">
+                            {{ $totalStokRendah > 0 ? $totalStokRendah . ' produk' : 'Aman' }}
                         </span>
                     </div>
                 </div>

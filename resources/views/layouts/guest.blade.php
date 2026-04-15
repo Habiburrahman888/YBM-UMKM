@@ -9,12 +9,12 @@
 
     {{-- Favicon --}}
     @if ($setting?->logo_expo)
-    <link rel="shortcut icon" href="{{ asset('storage/' . $setting->logo_expo) }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('storage/' . $setting->logo_expo) }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('storage/' . $setting->logo_expo) }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('storage/' . $setting->logo_expo) }}">
+        <link rel="shortcut icon" href="{{ asset('storage/' . $setting->logo_expo) }}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('storage/' . $setting->logo_expo) }}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('storage/' . $setting->logo_expo) }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('storage/' . $setting->logo_expo) }}">
     @else
-    <link rel="shortcut icon" href="{{ asset('images/default-logo.png') }}">
+        <link rel="shortcut icon" href="{{ asset('images/default-logo.png') }}">
     @endif
 
     {{-- Fonts --}}
