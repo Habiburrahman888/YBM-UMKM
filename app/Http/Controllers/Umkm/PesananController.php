@@ -119,6 +119,6 @@ class PesananController extends Controller
         $pdf = Pdf::loadView('umkm.pesanan.pdf', compact('umkm', 'pesanans', 'totalPendapatan', 'filters'))
             ->setPaper('a4', 'landscape');
 
-        return $pdf->download('laporan-pesanan-' . $umkm->nama_usaha . '-' . now()->format('Ymd') . '.pdf');
+        return $pdf->stream('laporan-pesanan-' . $umkm->nama_usaha . '-' . now()->format('Ymd') . '.pdf');
     }
 }

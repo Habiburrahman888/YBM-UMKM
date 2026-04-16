@@ -10,323 +10,295 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verifikasi Kode OTP - {{ $nama_expo }}</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-            background: #f5f7fa;
-            min-height: 100vh;
-            padding: 20px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #e0f2fe;
+            padding: 24px;
             line-height: 1.6;
         }
 
-        .email-wrapper {
-            max-width: 600px;
+        .wrapper {
+            max-width: 560px;
             margin: 0 auto;
             background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            border-radius: 20px;
+            border: 1px solid #bae6fd;
             overflow: hidden;
         }
 
+        /* ── Header ── */
         .header {
-            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
-            padding: 32px 24px 36px 24px;
+            background: #0891b2;
+            padding: 28px 32px 24px;
             text-align: center;
+        }
+
+        .header-logo-wrap {
+            display: inline-block;
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 10px 18px;
+            margin-bottom: 16px;
         }
 
         .header-logo {
             max-width: 200px;
-            max-height: 100px;
+            max-height: 80px;
             object-fit: contain;
-            margin-bottom: 20px;
             display: block;
-            margin-left: auto;
-            margin-right: auto;
         }
 
-        .header-text-logo {
-            font-size: 32px;
-            font-weight: bold;
-            color: white;
-            margin-bottom: 20px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        .header-brand {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
         }
 
         .header h1 {
             color: #ffffff;
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            letter-spacing: -0.5px;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 6px;
         }
 
         .header p {
-            color: #e0f2fe;
-            font-size: 15px;
-            font-weight: 400;
+            color: #cffafe;
+            font-size: 13px;
         }
 
-        .content {
-            padding: 40px 32px;
+        /* ── Body ── */
+        .body {
+            padding: 28px 32px 24px;
         }
 
         .greeting {
-            color: #1e293b;
-            font-size: 18px;
-            margin-bottom: 24px;
-            font-weight: 600;
-        }
-
-        .message {
-            color: #475569;
             font-size: 15px;
-            margin-bottom: 16px;
+            font-weight: 500;
+            color: #0c4a6e;
+            margin-bottom: 8px;
+        }
+
+        .msg {
+            font-size: 14px;
+            color: #475569;
             line-height: 1.7;
+            margin-bottom: 20px;
         }
 
-        .otp-container {
-            margin: 32px 0 36px 0;
+        /* Perbaikan: Teks email hitam dan bold */
+        .email-bold {
+            font-weight: 700 !important;
+            color: #000000 !important;
+            font-size: 14px;
+            text-decoration: none !important;
         }
 
+        .email-bold a {
+            color: #000000 !important;
+            text-decoration: none !important;
+        }
+
+        /* ── OTP ── */
         .otp-label {
-            font-size: 13px;
-            color: #64748b;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            text-align: center;
+            font-size: 10px;
             font-weight: 600;
-            text-align: center;
+            letter-spacing: 2px;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 14px;
         }
 
-        .otp-box {
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-            border: 3px dashed #0891b2;
-            border-radius: 16px;
-            padding: 30px;
+        .otp-area {
             text-align: center;
+            margin-bottom: 24px;
         }
 
-        .otp-value {
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.15);
-            font-size: 48px;
+        .otp-code {
+            font-size: 50px;
             font-weight: 800;
-            color: #155e75;
-            letter-spacing: 8px;
+            letter-spacing: 12px;
+            color: #0f172a;
             font-family: 'Courier New', monospace;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .otp-expiry {
             font-size: 13px;
-            color: #0e7490;
-            font-weight: 500;
+            color: #64748b;
         }
 
-        .otp-expiry strong {
-            color: #155e75;
-            font-weight: 700;
-        }
-
-        .instructions-container {
-            background: #f8fafc;
-            border-radius: 12px;
-            padding: 24px;
-            margin: 32px 0;
-            border: 1px solid #e2e8f0;
-        }
-
-        .instructions-title {
-            font-size: 16px;
-            font-weight: 700;
+        .otp-expiry b {
             color: #0f172a;
-            margin-bottom: 16px;
         }
 
-        .instructions-list {
-            margin: 0;
-            padding-left: 24px;
-            color: #475569;
-        }
-
-        .instructions-list li {
-            margin-bottom: 12px;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        .instructions-list li:last-child {
-            margin-bottom: 0;
-        }
-
-        .warning-box {
-            background: #fff0f0;
-            padding: 20px 24px;
-            border-radius: 8px;
-            margin: 32px 0;
-        }
-
-        .warning-box p {
-            margin: 0;
-            font-size: 14px;
-            color: #7f1d1d;
-            line-height: 1.7;
-        }
-
-        .warning-box strong {
-            color: #991b1b;
-            font-weight: 700;
+        /* ── Divider ── */
+        .divider-light {
+            border: none;
+            border-top: 1px solid #e0f2fe;
+            margin: 0 0 16px;
         }
 
         .divider {
-            height: 1px;
-            background: #e2e8f0;
-            margin: 32px 0;
+            border: none;
+            border-top: 0.5px solid #e0f2fe;
+            margin: 0 0 14px;
         }
 
-        .help-text {
-            margin-top: 24px;
+        /* Perbaikan: Card diperpendek (padding dan margin dikurangi) */
+        .info-card {
+            background: #f0f9ff;
+            border: 0.5px solid #bae6fd;
+            border-radius: 10px;
+            padding: 8px 12px; /* padding diperkecil */
+            margin-bottom: 10px;
+        }
+
+        .info-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #0c4a6e;
+            margin-bottom: 4px; /* margin diperkecil */
+        }
+
+        .info-list {
+            padding-left: 18px;
+            color: #334155;
+            margin: 0; /* tambahan untuk memastikan tidak ada margin berlebih */
+        }
+
+        .info-list li {
+            font-size: 12px; /* ukuran font sedikit diperkecil */
+            line-height: 1.5; /* line-height diperkecil */
+            margin-bottom: 2px;
+        }
+
+        .info-list li:last-child { margin-bottom: 0; }
+
+        /* Perbaikan: Card peringatan juga diperpendek */
+        .warn-card {
+            background: #fff7ed;
+            border: 0.5px solid #fed7aa;
+            border-radius: 10px;
+            padding: 8px 12px; /* padding diperkecil */
+            margin-bottom: 18px;
+        }
+
+        .warn-card p {
+            font-size: 12px; /* ukuran font diperkecil */
+            color: #7c2d12;
+            line-height: 1.5; /* line-height diperkecil */
+            margin: 0; /* hilangkan margin default paragraf */
+        }
+
+        .warn-card b { color: #9a3412; }
+
+        /* ── Help ── */
+        .help {
             font-size: 13px;
             color: #64748b;
             line-height: 1.6;
         }
 
+        /* ── Footer ── */
         .footer {
-            background: #f8fafc;
-            padding: 32px 32px 28px 32px;
+            background: #ffffff;
+            border-top: 1px solid #e0f2fe;
+            padding: 16px 32px;
             text-align: center;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .footer p {
-            color: #64748b;
-            font-size: 13px;
-            margin: 6px 0;
-            line-height: 1.6;
         }
 
         .footer .brand {
-            color: #0f172a;
-            font-weight: 700;
-            font-size: 15px;
-            margin-bottom: 8px;
-        }
-
-        .footer .copyright {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
-            color: #94a3b8;
-            font-size: 12px;
-        }
-
-        .email-highlight {
-            font-weight: 600;
-            color: #0f172a;
-            background: #f1f5f9;
-            padding: 2px 6px;
-            border-radius: 4px;
             font-size: 14px;
+            font-weight: 600;
+            color: #0c4a6e;
+            margin-bottom: 2px;
         }
 
-        @media (max-width: 500px) {
-            .header-logo {
-                max-width: 160px;
-                max-height: 80px;
-            }
-
-            .header-text-logo {
-                font-size: 26px;
-            }
-
-            .otp-value {
-                font-size: 36px;
-                letter-spacing: 6px;
-                padding: 16px;
-            }
-
-            .otp-box {
-                padding: 20px;
-            }
+        .footer .sub {
+            font-size: 12px;
+            color: #94a3b8;
+            margin: 3px 0;
         }
 
+        .footer .copy {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 0.5px solid #e0f2fe;
+        }
+
+        /* ── Responsive ── */
         @media (max-width: 600px) {
-            body {
-                padding: 12px;
+            body { padding: 12px; }
+
+            .header { padding: 28px 20px 28px; }
+            .header h1 { font-size: 20px; }
+
+            .body { padding: 28px 20px 24px; }
+
+            .otp-code {
+                font-size: 38px;
+                letter-spacing: 8px;
             }
 
-            .header {
-                padding: 28px 20px 32px 20px;
-            }
+            .footer { padding: 16px 20px; }
 
-            .header h1 {
-                font-size: 24px;
-            }
-
-            .header p {
-                font-size: 14px;
-            }
-
-            .content {
-                padding: 32px 24px;
-            }
-
-            .footer {
-                padding: 28px 24px 24px 24px;
-            }
-
-            .instructions-container {
-                padding: 20px;
-            }
-
-            .warning-box {
-                padding: 16px 20px;
-            }
+            .header-logo-wrap { padding: 8px 14px; }
+            .header-logo { max-width: 160px; max-height: 64px; }
         }
     </style>
 </head>
 
 <body>
-    <div class="email-wrapper">
+    <div class="wrapper">
+
+        {{-- ── Header ── --}}
         <div class="header">
             @if ($logo_expo)
-                <img src="{{ $message->embed($logo_expo) }}" alt="Logo {{ $nama_expo }}" class="header-logo">
+                <div class="header-logo-wrap">
+                    <img src="{{ $message->embed($logo_expo) }}"
+                         alt="Logo {{ $nama_expo }}"
+                         class="header-logo">
+                </div>
             @else
-                <div class="header-text-logo">{{ $nama_expo }}</div>
+                <div class="header-brand">{{ $nama_expo }}</div>
             @endif
 
             <h1>Verifikasi Email Anda</h1>
             <p>Kode OTP untuk aktivasi akun</p>
         </div>
 
-        <div class="content">
+        {{-- ── Body ── --}}
+        <div class="body">
             <div class="greeting">Halo,</div>
 
-            <div class="message">
+            <div class="msg">
                 Terima kasih telah mendaftar! Untuk melanjutkan proses verifikasi email
-                <span class="email-highlight">{{ $email }}</span>, silakan gunakan kode OTP berikut:
+                <span class="email-bold" style="color: #000000 !important; text-decoration: none !important;">{{ $email }}</span>,
+                silakan gunakan kode OTP berikut:
             </div>
 
-            <div class="otp-container">
-                <div class="otp-label">KODE VERIFIKASI OTP</div>
-                <div class="otp-box">
-                    <div class="otp-value">{{ $otp }}</div>
-                    <div class="otp-expiry">
-                        Kode ini berlaku selama <strong>{{ $expiresInMinutes }} menit</strong>
-                    </div>
+            {{-- OTP --}}
+            <div class="otp-label">Kode Verifikasi OTP</div>
+            <div class="otp-area">
+                <div class="otp-code">{{ $otp }}</div>
+                <div class="otp-expiry">
+                    Kode ini berlaku selama <b>{{ $expiresInMinutes }} menit</b>
                 </div>
             </div>
 
-            <div class="instructions-container">
-                <div class="instructions-title">Cara Menggunakan Kode OTP:</div>
-                <ol class="instructions-list">
+            <hr class="divider-light">
+
+            {{-- Instruksi (Card lebih pendek) --}}
+            <div class="info-card">
+                <div class="info-title">Cara Menggunakan Kode OTP:</div>
+                <ol class="info-list">
                     <li>Salin kode OTP di atas</li>
                     <li>Kembali ke halaman verifikasi</li>
                     <li>Masukkan kode 6 digit tersebut</li>
@@ -334,29 +306,33 @@
                 </ol>
             </div>
 
-            <div class="warning-box">
+            {{-- Peringatan (Card lebih pendek) --}}
+            <div class="warn-card">
                 <p>
-                    <strong>Perhatian:</strong><br>
-                    Jangan bagikan kode OTP ini kepada siapapun, termasuk staff kami. Kami tidak akan pernah meminta
-                    kode OTP Anda melalui email, telepon, atau media sosial.
+                    <b>Perhatian:</b> Jangan bagikan kode OTP ini kepada siapapun, termasuk staff kami.
+                    Kami tidak akan pernah meminta kode OTP Anda melalui email, telepon, atau media sosial.
                 </p>
             </div>
 
-            <div class="divider"></div>
+            <hr class="divider">
 
-            <div class="help-text">
-                Jika Anda tidak melakukan pendaftaran, abaikan email ini atau hubungi tim support kami
-                jika Anda memiliki pertanyaan.
+            <div class="help">
+                Jika Anda tidak melakukan pendaftaran, abaikan email ini atau
+                hubungi tim support kami jika Anda memiliki pertanyaan.
             </div>
         </div>
 
+        {{-- ── Footer ── --}}
         <div class="footer">
-            <p class="brand">{{ $nama_expo }}</p>
-            <p style="font-size: 12px;">Email otomatis - Mohon tidak membalas email ini</p>
-            <p class="copyright">
-                © {{ date('Y') }} {{ $nama_expo }}. Semua hak dilindungi.
-            </p>
+            <div class="brand">{{ $nama_expo }}</div>
+            <div class="sub">Email otomatis — Mohon tidak membalas email ini</div>
+            <div class="copy">© {{ date('Y') }} {{ $nama_expo }}. Semua hak dilindungi.</div>
+            {{-- Mencegah Gmail clipping/hiding dengan ID unik dinamis --}}
+            <div style="display:none; visibility:hidden; mso-hide:all; font-size:1px; color:#ffffff; line-height:1px; max-height:0px; max-width:0px; opacity:0; overflow:hidden;">
+                {{ md5(time()) }}
+            </div>
         </div>
+
     </div>
 </body>
 

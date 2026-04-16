@@ -324,6 +324,11 @@ class GuestController extends Controller
             $query->where('nama_produk', 'like', '%' . $request->cari . '%');
         }
 
+        if ($request->filled('wishlist')) {
+            $ids = explode(',', $request->wishlist);
+            $query->whereIn('id', $ids);
+        }
+
         $produk = $query->paginate(12)->withQueryString();
 
         $provinces_filter = \Laravolt\Indonesia\Models\Province::whereIn('code', Umkm::where('status', 'aktif')->pluck('province_code')->filter()->unique())->get();

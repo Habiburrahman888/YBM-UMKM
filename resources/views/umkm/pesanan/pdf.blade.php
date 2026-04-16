@@ -3,308 +3,286 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Laporan Pesanan - {{ $umkm->nama_usaha }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* Konfigurasi Halaman Cetak */
+        @page {
+            size: A4;
+            margin: 1.5cm;
         }
 
         body {
-            font-family: 'Poppins', 'DejaVu Sans', sans-serif;
-            font-size: 11px;
-            background: #eef2f5;
-            color: #1f3a47;
-            padding: 20px;
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 10pt;
+            color: #333;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+            background: #fff;
         }
 
-        /* kontainer utama menyatu, tidak terlalu lebar */
-        .laporan-card {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-            overflow: hidden;
-        }
-
-        /* padding internal proporsional, tidak mepet */
-        .laporan-body {
-            padding: 20px 24px 24px 24px;
-        }
-
-        /* header sederhana menyatu */
-        .header-simple {
+        /* Header Usaha */
+        .header {
             display: flex;
             justify-content: space-between;
-            align-items: baseline;
-            flex-wrap: wrap;
-            gap: 12px;
+            align-items: flex-start;
+            border-bottom: 2px solid #3182ce;
+            padding-bottom: 15px;
             margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #ecf3f8;
         }
 
-        .umkm-title h2 {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1e4a6b;
-            letter-spacing: -0.2px;
+        .brand h1 {
+            font-size: 18pt;
+            margin: 0;
+            color: #2c5282;
+            text-transform: uppercase;
         }
 
-        .umkm-title p {
-            font-size: 9.5px;
-            color: #6f95ab;
-            margin-top: 2px;
+        .brand p {
+            margin: 5px 0 0 0;
+            color: #718096;
+            font-size: 9pt;
         }
 
-        .tanggal-box {
+        .meta {
             text-align: right;
         }
 
-        .tanggal-box .date {
-            font-weight: 600;
-            font-size: 12px;
-            color: #1e4a6b;
+        .meta .title {
+            font-weight: bold;
+            color: #3182ce;
+            font-size: 11pt;
+            margin-bottom: 5px;
         }
 
-        .tanggal-box .time {
-            font-size: 9px;
-            color: #8aaec2;
+        /* Chips / Filter Info */
+        .info-bar {
+            background: #f7fafc;
+            border: 1px solid #edf2f7;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 20px;
+            font-size: 9pt;
         }
 
-        /* filter dalam satu baris rapi */
-        .filter-chip {
-            background: #f9fbfd;
-            border-radius: 40px;
-            padding: 8px 18px;
-            margin-bottom: 18px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 24px;
-            border: 1px solid #eaf0f5;
-            font-size: 9.5px;
+        .info-bar span {
+            margin-right: 15px;
         }
 
-        .filter-chip span {
-            color: #2c5f7a;
-            font-weight: 500;
-        }
-
-        .filter-chip strong {
-            color: #1a445b;
-            font-weight: 700;
-        }
-
-        /* 3 stat kecil menyatu, tidak besar */
-        .stats-mini {
-            display: flex;
-            gap: 14px;
-            margin-bottom: 22px;
-        }
-
-        .stat-mini-card {
-            flex: 1;
-            background: #fafcfd;
-            border-radius: 18px;
-            padding: 10px 12px;
-            border: 1px solid #eef3f9;
-            text-align: center;
-        }
-
-        .stat-mini-card .label {
-            font-size: 8.5px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            color: #6d8ea3;
-        }
-
-        .stat-mini-card .value {
-            font-size: 22px;
-            font-weight: 700;
-            color: #236b8e;
-            line-height: 1.2;
-        }
-
-        /* tabel rapi, tidak mepet */
-        .table-responsive {
+        /* Ringkasan Stats */
+        .stats-grid {
             width: 100%;
-            border-radius: 16px;
-            border: 1px solid #eef2f7;
-            overflow: hidden;
-            margin: 10px 0 6px;
+            margin-bottom: 25px;
+            border-spacing: 10px 0;
+            display: table;
         }
 
+        .stat-card {
+            display: table-cell;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            width: 33.33%;
+        }
+
+        .stat-card .label {
+            font-size: 8pt;
+            color: #718096;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .stat-card .value {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        /* Styling Tabel */
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 20px;
         }
 
         th {
-            background: #f1f7fc;
-            padding: 10px 12px;
-            font-size: 9.5px;
-            font-weight: 600;
-            color: #1a5a78;
+            background-color: #3182ce;
+            color: white;
             text-align: left;
-            border-bottom: 1px solid #e2eaf1;
+            padding: 10px;
+            font-size: 9pt;
+            text-transform: uppercase;
         }
 
         td {
-            padding: 10px 12px;
-            font-size: 10px;
-            border-bottom: 1px solid #f0f5fa;
-            color: #2b5d78;
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
         }
 
-        .currency {
-            font-weight: 600;
-            color: #2e7a6e;
+        tr:nth-child(even) {
+            background-color: #f8fafc;
         }
 
-        .badge-soft {
-            background: #eef4f0;
-            padding: 3px 12px;
-            border-radius: 40px;
-            font-size: 8.5px;
-            font-weight: 500;
-            display: inline-block;
-            color: #2e6b5c;
+        .text-right {
+            text-align: right;
         }
 
-        /* total row menyatu dengan tabel */
-        .total-garis td {
-            background: #f5fafd;
-            font-weight: 700;
-            color: #1f5a77;
-            border-bottom: none;
-            padding: 10px 12px;
-        }
-
-        /* footer kecil */
-        .footer-meta {
+        .text-center {
             text-align: center;
-            margin-top: 20px;
-            font-size: 8.5px;
-            color: #8bafc2;
-            padding-top: 12px;
-            border-top: 1px solid #ecf3f9;
         }
 
-        @media (max-width: 600px) {
-            body {
-                padding: 12px;
-            }
+        /* Badge Status Dinamis */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 8pt;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
 
-            .laporan-body {
-                padding: 16px;
-            }
+        .badge-selesai {
+            background: #c6f6d5;
+            color: #22543d;
+        }
 
-            .stats-mini {
-                flex-direction: column;
-                gap: 8px;
-            }
+        .badge-proses {
+            background: #feebc8;
+            color: #744210;
+        }
 
-            .header-simple {
-                flex-direction: column;
-                align-items: flex-start;
-            }
+        .badge-batal {
+            background: #fed7d7;
+            color: #822727;
+        }
 
-            .tanggal-box {
-                text-align: left;
-            }
+        /* Row Total */
+        .total-row td {
+            background: #edf2f7;
+            font-weight: bold;
+            border-top: 2px solid #cbd5e0;
+            font-size: 11pt;
+        }
 
-            .filter-chip {
-                gap: 16px;
-            }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 8pt;
+            color: #a0aec0;
+            border-top: 1px solid #edf2f7;
+            padding-top: 10px;
         }
     </style>
 </head>
 
 <body>
-    <div class="laporan-card">
-        <div class="laporan-body">
-            <!-- header ringkas -->
-            <div class="header-simple">
-                <div class="umkm-title">
-                    <h2>Laporan Pesanan</h2>
-                    <p>{{ $umkm->nama_usaha }} · {{ $umkm->nama_pemilik }}</p>
-                </div>
-                <div class="tanggal-box">
-                    <div class="date">{{ now()->format('d M Y') }}</div>
-                    <div class="time">{{ now()->format('H:i') }} WIB</div>
-                </div>
-            </div>
 
-            <!-- filter -->
-            <div class="filter-chip">
-                <span>Status: <strong>{{ $filters['status'] ?? 'SEMUA' }}</strong></span>
-                <span>Total order: <strong>{{ $pesanans->count() }}</strong></span>
-                @if (isset($filters['tanggal_mulai']) && $filters['tanggal_mulai'])
-                    <span>Periode: <strong>{{ $filters['tanggal_mulai'] }} →
-                            {{ $filters['tanggal_akhir'] }}</strong></span>
-                @endif
-            </div>
-
-            <!-- stats ringkas tidak besar -->
-            <div class="stats-mini">
-                <div class="stat-mini-card">
-                    <div class="label">Pesanan</div>
-                    <div class="value">{{ $pesanans->count() }}</div>
-                </div>
-                <div class="stat-mini-card">
-                    <div class="label">Selesai</div>
-                    <div class="value">{{ $pesanans->where('status', 'selesai')->count() }}</div>
-                </div>
-                <div class="stat-mini-card">
-                    <div class="label">Pendapatan</div>
-                    <div class="value">Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</div>
-                </div>
-            </div>
-
-            <!-- tabel -->
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Pembeli</th>
-                            <th>Total Harga</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($pesanans as $i => $p)
-                            <tr>
-                                <td>{{ $i + 1 }}</td>
-                                <td>{{ $p->nama_pembeli ?? 'Pembeli' }}</td>
-                                <td class="currency">Rp {{ number_format($p->total_harga, 0, ',', '.') }}</td>
-                                <td><span class="badge-soft">{{ $p->status }}</span></td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" style="text-align:center; padding: 28px;">Tidak ada pesanan</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                    @if ($pesanans->count() > 0)
-                        <tr class="total-garis">
-                            <td colspan="2"><strong>Total Keseluruhan</strong></td>
-                            <td class="currency"><strong>Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</strong>
-                            </td>
-                            <td></td>
-                        </tr>
-                    @endif
-                </table>
-            </div>
-
-            <div class="footer-meta">
-                Dicetak otomatis · Sistem UMKM
-            </div>
+    <div class="header">
+        <div class="brand">
+            <h1>{{ $umkm->nama_usaha }}</h1>
+            <p>Pemilik: {{ $umkm->nama_pemilik }}</p>
+        </div>
+        <div class="meta">
+            <div class="title">LAPORAN PESANAN</div>
+            <div>{{ now()->format('d F Y') }}</div>
+            <div style="font-size: 8pt; color: #718096;">Waktu Cetak: {{ now()->format('H:i') }} WIB</div>
         </div>
     </div>
+
+    <div class="info-bar">
+        <span>Status: <strong>{{ strtoupper($filters['status'] ?? 'SEMUA') }}</strong></span>
+        @if (isset($filters['tanggal_mulai']))
+            <span>Periode: <strong>{{ $filters['tanggal_mulai'] }} - {{ $filters['tanggal_akhir'] }}</strong></span>
+        @endif
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="label">Total Pesanan</span>
+            <span class="value">{{ $pesanans->count() }}</span>
+        </div>
+        <div class="stat-card">
+            <span class="label">Pesanan Selesai</span>
+            <span class="value">{{ $pesanans->where('status', 'selesai')->count() }}</span>
+        </div>
+        <div class="stat-card">
+            <span class="label">Total Pendapatan</span>
+            <span class="value">Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</span>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th class="text-center" width="5%">No</th>
+                <th width="20%">Nama Pembeli</th>
+                <th width="30%">Produk</th>
+                <th class="text-center" width="10%">Qty</th>
+                <th class="text-center" width="15%">Status</th>
+                <th class="text-right" width="20%">Total Harga</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse ($pesanans as $i => $p)
+                <tr>
+                    <td class="text-center">{{ $i + 1 }}</td>
+                    <td>
+                        <div style="font-weight: bold;">{{ $p->nama_pembeli ?? 'Pembeli Umum' }}</div>
+                        <div style="font-size: 8pt; color: #718096;">{{ $p->telepon_pembeli }}</div>
+                    </td>
+                    <td>
+                        @if ($p->items->count() > 0)
+                            @foreach ($p->items as $item)
+                                <div style="margin-bottom: 2px;">
+                                    {{ $item->produk->nama_produk ?? 'Produk Terhapus' }}
+                                </div>
+                            @endforeach
+                        @elseif($p->produk)
+                            {{ $p->produk->nama_produk }}
+                        @else
+                            <span style="color: #a0aec0;">-</span>
+                        @endif
+                    </td>
+                    <td class="text-center">
+                        @if ($p->items->count() > 0)
+                            @foreach ($p->items as $item)
+                                <div style="margin-bottom: 2px;">{{ $item->jumlah }}</div>
+                            @endforeach
+                        @else
+                            {{ $p->jumlah ?? 0 }}
+                        @endif
+                    </td>
+                    <td class="text-center">
+                        <span class="badge badge-{{ strtolower($p->status) }}">
+                            {{ $p->status }}
+                        </span>
+                    </td>
+                    <td class="text-right">Rp {{ number_format($p->total_harga, 0, ',', '.') }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="6" class="text-center" style="padding: 30px; color: #a0aec0;">
+                        Data pesanan tidak ditemukan untuk periode ini.
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+        @if ($pesanans->count() > 0)
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="5" class="text-right">TOTAL KESELURUHAN</td>
+                    <td class="text-right">Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</td>
+                </tr>
+            </tfoot>
+        @endif
+    </table>
+
+    <div class="footer">
+        Laporan ini digenerate secara otomatis oleh Sistem Manajemen UMKM - {{ date('Y') }}
+    </div>
+
 </body>
 
 </html>

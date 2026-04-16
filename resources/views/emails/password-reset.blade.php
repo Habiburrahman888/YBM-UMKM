@@ -91,6 +91,17 @@
             line-height: 1.7;
         }
 
+        .email-bold {
+            font-weight: 700 !important;
+            color: #000000 !important;
+            text-decoration: none !important;
+        }
+
+        .email-bold a {
+            color: #000000 !important;
+            text-decoration: none !important;
+        }
+
         .info-row {
             margin: 28px 0 32px 0;
         }
@@ -369,7 +380,9 @@
 
             <div class="info-row">
                 <div class="info-label">Email Terdaftar</div>
-                <div class="info-value">{{ $email }}</div>
+                <div class="info-value">
+                    <span class="email-bold" style="color: #000000 !important; text-decoration: none !important;">{{ $email }}</span>
+                </div>
             </div>
 
             <div class="message">
@@ -427,6 +440,10 @@
             <p class="brand">{{ $nama_expo }}</p>
             <p style="font-size: 12px;">Email otomatis - Mohon tidak membalas email ini</p>
             <p class="copyright">© {{ date('Y') }} {{ $nama_expo }}. Semua hak dilindungi.</p>
+            {{-- Mencegah Gmail clipping/hiding dengan ID unik dinamis --}}
+            <div style="display:none; visibility:hidden; mso-hide:all; font-size:1px; color:#ffffff; line-height:1px; max-height:0px; max-width:0px; opacity:0; overflow:hidden;">
+                {{ md5(time()) }}
+            </div>
         </div>
     </div>
 </body>

@@ -278,14 +278,23 @@
                     {{-- Toolbar --}}
                     <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
                         <div>
-                            <p class="text-sm font-semibold text-neutral-400">
-                                Menampilkan
-                                <strong class="text-neutral-900 font-extrabold">{{ $produk->total() }}</strong>
-                                produk
-                                @if (request('cari'))
-                                    untuk <em>"{{ request('cari') }}"</em>
-                                @endif
-                            </p>
+                            <div x-show="!$store.wishlist.showOnly">
+                                <p class="text-sm font-semibold text-neutral-400">
+                                    Menampilkan
+                                    <strong class="text-neutral-900 font-extrabold">{{ $produk->total() }}</strong>
+                                    produk
+                                    @if (request('cari'))
+                                        untuk <em>"{{ request('cari') }}"</em>
+                                    @endif
+                                </p>
+                            </div>
+                            <div x-show="$store.wishlist.showOnly" style="display: none;">
+                                <p class="text-sm font-semibold text-neutral-400">
+                                    Menampilkan
+                                    <strong class="text-neutral-900 font-extrabold" x-text="$store.wishlist.count"></strong>
+                                    produk di wishlist Anda
+                                </p>
+                            </div>
                             @if (request('lat') && request('lng'))
                                 <p class="text-xs font-bold mt-0.5" style="color: var(--brand);">
                                     <i class="fas fa-location-dot"></i> Menampilkan hasil terdekat dari lokasi Anda
@@ -326,7 +335,9 @@
                     {{-- PRODUCT GRID --}}
                     <div class="produk-grid" x-show="!$store.wishlist.showOnly || $store.wishlist.count > 0">
                         @forelse ($produk as $p)
-                            @include('guest.partials.product-card', ['produk' => $p])
+                            <div x-show="!$store.wishlist.showOnly || $store.wishlist.includes('{{ $p->id }}')">
+                                @include('guest.partials.product-card', ['produk' => $p])
+                            </div>
                         @empty
                             <div x-show="!$store.wishlist.showOnly"
                                 class="col-span-full flex flex-col items-center justify-center py-20 text-center">
@@ -353,23 +364,54 @@
                         x-transition:enter="transition-opacity duration-300" x-transition:enter-start="opacity-0"
                         x-transition:enter-end="opacity-100" style="display:none"
                         class="flex flex-col items-center justify-center py-20 text-center">
+                        <i class="far fa-heart text-5xl text-neutral-200 mb-6"></i>
                         <h3 class="font-heading text-xl font-bold text-neutral-900 mb-2">
                             Wishlist Kosong
                         </h3>
-                        <p class="text-sm text-neutral-400 mb-5 max-w-xs">
+                        <p class="text-sm text-neutral-400 mb-5 max-w-xs leading-relaxed">
                             Belum ada produk yang kamu simpan. Tekan ♡ pada produk untuk menambahkannya.
                         </p>
                         <button type="button" @click="$store.wishlist.toggleFilter()"
-                            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full
-                                   text-white text-sm font-semibold transition-all duration-200"
+                            class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full
+                                   text-white text-sm font-bold transition-all duration-200 shadow-sm"
                             style="background: var(--brand);" onmouseover="this.style.background='var(--brand-dark)'"
                             onmouseout="this.style.background='var(--brand)'">
-                            <i class="fas fa-arrow-left text-xs"></i> Lihat Semua Produk
+                            <i class="fas fa-arrow-left text-xs"></i> Jelajahi Produk
                         </button>
                     </div>
 
+                    {{-- Wishlist not on this page state --}}
+                    @php $pageIds = $produk->pluck('id')->map(fn($id) => (string)$id)->toArray(); @endphp
+                    <div x-show="$store.wishlist.showOnly && $store.wishlist.count > 0 && !$store.wishlist.itemsOnPage(@js($pageIds))"
+                        x-transition:enter="transition-opacity duration-300" x-transition:enter-start="opacity-0"
+                        x-transition:enter-end="opacity-100" style="display:none"
+                        class="flex flex-col items-center justify-center py-20 text-center">
+                        <i class="fas fa-search text-5xl text-neutral-200 mb-6"></i>
+                        <h3 class="font-heading text-xl font-bold text-neutral-900 mb-2">
+                            Tidak Ada di Halaman Ini
+                        </h3>
+                        <p class="text-sm text-neutral-400 mb-5 max-w-xs leading-relaxed">
+                            Produk favorit Anda mungkin ada di halaman lain atau tidak sesuai dengan filter kategori saat ini.
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <button type="button" @click="$store.wishlist.showOnly = false"
+                                class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full
+                                       bg-neutral-100 text-neutral-600 text-sm font-bold transition-all duration-200">
+                                <i class="fas fa-eye text-xs"></i> Lihat Semua
+                            </button>
+                            <a href="{{ route('guest.katalog') }}?wishlist=@{{ $store.wishlist.items.join(',') }}"
+                                @click.prevent="window.location.href = '{{ route('guest.katalog') }}?wishlist=' + $store.wishlist.items.join(',')"
+                                class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full
+                                       text-white text-sm font-bold transition-all duration-200 shadow-sm"
+                                style="background: var(--brand);" onmouseover="this.style.background='var(--brand-dark)'"
+                                onmouseout="this.style.background='var(--brand)'">
+                                <i class="fas fa-list-check text-xs"></i> Tampilkan Semua Favorit
+                            </a>
+                        </div>
+                    </div>
+
                     {{-- PAGINATION --}}
-                    <div class="mt-14 flex justify-center">
+                    <div class="mt-14 flex justify-center" x-show="!$store.wishlist.showOnly">
                         {{ $produk->withQueryString()->links() }}
                     </div>
                 </div>
@@ -390,6 +432,11 @@
                     if (typeof store.toggleFilter === 'undefined') {
                         store.toggleFilter = function() {
                             this.showOnly = !this.showOnly;
+                        };
+                    }
+                    if (typeof store.itemsOnPage === 'undefined') {
+                        store.itemsOnPage = function(pageIds) {
+                            return pageIds.some(id => this.items.includes(id));
                         };
                     }
                 };
